@@ -1,0 +1,147 @@
+.header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e8e8e8;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+}
+
+.navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 80px;
+  max-width: 1440px;
+  margin: 0 auto;
+  height: 48px;
+}
+
+.logo {
+  font-size: 24px;
+  text-align: center;
+  width: 304px;
+  flex-shrink: 0;
+}
+
+.logoSkill {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  color: #ffa412;
+}
+
+.logoSwap {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  color: #3272a3;
+}
+
+.logoDot {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  color: #ffa412;
+}
+
+.navLinks {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: center;
+  width: 520px;
+  flex-shrink: 0;
+}
+
+.navLink {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #0c0d0f;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.navLinkActive {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  color: #3272a3;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.userActions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: flex-end;
+  width: 411px;
+  flex-shrink: 0;
+}
+
+.searchBar {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex: 1 0 0;
+  gap: 4px;
+  height: 40px;
+  align-items: center;
+  padding: 0 16px;
+  border-radius: 20px;
+}
+
+.searchIcon {
+  flex-shrink: 0;
+}
+
+.searchInput {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  color: #9ca3af;
+  border: none;
+  background: transparent;
+  outline: none;
+  flex: 1;
+}
+
+.searchInput::placeholder {
+  color: #9ca3af;
+}
+
+.iconButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.iconButton {
+  background-color: #f7f7fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.iconButton:hover {
+  background-color: #e8e8ee;
+}
+
+.profilePicture {
+  border-radius: 16px;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.profileImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
