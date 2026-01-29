@@ -1,8 +1,9 @@
+import RequestSkill from './pages/RequestSkill/RequestSkill';
+import './index.css';
+
 function App() {
   return (
-    <>
-      <h1> Skill Swap</h1>
-    </>
+    <RequestSkill />
   );
 }
 

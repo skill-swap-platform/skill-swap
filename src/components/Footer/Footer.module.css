@@ -1,0 +1,145 @@
+.footer {
+  background-color: #101828;
+  padding: 48px 80px;
+  width: 100%;
+  margin-top: auto;
+}
+
+.footerContent {
+  display: flex;
+  gap: 100px;
+  max-width: 1440px;
+  margin: 0 auto 40px;
+}
+
+.footerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 341px;
+  flex-shrink: 0;
+}
+
+.logo {
+  font-size: 24px;
+  text-align: center;
+  width: 304px;
+  flex-shrink: 0;
+}
+
+.logoSkill {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  color: #ffa412;
+}
+
+.logoSwap {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  color: #3272a3;
+}
+
+.logoDot {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  color: #ffa412;
+}
+
+.footerDescription {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  color: #999;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.footerDescription p {
+  margin: 0;
+}
+
+.footerLinks {
+  display: flex;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  gap: 139px;
+  align-items: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.linkColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+
+.linkTitle {
+  color: #ffffff;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.linkList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.link {
+  color: #999;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.link:hover {
+  color: #ccc;
+}
+
+.copyright {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 0;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.divider {
+  width: 100%;
+  max-width: 1440px;
+  border: none;
+  border-top: 1px solid #333;
+  margin: 0;
+}
+
+.copyrightInfo {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.copyrightIcon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.copyrightText {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #999;
+  margin: 0;
+  flex-shrink: 0;
+}
