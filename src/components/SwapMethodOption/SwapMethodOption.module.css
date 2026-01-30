@@ -14,9 +14,18 @@
   border-color: #3272a3;
 }
 
+.container.warningVariant:hover {
+  border-color: #ffa412;
+}
+
 .selected {
+  background-color: rgba(47, 113, 163, 0.1);
   border-color: #3272a3;
-  box-shadow: 0 0 0 1px #3272a3;
+}
+
+.selectedWarning {
+  background-color: rgba(245, 158, 11, 0.1);
+  border-color: #ffa412;
 }
 
 .iconContainer {
@@ -65,22 +74,16 @@
 .radioButton {
   width: 20px;
   height: 20px;
-  border: 2px solid #d1d5db;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: border-color 0.2s;
 }
 
-.selected .radioButton {
-  border-color: #3272a3;
-}
-
-.radioButtonInner {
-  width: 10px;
-  height: 10px;
+.emptyCircle {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;
   border-radius: 50%;
-  background-color: #3272a3;
+  background-color: white;
 }

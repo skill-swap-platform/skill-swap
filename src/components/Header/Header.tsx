@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './Header.module.css';
+import Avatar from '../Avatar/Avatar';
 
 type HeaderProps = {
   activeTab?: "Chat" | "Explore" | "Home" | "Notifications" | "Requests" | "Sessions" | "Default";
@@ -71,10 +72,10 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
           </div>
           
           <div className={styles.profilePicture}>
-            <img 
+            <Avatar 
               src="https://via.placeholder.com/48" 
-              alt="Profile" 
-              className={styles.profileImage}
+              name="User Name" 
+              size={40}
             />
           </div>
         </div>
