@@ -4,16 +4,31 @@
   border-radius: 20px;
   padding: 16px;
   width: 100%;
-  box-shadow: 0 0 4.7px rgba(0, 0, 0, 0.25);
+}
+
+.container.completed {
+  border-color: #16a34a;
+  box-shadow: none;
+}
+
+.checkIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 .header {
   display: flex;
-  gap: 4px;
-  align-items: flex-end;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   cursor: pointer;
   flex-shrink: 0;
+  height: 48px;
 }
 
 .titleContainer {
@@ -22,6 +37,7 @@
   flex-direction: column;
   gap: 4px;
   align-items: flex-start;
+  justify-content: center;
   min-height: 1px;
   min-width: 1px;
 }
@@ -103,4 +119,5 @@
 /* Expanded state */
 .container:has(.content) {
   min-height: auto;
+  box-shadow: 0 0 4.7px rgba(0, 0, 0, 0.25);
 }
