@@ -1,73 +1,88 @@
-# React + TypeScript + Vite
+# Skill Swap Platform 🔄 💡
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### *"Exchange Skills, Grow Together"*
 
-Currently, two official plugins are available:
+**Skill Swap** is an innovative digital platform designed to facilitate skill and knowledge exchange between individuals through a **skill-for-skill barter system**. The platform enables users to learn new skills (such as programming or languages) by sharing their own expertise—without any financial transactions.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## React Compiler
+## ✨ Key Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Based on the platform’s **Information Architecture (IA)** and **UI/UX designs**:
 
-## Expanding the ESLint configuration
+* **Onboarding & Profile Setup:**
+  A flexible registration flow that allows users to select **3–5 skills** they want to learn or offer.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+* **Skill Discovery:**
+  An advanced search and discovery engine to find skill providers, with filtering by category and difficulty level.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+* **Swap Request System:**
+  Send skill exchange requests or free session invitations, with the ability to specify preferred time slots and include an introductory message.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+* **Real-time Chat & Scheduling:**
+  An integrated chat system to coordinate session details and confirm schedules.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+* **Sessions Management:**
+  Dedicated interfaces for upcoming sessions, session summaries, and request management (accept / decline).
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+* **Gamification & Feedback:**
+  A motivational system including **Skill Points**, **Badges** such as *“Consistency Champion”*, and a mutual rating system after each session.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🎨 Design System
+
+The front-end was developed based on a defined visual identity to enhance trust and collaboration:
+
+### Color Palette
+
+* **Primary Blue:** `#3E8FCC` (used for core elements and branding)
+* **Skill Orange:** `#FF9F00` (represents growth and creativity)
+* **Success:** `#16A34A` | **Error:** `#DC2626` | **Warning:** `#F59E0B`
+* **Neutrals:** Backgrounds starting from `#F9FAFB` with white cards `#FFFFFF`
+
+### Typography
+
+* **Titles & Headings:** **Poppins** 
+* **UI & Body Text:** **Inter** 
+
+
+## 🏗️ Site Structure (Site Map)
+
+The platform follows a clear hierarchical flow:
+
+1. **Landing & Auth:** Landing pages, authentication, and onboarding
+2. **Explore:** Skill and provider discovery
+3. **Exchange & Chat:** Request handling and real-time messaging
+4. **Dashboard:** User dashboard (sessions, points, badges)
+5. **Support:** Help center and dispute reporting
+
+
+## 🛠️ Tech Stack
+
+
+
+* **Framework:** React.js 
+* **Styling:** Tailwind CSS
+
+## State Management & Data Fetching
+
+The platform uses a hybrid approach for state management to ensure performance, scalability, and clean separation of concerns:
+
+**Zustand:**
+
+Used for managing simple and local UI states, such as:
+
+* Opening and closing menus and modals
+
+* Temporary profile data
+
+* UI preferences and lightweight global states
+
+**TanStack Query (React Query):**
+
+Used for handling server-side state and data fetched from the database, including:
+
+* Skills data
+
+* Sessions and exchange requests
+
+* Caching, background refetching, and data synchronization
