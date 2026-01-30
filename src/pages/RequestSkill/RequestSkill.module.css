@@ -1,0 +1,93 @@
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.mainContent > div:first-child {
+  background-color: #ffffff;
+  border-radius: 15px;
+  padding: 24px;
+  width: 100%;
+  max-width: 846px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.pageTitle {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.backButton {
+  background: transparent;
+  border: none;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 5px;
+  padding: 0;
+  transition: background-color 0.2s;
+}
+
+.backButton:hover {
+  background-color: #f3f4f6;
+}
+
+.title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  color: #0c0d0f;
+  margin: 0;
+}
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 32px;
+  width: 100%;
+}
+
+.sendButton {
+  background-color: #9ca3af;
+  border: none;
+  border-radius: 10px;
+  width: 218px;
+  height: 48px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  color: #ffffff;
+  cursor: not-allowed;
+  transition: background-color 0.2s;
+}
+
+.sendButton:not(:disabled) {
+  background-color: #3272a3;
+  cursor: pointer;
+}
+
+.sendButton:not(:disabled):hover {
+  background-color: #2f71a3;
+}
