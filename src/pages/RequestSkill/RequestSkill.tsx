@@ -6,7 +6,6 @@ import CollapsibleSection from '../../components/CollapsibleSection/CollapsibleS
 import { CustomDatePicker, CustomTimePicker, TimezoneSelector } from '../../components/DatePicker';
 import SuccessModal from '../../components/SuccessModal';
 import { Dayjs } from 'dayjs';
-import styles from './RequestSkill.module.css';
 
 const RequestSkill: React.FC = () => {
   const [selectedSwapMethod, setSelectedSwapMethod] = useState<'skill' | 'free' | null>(null);
@@ -70,21 +69,22 @@ const RequestSkill: React.FC = () => {
   const isFormComplete = isSection1Complete && isSection2Complete && isSection3Complete;
 
   return (
-    <div className={styles.pageContainer}>
+    <div className="flex flex-col min-h-screen bg-gray-light">
       <Header activeTab="Default" />
       
-      <div className={styles.mainContent}>
-        <div>
-          <div className={styles.pageTitle}>
-            <button className={styles.backButton} onClick={handleBackClick}>
+      <div className="flex-1 flex flex-col items-center px-5 py-10">
+        <div className="bg-white rounded-lg p-6 w-full max-w-[846px] shadow-sm">
+          <div className="flex items-center gap-4 mb-6">
+            <button className="bg-transparent border-none w-8 h-8 flex items-center justify-center cursor-pointer rounded-sm p-0 transition-colors hover:bg-gray-100" onClick={handleBackClick}>
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                <path d="M20 26L10 16L20 6" stroke="#0C0D0F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M13.3327 26.6667L4.66602 18L13.3327 9.33334" stroke="#0C0D0F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M27.3327 18H4.66602" stroke="#0C0D0F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
-            <h1 className={styles.title}>Request Skill</h1>
+            <h1 className="font-bold text-3xl text-dark m-0">Request Skill</h1>
           </div>
 
-          <div className={styles.formContainer}>
+          <div className="flex flex-col gap-6 w-full">
           <CollapsibleSection
             number={1}
             title="Select swap method"
@@ -92,7 +92,7 @@ const RequestSkill: React.FC = () => {
             defaultExpanded={false}
             isCompleted={isSection1Complete}
           >
-            <div className={styles.swapMethodsContainer}>
+            <div className="flex flex-col gap-3 w-full">
               <SwapMethodOption
                 icon={
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -109,29 +109,29 @@ const RequestSkill: React.FC = () => {
               />
 
               {selectedSwapMethod === 'skill' && (
-                <div className={styles.offeredSkillContainer}>
-                  <div className={styles.offeredSkillWrapper}>
-                    <div className={styles.offeredSkillTitleContainer}>
-                      <h3 className={styles.offeredSkillTitle}>Your offered skill</h3>
-                      <p className={styles.offeredSkillDescription}>Select one of your skills to exchange with the provider.</p>
+                <div className="px-4 w-full">
+                  <div className="border border-primary rounded-lg p-4 flex flex-col gap-4 bg-white">
+                    <div className="flex flex-col gap-1">
+                      <h3 className="font-semibold text-lg text-dark m-0">Your offered skill</h3>
+                      <p className="font-normal text-sm text-dark-light m-0">Select one of your skills to exchange with the provider.</p>
                     </div>
-                    <div className={styles.offeredSkillSelectionContainer}>
-                      <div className={styles.skillDropdownWrapper}>
+                    <div className="flex flex-col gap-2.5 px-4">
+                      <div className="relative w-full">
                         <button 
-                          className={styles.skillDropdown}
+                          className="bg-white border border-gray-border rounded-md h-12 w-full flex items-center justify-between px-4 cursor-pointer transition-colors hover:border-primary"
                           onClick={() => setShowSkillDropdown(!showSkillDropdown)}
                         >
-                          <span className={styles.skillDropdownText}>{selectedSkill}</span>
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={styles.dropdownArrow}>
+                          <span className="font-semibold text-xs text-dark text-left flex-1">{selectedSkill}</span>
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0 transition-transform">
                             <path d="M4 6L8 10L12 6" stroke="#0C0D0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         </button>
                         {showSkillDropdown && (
-                          <div className={styles.skillDropdownMenu}>
+                          <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white border border-gray-border rounded-md shadow-card z-10 overflow-hidden">
                             {userSkills.map((skill) => (
                               <div
                                 key={skill}
-                                className={styles.skillDropdownItem}
+                                className="py-3 px-4 font-semibold text-xs text-dark cursor-pointer transition-colors hover:bg-gray-light"
                                 onClick={() => {
                                   setSelectedSkill(skill);
                                   setShowSkillDropdown(false);
@@ -143,11 +143,11 @@ const RequestSkill: React.FC = () => {
                           </div>
                         )}
                       </div>
-                      <button className={styles.addSkillButton}>
+                      <button className="border border-primary rounded-md h-8 w-[163px] flex items-center justify-center gap-1 bg-transparent cursor-pointer transition-colors hover:bg-primary-dark/5">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                           <path d="M12 6V18M6 12H18" stroke="#3272A3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
-                        <span>Add new Skill</span>
+                        <span className="font-normal text-13 text-primary">Add new Skill</span>
                       </button>
                     </div>
                   </div>
@@ -174,30 +174,30 @@ const RequestSkill: React.FC = () => {
 
           <CollapsibleSection
             number={2}
-            title="Write a message to provider (optional)"
+            title="Write a message to provider"
             description="Introduce yourself and explain what you want to learn."
             defaultExpanded={false}
             isCompleted={isSection2Complete}
           >
-            <div className={styles.messageContainer}>
-              <div className={styles.textareaWrapper}>
+            <div className="flex flex-col gap-2 w-full">
+              <div className="relative w-full">
                 <textarea
-                  className={styles.messageTextarea}
+                  className="bg-white border border-gray-border rounded-md p-2 pb-6 min-h-[121px] max-h-[121px] font-normal text-xs text-dark resize-none w-full overflow-y-auto placeholder:text-dark-light"
                   placeholder="Hi! I've always wanted to improve my speaking skills for my upcoming conference..."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   maxLength={500}
                 />
-                <div className={styles.characterCount}>
+                <div className="absolute bottom-2 right-2 font-normal text-xs text-[#656363] pointer-events-none">
                   {message.length} / 500
                 </div>
               </div>
             </div>
-            <div className={styles.suggestionContainer}>
+            <div className="flex gap-2 w-full flex-wrap">
               {messageSuggestions.map((suggestion, index) => (
                 <button
                   key={index}
-                  className={styles.suggestionButton}
+                  className="flex-1 min-w-0 bg-background-gray border border-gray-border rounded-2xl px-2 py-2 h-12 font-normal text-xs text-black cursor-pointer transition-colors text-center flex items-center justify-center hover:bg-gray-border"
                   onClick={() => setMessage(suggestion)}
                 >
                   "{suggestion}"
@@ -213,9 +213,9 @@ const RequestSkill: React.FC = () => {
             defaultExpanded={false}
             isCompleted={isSection3Complete}
           >
-            <div className={styles.timeSelectionContainer}>
-              <div className={styles.inputField}>
-                <label className={styles.inputLabel}>Date</label>
+            <div className="flex flex-col gap-3 w-full">
+              <div className="flex flex-col gap-1 w-full">
+                <label className="font-medium text-xs leading-4 tracking-wide text-[#5c5c5c]">Date</label>
                 <CustomDatePicker
                   value={selectedDate}
                   onChange={setSelectedDate}
@@ -223,9 +223,9 @@ const RequestSkill: React.FC = () => {
                 />
               </div>
 
-              <div className={styles.timeInputsRow}>
-                <div className={styles.timeInputField}>
-                  <label className={styles.inputLabel}>Start</label>
+              <div className="flex gap-4 items-end w-full">
+                <div className="flex-1 flex flex-col gap-1">
+                  <label className="font-medium text-xs leading-4 tracking-wide text-[#5c5c5c]">Start</label>
                   <CustomTimePicker
                     value={startTime}
                     onChange={setStartTime}
@@ -233,10 +233,10 @@ const RequestSkill: React.FC = () => {
                   />
                 </div>
 
-                <div className={styles.timeSeparator}>to</div>
+                <div className="font-medium text-sm text-[#353535] text-center w-[13px] pb-3">to</div>
 
-                <div className={styles.timeInputField}>
-                  <label className={styles.inputLabel}>End</label>
+                <div className="flex-1 flex flex-col gap-1">
+                  <label className="font-medium text-xs leading-4 tracking-wide text-[#5c5c5c]">End</label>
                   <CustomTimePicker
                     value={endTime}
                     onChange={setEndTime}
@@ -245,7 +245,7 @@ const RequestSkill: React.FC = () => {
                 </div>
               </div>
 
-              <div className={styles.timezoneWrapper}>
+              <div className="w-full">
                 <TimezoneSelector
                   value={timezone}
                   onChange={setTimezone}
@@ -255,9 +255,9 @@ const RequestSkill: React.FC = () => {
             </div>
           </CollapsibleSection>
 
-          <div className={styles.buttonContainer}>
+          <div className="flex justify-end pt-8 w-full">
             <button 
-              className={styles.sendButton}
+              className="border-none rounded-md w-[218px] h-12 font-medium text-base text-white transition-all disabled:cursor-not-allowed disabled:bg-gradient-to-r disabled:from-gray-400 disabled:to-gray-400 enabled:bg-gradient-to-r enabled:from-primary-light enabled:to-primary-light enabled:cursor-pointer enabled:hover:opacity-90"
               onClick={handleSendRequest}
               disabled={!isFormComplete}
             >
