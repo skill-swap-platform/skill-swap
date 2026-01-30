@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { ThumbsUp, X } from 'lucide-react'
 import { Modal, RatingDisplay, Avatar } from '@/components/common'
-import { Feedback } from '@/types'
+import type { Feedback } from '@/types/index'
 
 interface ViewFeedbackModalProps {
     isOpen: boolean

@@ -1,11 +1,11 @@
 import api from './api'
-import {
+import type {
     Feedback,
     SessionFeedback,
     SubmitFeedbackDto,
     FeedbackStats,
     FeedbackHistoryFilter,
-} from '@/types'
+} from '@/types/index'
 export const submitFeedback = async (data: SubmitFeedbackDto): Promise<Feedback> => {
     const response = await api.post(`/sessions/${data.sessionId}/feedback`, {
         toUserId: data.toUserId,

@@ -1,7 +1,7 @@
 import React from 'react'
-import { Award, Lock, ChevronRight } from 'lucide-react'
+import { Lock, ChevronRight } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Badge as BadgeComponent } from '@/components/common'
-import { UserBadge, Badge } from '@/types'
+import type { UserBadge } from '@/types/index'
 
 interface BadgesShowcaseProps {
     userBadges: UserBadge[]

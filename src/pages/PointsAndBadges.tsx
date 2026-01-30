@@ -9,7 +9,7 @@ import {
     CreateBadgeModal,
 } from '@/components/gamification'
 import { useAllBadges, useLeaderboard } from '@/hooks'
-import { PointsBreakdown } from '@/types'
+import type { PointsBreakdown } from '@/types'
 
 export const PointsAndBadges: React.FC = () => {
     const [showFilter, setShowFilter] = useState(false)
@@ -212,7 +212,7 @@ export const PointsAndBadges: React.FC = () => {
                 isOpen={showFilter}
                 onClose={() => setShowFilter(false)}
                 filters={filters}
-                onFiltersChange={setFilters}
+                onFiltersChange={(newFilters) => setFilters(prev => ({ ...prev, ...newFilters }))}
                 onReset={handleResetFilters}
             />
             {modalType === 'points' && selectedUser && (

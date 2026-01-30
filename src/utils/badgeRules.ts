@@ -1,5 +1,5 @@
 import { BADGE_UNLOCK_CONDITIONS } from '@/constants/badges'
-import { Badge, UserStats } from '@/types'
+import type { Badge, UserStats } from '@/types/index'
 export const checkBadgeEligibility = (
     badge: Badge,
     userStats: UserStats
@@ -40,7 +40,6 @@ export const getEligibleBadges = (
 }
 
 export const getNextBadge = (
-    userStats: UserStats,
     currentBadgeIds: string[],
     allBadges: Badge[]
 ): Badge | null => {

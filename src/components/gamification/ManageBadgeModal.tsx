@@ -1,7 +1,7 @@
 import React from 'react'
 import { Modal, ModalFooter, Button } from '@/components/common'
 import { Check } from 'lucide-react'
-import { Badge, UserBadge } from '@/types'
+import type { Badge, UserBadge } from '@/types/index'
 
 interface ManageBadgeModalProps {
     isOpen: boolean

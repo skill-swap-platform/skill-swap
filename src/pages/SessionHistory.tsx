@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, Search, Filter } from 'lucide-react'
-import { SessionHistoryList } from '@/components/feedback/SessionHistoryList'
-import { ViewFeedbackModal } from '@/components/feedback/ViewFeedbackModal'
-import { PostSessionFooter } from '@/components/layout/PostSessionFooter'
-import type { SessionFeedback, FeedbackRating } from '@/types'
+import { SessionHistoryList } from '@/components/feedback/index'
+import { ViewFeedbackModal } from '@/components/feedback/index'
+import { PostSessionFooter } from '@/components/layout/index'
+import type { SessionFeedback, FeedbackRating } from '@/types/index'
 
 // ---------------- MOCK SESSIONS ----------------
 const mockSessions = [

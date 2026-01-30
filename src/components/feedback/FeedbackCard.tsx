@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card, Avatar, RatingDisplay } from '@/components/common'
 import { formatDate } from '@/utils'
-import { Feedback } from '@/types'
+import type { Feedback } from '@/types/index'
 interface FeedbackCardProps {
     feedback: Feedback
     fromUserName: string

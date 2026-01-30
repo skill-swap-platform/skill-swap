@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react'
-import { ChevronRight, MessageSquare, ChevronLeft } from 'lucide-react'
-import { Avatar, RatingDisplay, Badge } from '@/components/common'
+import { ChevronRight, ChevronLeft } from 'lucide-react'
+import { Avatar, RatingDisplay } from '@/components/common'
 import { formatDate } from '@/utils'
-import { Feedback } from '@/types'
+import type { Feedback } from '@/types/index'
 
 interface SessionHistoryListProps {
     sessions: Array<{
@@ -23,7 +23,7 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
     onViewFeedback,
     emptyMessage = 'No sessions yet',
 }) => {
-    const [filter, setFilter] = useState<'all' | 'provider' | 'seeker'>('all')
+    const [filter] = useState<'all' | 'provider' | 'seeker'>('all')
 
     const filteredSessions = useMemo(() => {
         return sessions.filter((session) => {
@@ -31,6 +31,13 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
             return session.role === filter
         })
     }, [sessions, filter])
+
+    const statusColors: Record<string, string> = {
+        Completed: 'bg-[#F0FDF4] text-[#16A34A] border-[#DCFCE7]',
+        Upcoming: 'bg-[#FFFBEB] text-[#D97706] border-[#FEF3C7]',
+        Canceled: 'bg-[#FEF2F2] text-[#DC2626] border-[#FEE2E2]',
+        'In Progress': 'bg-[#F0F9FF] text-[#0284C7] border-[#E0F2FE]',
+    }
 
     if (sessions.length === 0) {
         return (
@@ -58,22 +65,6 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                     {filteredSessions.map((session) => {
                         const status: 'Upcoming' | 'Completed' | 'Canceled' | 'In Progress' =
                             session.id === '5' ? 'In Progress' : (session.feedback || session.id === '2' || session.id === '4' ? 'Completed' : (session.id === '14' || session.id === '3' ? 'Canceled' : 'Upcoming'))
-
-                        const statusVariant =
-                            status === 'Completed'
-                                ? 'success'
-                                : status === 'Canceled'
-                                    ? 'error'
-                                    : status === 'In Progress'
-                                        ? 'info'
-                                        : 'warning'
-
-                        const statusColors = {
-                            Completed: 'bg-[#F0FDF4] text-[#16A34A] border-[#DCFCE7]',
-                            Upcoming: 'bg-[#FFFBEB] text-[#D97706] border-[#FEF3C7]',
-                            Canceled: 'bg-[#FEF2F2] text-[#DC2626] border-[#FEE2E2]',
-                            'In Progress': 'bg-[#F0F9FF] text-[#0284C7] border-[#E0F2FE]',
-                        }
 
                         return (
                             <div
@@ -149,7 +140,7 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                 </button>
 
                 <div className="flex items-center gap-2">
-                    {[1, 2, 3, '...', 8, 9, 10].map((page, i) => (
+                    {[1, 2, 3, 8, 9, 10].map((page, i) => (
                         <button
                             key={i}
                             className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all ${page === 1

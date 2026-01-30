@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { Filter as FilterIcon, X } from 'lucide-react'
 import { Button, Modal, ModalFooter } from '@/components/common'
-import { POINTS_RANGES, ACTIVITY_TIME_RANGE_LABELS } from '@/constants'
+import { POINTS_RANGES, ACTIVITY_TIME_RANGE_LABELS } from '@/constants/index'
 interface FilterPanelProps {
     isOpen: boolean
     onClose: () => void
@@ -10,7 +10,7 @@ interface FilterPanelProps {
         badges?: string[]
         timeRange?: string
     }
-    onFiltersChange: (filters: any) => void
+    onFiltersChange: (filters: { pointsRange?: { min: number; max: number | null }; badges?: string[]; timeRange?: string }) => void
     onReset: () => void
 }
 
@@ -31,7 +31,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     const isOpenSafe = isOpen
     const selectedRangeLabel = useMemo(() => {
         const found = POINTS_RANGES.find(
-            (r) => r.min === filters.pointsRange?.min && r.max === filters.pointsRange?.max
+            (r: { min: number; max: number | null; label: string }) => r.min === filters.pointsRange?.min && r.max === filters.pointsRange?.max
         )
         return found?.label
     }, [filters.pointsRange])
@@ -107,7 +107,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                     </div>
 
                     <div className="mt-3 flex flex-wrap gap-2">
-                        {POINTS_RANGES.slice(0, 3).map((range) => {
+                        {POINTS_RANGES.slice(0, 3).map((range: { min: number; max: number | null; label: string }) => {
                             const active =
                                 filters.pointsRange?.min === range.min && filters.pointsRange?.max === range.max
                             return (
@@ -153,7 +153,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                     >
                         {Object.entries(ACTIVITY_TIME_RANGE_LABELS).map(([value, label]) => (
                             <option key={value} value={value}>
-                                {label}
+                                {label as React.ReactNode}
                             </option>
                         ))}
                     </select>

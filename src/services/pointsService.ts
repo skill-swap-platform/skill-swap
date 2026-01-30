@@ -1,12 +1,12 @@
 import api from './api'
-import {
+import type {
     PointsSummary,
     PointsBreakdown,
     LeaderboardEntry,
     LeaderboardFilter,
     AddPointsDto,
     UpdatePointsDto,
-} from '@/types'
+} from '@/types/index'
 export const getUserPoints = async (userId: string): Promise<PointsSummary> => {
     const response = await api.get(`/users/${userId}/points`)
     return response.data

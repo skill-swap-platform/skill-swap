@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, Button, Rating } from '@/components/common'
 import { ThumbsUp, ThumbsDown, MessageSquare } from 'lucide-react'
-import { FeedbackFormData, FeedbackRating } from '@/types'
+import type { FeedbackFormData, FeedbackRating } from '@/types/index'
 
 interface FeedbackFormProps {
     partnerName: string
@@ -91,8 +91,8 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
                         <button
                             onClick={() => setFormData({ ...formData, wasHelpful: true })}
                             className={`flex-1 p-4 rounded-lg border-2 transition-all ${formData.wasHelpful === true
-                                    ? 'border-[var(--success)] bg-[color-mix(in_srgb,var(--success)_10%,white)]'
-                                    : 'border-[var(--neutral-light)] hover:border-[var(--success)]'
+                                ? 'border-[var(--success)] bg-[color-mix(in_srgb,var(--success)_10%,white)]'
+                                : 'border-[var(--neutral-light)] hover:border-[var(--success)]'
                                 }`}
                         >
                             <ThumbsUp className={`w-6 h-6 mx-auto mb-2 ${formData.wasHelpful === true ? 'text-[var(--success)]' : 'text-[var(--text-tertiary)]'
@@ -103,8 +103,8 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
                         <button
                             onClick={() => setFormData({ ...formData, wasHelpful: false })}
                             className={`flex-1 p-4 rounded-lg border-2 transition-all ${formData.wasHelpful === false
-                                    ? 'border-[var(--error)] bg-[color-mix(in_srgb,var(--error)_10%,white)]'
-                                    : 'border-[var(--neutral-light)] hover:border-[var(--error)]'
+                                ? 'border-[var(--error)] bg-[color-mix(in_srgb,var(--error)_10%,white)]'
+                                : 'border-[var(--neutral-light)] hover:border-[var(--error)]'
                                 }`}
                         >
                             <ThumbsDown className={`w-6 h-6 mx-auto mb-2 ${formData.wasHelpful === false ? 'text-[var(--error)]' : 'text-[var(--text-tertiary)]'
@@ -121,8 +121,8 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
                         <button
                             onClick={() => setFormData({ ...formData, wouldRecommend: true })}
                             className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all ${formData.wouldRecommend === true
-                                    ? 'border-[var(--primary)] bg-[color-mix(in_srgb,var(--primary)_10%,white)] text-[var(--primary)]'
-                                    : 'border-[var(--neutral-light)] hover:border-[var(--primary)]'
+                                ? 'border-[var(--primary)] bg-[color-mix(in_srgb,var(--primary)_10%,white)] text-[var(--primary)]'
+                                : 'border-[var(--neutral-light)] hover:border-[var(--primary)]'
                                 }`}
                         >
                             <p className="font-medium text-center">Yes, definitely!</p>
@@ -131,8 +131,8 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
                         <button
                             onClick={() => setFormData({ ...formData, wouldRecommend: false })}
                             className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all ${formData.wouldRecommend === false
-                                    ? 'border-[var(--neutral-light)] bg-[var(--neutral-light)]'
-                                    : 'border-[var(--neutral-light)] hover:bg-[var(--neutral-light)]'
+                                ? 'border-[var(--neutral-light)] bg-[var(--neutral-light)]'
+                                : 'border-[var(--neutral-light)] hover:bg-[var(--neutral-light)]'
                                 }`}
                         >
                             <p className="font-medium text-center">Not really</p>

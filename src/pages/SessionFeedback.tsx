@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { SessionCompletedScreen, PostSessionFeedbackLayout } from '@/components/feedback'
-import { BadgeUnlockedScreen } from '@/components/gamification'
-import { useSubmitFeedback } from '@/hooks'
-import { useBadgesStore } from '@/store'
-import { FeedbackFormData } from '@/types'
-import { PostSessionTopNav } from '@/components/layout/PostSessionTopNav'
-import { PostSessionFooter } from '@/components/layout/PostSessionFooter'
+import { SessionCompletedScreen, PostSessionFeedbackLayout } from '@/components/feedback/index'
+import { BadgeUnlockedScreen } from '@/components/gamification/index'
+import { useSubmitFeedback } from '@/hooks/index'
+import { useBadgesStore } from '@/store/index'
+import type { FeedbackFormData } from '@/types'
+import { PostSessionTopNav } from '@/components/layout/index'
+import { PostSessionFooter } from '@/components/layout/index'
 
 export const SessionFeedback: React.FC = () => {
     const navigate = useNavigate()
@@ -82,7 +82,7 @@ export const SessionFeedback: React.FC = () => {
                 partnerName={partnerName}
                 partnerAvatar={partnerAvatar}
                 role={role}
-                onSubmit={(data) =>
+                onSubmit={(data: { rating: 1 | 2 | 3 | 4 | 5; comment?: string; improvement?: string }) =>
                     handleSubmitFeedback({
                         rating: data.rating,
                         comment: data.comment,

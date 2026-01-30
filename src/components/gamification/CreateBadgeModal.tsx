@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Modal, ModalFooter, Button } from '@/components/common'
-import { BADGE_ICONS, BADGE_COLOR_SCHEMES } from '@/constants'
-import { CreateBadgeDto } from '@/types'
+import { BADGE_ICONS, BADGE_COLOR_SCHEMES } from '@/constants/index'
+import type { CreateBadgeDto } from '@/types/index'
 
 interface CreateBadgeModalProps {
     isOpen: boolean
@@ -115,7 +115,7 @@ export const CreateBadgeModal: React.FC<CreateBadgeModalProps> = ({
                                 Icon*
                             </label>
                             <div className="grid grid-cols-3 gap-3 max-w-sm">
-                                {BADGE_ICONS.slice(0, 6).map((icon) => {
+                                {BADGE_ICONS.slice(0, 6).map((icon: string) => {
                                     const active = formData.icon === icon
                                     return (
                                         <button
@@ -162,14 +162,14 @@ export const CreateBadgeModal: React.FC<CreateBadgeModalProps> = ({
                                         <button
                                             key={name}
                                             type="button"
-                                            onClick={() => setFormData({ ...formData, color })}
+                                            onClick={() => setFormData({ ...formData, color: color as string })}
                                             className={`h-16 rounded-xl border-2 transition-all overflow-hidden ${active ? 'border-[#0C0D0F]' : 'border-[#E5E7EB]'
                                                 }`}
                                             title={`Select color: ${name}`}
                                         >
                                             <div
                                                 className="h-9"
-                                                style={{ backgroundColor: color }}
+                                                style={{ backgroundColor: color as string }}
                                             />
                                             <div className="h-7 flex items-center justify-center text-xs text-[#666666] bg-white capitalize">
                                                 {name.toLowerCase()}

@@ -1,4 +1,4 @@
-import { Badge } from '@/types'
+import type { Badge } from '@/types'
 
 export const BADGE_CATEGORIES = {
     LEARNING: 'learning',

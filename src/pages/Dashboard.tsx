@@ -5,9 +5,9 @@ import {
     BadgesShowcase,
     RecentAchievements,
     AchievementsWidget,
-} from '@/components/dashboard'
-import { useUserPoints, useUserBadges, useAllBadges } from '@/hooks'
-import { Sparkles, ArrowRight, Zap, Target, Search } from 'lucide-react'
+} from '@/components/dashboard/index'
+import { useUserPoints, useUserBadges, useAllBadges } from '@/hooks/index'
+import { ArrowRight, Target, Search } from 'lucide-react'
 
 export const Dashboard: React.FC = () => {
     const navigate = useNavigate()

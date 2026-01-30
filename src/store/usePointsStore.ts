@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { PointsSummary, PointActivity, LeaderboardEntry } from '@/types'
+import type { PointsSummary, PointActivity, LeaderboardEntry } from '@/types'
 
 interface PointsState {
     pointsSummary: PointsSummary | null

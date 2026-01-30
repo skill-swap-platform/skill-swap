@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Badge, UserBadge, BadgeProgress } from '@/types'
+import type { Badge, UserBadge, BadgeProgress } from '@/types'
 
 interface BadgesState {
     allBadges: Badge[]

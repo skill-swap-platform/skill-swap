@@ -1,4 +1,4 @@
-import { Badge } from './badge.types'
+import type { Badge } from './badge.types'
 
 export type UserRole = 'skill_seeker' | 'skill_provider' | 'both' | 'admin'
 

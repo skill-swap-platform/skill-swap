@@ -5,7 +5,6 @@ import {
     Award,
     History,
     Settings,
-    LogOut,
     Menu,
     X,
     Users,
@@ -13,18 +12,9 @@ import {
     AlertCircle,
     BarChart3,
 } from 'lucide-react'
-import { Avatar } from '@/components/common'
 
 export const Layout: React.FC = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-
-    // Mock user data
-    const user = {
-        name: 'Wafaa Amjad',
-        email: 'admin@skillswap.com',
-        avatar: undefined,
-        role: 'Admin',
-    }
 
     const navItems = [
         {

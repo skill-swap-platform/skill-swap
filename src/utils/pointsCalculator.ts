@@ -1,5 +1,5 @@
 import { POINTS_REWARDS } from '@/constants/points'
-import { PointActivityType } from '@/types'
+import type { PointActivityType } from '@/types'
 
 export const calculatePoints = (
     activityType: PointActivityType,

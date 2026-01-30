@@ -12,7 +12,7 @@ import {
     getBadgesByCategory,
 } from '@/services'
 import { useBadgesStore } from '@/store'
-import { CreateBadgeDto, UpdateBadgeDto } from '@/types'
+import type { CreateBadgeDto, UpdateBadgeDto } from '@/types'
 
 
 export const badgesKeys = {

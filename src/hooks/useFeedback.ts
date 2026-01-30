@@ -12,7 +12,7 @@ import {
     canSubmitFeedback,
 } from '@/services'
 import { useFeedbackStore } from '@/store'
-import { SubmitFeedbackDto, FeedbackHistoryFilter } from '@/types'
+import type { SubmitFeedbackDto, FeedbackHistoryFilter } from '@/types'
 
 export const feedbackKeys = {
     all: ['feedback'] as const,

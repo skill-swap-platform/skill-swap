@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Feedback, SessionFeedback, FeedbackStats } from '@/types'
+import type { Feedback, SessionFeedback, FeedbackStats } from '@/types'
 
 interface FeedbackState {
     sessionFeedback: SessionFeedback | null

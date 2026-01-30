@@ -1,7 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/common'
-import { UserBadge } from '@/types'
+import type { UserBadge } from '@/types/index'
 
 interface BadgeUnlockedScreenProps {
     badge: UserBadge | null

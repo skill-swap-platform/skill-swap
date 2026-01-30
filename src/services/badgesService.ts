@@ -1,11 +1,11 @@
 import api from './api'
-import {
+import type {
     Badge,
     UserBadge,
     BadgeProgress,
     CreateBadgeDto,
     UpdateBadgeDto,
-} from '@/types'
+} from '@/types/index'
 export const getAllBadges = async (): Promise<Badge[]> => {
     const response = await api.get('/badges')
     return response.data

@@ -9,7 +9,7 @@ import {
     getPointsHistory,
 } from '@/services'
 import { usePointsStore } from '@/store'
-import {
+import type {
     AddPointsDto,
     UpdatePointsDto,
     LeaderboardFilter,
@@ -32,9 +32,9 @@ export const useUserPoints = (userId: string) => {
         queryFn: async () => {
             setLoading(true)
             try {
-                const data = await getUserPoints(userId)
-                setPointsSummary(data)
-                return data
+                const summary = await getUserPoints(userId)
+                setPointsSummary(summary)
+                return summary
             } catch (error: any) {
                 setError(error.message)
                 throw error
@@ -122,7 +122,7 @@ export const useUpdatePoints = () => {
 
     return useMutation({
         mutationFn: (data: UpdatePointsDto) => updateUserPoints(data),
-        onSuccess: (data, variables) => {
+        onSuccess: (_data, variables) => {
             queryClient.invalidateQueries({ queryKey: pointsKeys.summary(variables.userId) })
             queryClient.invalidateQueries({ queryKey: pointsKeys.leaderboard() })
             queryClient.invalidateQueries({ queryKey: pointsKeys.rank(variables.userId) })

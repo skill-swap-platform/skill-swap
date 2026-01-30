@@ -39,8 +39,6 @@ export const PostSessionFeedbackLayout: React.FC<PostSessionFeedbackLayoutProps>
         Object.fromEntries(questions.map((q) => [q, 0]))
     )
     const [didShowUp, setDidShowUp] = useState<boolean | undefined>(undefined)
-    const [positive, setPositive] = useState('')
-    const [improve, setImprove] = useState('')
     const [selectedPositiveTags, setSelectedPositiveTags] = useState<string[]>([])
     const [selectedImproveTags, setSelectedImproveTags] = useState<string[]>([])
 
@@ -49,9 +47,7 @@ export const PostSessionFeedbackLayout: React.FC<PostSessionFeedbackLayoutProps>
 
     const toggleTag = (
         tag: string,
-        selected: string[],
         setSelected: React.Dispatch<React.SetStateAction<string[]>>,
-        setText: React.Dispatch<React.SetStateAction<string>>
     ) => {
         setSelected((prev) => {
             const next = prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
@@ -158,8 +154,8 @@ export const PostSessionFeedbackLayout: React.FC<PostSessionFeedbackLayoutProps>
                                 Things they did well? <span className="text-[#9CA3AF] font-normal">(Optional)</span>
                             </div>
                             <textarea
-                                value={positive}
-                                onChange={(e) => setPositive(e.target.value)}
+                                value={selectedPositiveTags.join(', ')}
+                                onChange={(e) => setSelectedPositiveTags(e.target.value.split(',').map(s => s.trim()))}
                                 placeholder="What stood out positively?."
                                 rows={3}
                                 className="w-full p-5 rounded-[16px] border border-[#E5E7EB] outline-none focus:ring-2 focus:ring-[#3E8FCC] bg-white text-base resize-none"
@@ -171,7 +167,7 @@ export const PostSessionFeedbackLayout: React.FC<PostSessionFeedbackLayoutProps>
                                         <button
                                             key={t}
                                             type="button"
-                                            onClick={() => toggleTag(t, selectedPositiveTags, setSelectedPositiveTags, setPositive)}
+                                            onClick={() => toggleTag(t, setSelectedPositiveTags)}
                                             className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${isActive
                                                 ? 'bg-[#3E8FCC] border-[#3E8FCC] text-white shadow-md'
                                                 : 'bg-white border-[#E5E7EB] text-[#666666] hover:bg-[#F9FAFB]'
@@ -188,8 +184,8 @@ export const PostSessionFeedbackLayout: React.FC<PostSessionFeedbackLayoutProps>
                                 Things they could improve? <span className="text-[#9CA3AF] font-normal">(Optional)</span>
                             </div>
                             <textarea
-                                value={improve}
-                                onChange={(e) => setImprove(e.target.value)}
+                                value={selectedImproveTags.join(', ')}
+                                onChange={(e) => setSelectedImproveTags(e.target.value.split(',').map(s => s.trim()))}
                                 placeholder="Any suggestions for improvement?"
                                 rows={3}
                                 className="w-full p-5 rounded-[16px] border border-[#E5E7EB] outline-none focus:ring-2 focus:ring-[#3E8FCC] bg-white text-base resize-none"
@@ -201,7 +197,7 @@ export const PostSessionFeedbackLayout: React.FC<PostSessionFeedbackLayoutProps>
                                         <button
                                             key={t}
                                             type="button"
-                                            onClick={() => toggleTag(t, selectedImproveTags, setSelectedImproveTags, setImprove)}
+                                            onClick={() => toggleTag(t, setSelectedImproveTags)}
                                             className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${isActive
                                                 ? 'bg-[#3E8FCC] border-[#3E8FCC] text-white shadow-md'
                                                 : 'bg-white border-[#E5E7EB] text-[#666666] hover:bg-[#F9FAFB]'
@@ -229,8 +225,8 @@ export const PostSessionFeedbackLayout: React.FC<PostSessionFeedbackLayoutProps>
                             onClick={() =>
                                 onSubmit({
                                     rating: (Math.max(1, Math.min(5, Math.round(overall || 1))) as 1 | 2 | 3 | 4 | 5),
-                                    comment: positive,
-                                    improvement: improve,
+                                    comment: selectedPositiveTags.join(', '),
+                                    improvement: selectedImproveTags.join(', '),
                                 })
                             }
                             disabled={!canSubmit || isSubmitting}

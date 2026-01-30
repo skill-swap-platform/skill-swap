@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { SessionCompletedScreen, FeedbackForm } from '@/components/feedback'
 import { BadgeUnlockedScreen, PointsModal } from '@/components/gamification'
 import { ManageBadgeModal } from '@/components/gamification/ManageBadgeModal'
-import { Badge, UserBadge } from '@/types'
+import type { Badge, UserBadge } from '@/types'
 
 // Mock data
 const mockBadges: Badge[] = [
@@ -65,7 +65,6 @@ export const PreviewBadgeUnlocked: React.FC = () => {
     const userBadge: UserBadge = {
         ...mockBadges[0],
         awardedAt: new Date(),
-        userId: 'u1'
     }
     return (
         <BadgeUnlockedScreen

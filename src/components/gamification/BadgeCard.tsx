@@ -1,7 +1,7 @@
 import React from 'react'
 import { Lock, Check } from 'lucide-react'
 import { Card } from '@/components/common'
-import { Badge } from '@/types'
+import type { Badge } from '@/types/index'
 import { ProgressBar } from '@/components/common'
 
 interface BadgeCardProps {
