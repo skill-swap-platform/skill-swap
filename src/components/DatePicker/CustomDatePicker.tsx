@@ -8,7 +8,6 @@ import { PickersDay } from '@mui/x-date-pickers/PickersDay';
 import { styled } from '@mui/material/styles';
 import { Box, Popover, Select, MenuItem } from '@mui/material';
 import type { PickersCalendarHeaderProps } from '@mui/x-date-pickers/PickersCalendarHeader';
-import styles from './CustomDatePicker.module.css';
 
 // Custom styled Day component to match Figma design
 const CustomDay = styled(PickersDay)(() => ({
@@ -217,8 +216,8 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
 
   return (
     <>
-      <div className={styles.inputWrapper} onClick={handleClick}>
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className={styles.inputIcon}>
+      <div className="border border-gray-divider rounded-md h-12 flex items-center gap-3 px-3.5 py-1 bg-white cursor-pointer transition-colors hover:border-primary" onClick={handleClick}>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="flex-shrink-0">
           <path d="M6.66602 1.66667V4.16667" stroke="#5C5C5C" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M13.334 1.66667V4.16667" stroke="#5C5C5C" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M2.91602 7.575H17.0827" stroke="#5C5C5C" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
@@ -226,14 +225,16 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
         </svg>
         <input
           type="text"
-          className={styles.input}
+          className="flex-1 border-none outline-none font-medium text-sm leading-5 tracking-wide text-[#5c5c5c] bg-transparent cursor-pointer placeholder:text-[#5c5c5c]"
           placeholder={placeholder}
           value={formatDate(value)}
           readOnly
         />
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className={styles.dropdownIcon}>
-          <path d="M8.91016 19.92L15.4302 13.4C16.2002 12.63 16.2002 11.37 15.4302 10.6L8.91016 4.08" stroke="#0C0D0F" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        <div className={`flex items-center justify-center w-6 h-6 flex-shrink-0 transition-transform duration-300 ${open ? 'rotate-[-90deg]' : 'rotate-90'}`}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M8.91016 19.92L15.4302 13.4C16.2002 12.63 16.2002 11.37 15.4302 10.6L8.91016 4.08" stroke="#0C0D0F" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
       </div>
 
       <Popover

@@ -16,13 +16,10 @@ const Avatar: React.FC<AvatarProps> = ({ src, name = "User", size = 40 }) => {
 
   return (
     <div
+      className="rounded-full overflow-hidden bg-gray-200 flex-shrink-0"
       style={{
         width: size,
         height: size,
-        borderRadius: "50%",
-        overflow: "hidden",
-        background: "#eee",
-        flexShrink: 0,
       }}
     >
       <img
@@ -30,7 +27,7 @@ const Avatar: React.FC<AvatarProps> = ({ src, name = "User", size = 40 }) => {
         alt="avatar"
         width={size}
         height={size}
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        className="w-full h-full object-cover"
         onError={(e) => {
           e.currentTarget.onerror = null;
           e.currentTarget.src = fallback(name);
