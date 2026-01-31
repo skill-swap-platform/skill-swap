@@ -77,11 +77,11 @@ export default {
       },
       keyframes: {
         slideDown: {
-          '0%': { 
+          '0%': {
             maxHeight: '0',
             opacity: '0',
           },
-          '100%': { 
+          '100%': {
             maxHeight: '500px',
             opacity: '1',
           },
@@ -92,7 +92,5 @@ export default {
       },
     },
   },
-  plugins: [
-    require('tailwind-scrollbar')({ nocompatible: true }),
-  ],
+  plugins: [],
 }
