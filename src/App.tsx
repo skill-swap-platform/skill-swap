@@ -1,32 +1,32 @@
 import "./index.css";
-import { RequestSkill } from "./pages/RequestSkill";
-import { SessionSchedule } from "./pages/session/SessionSchedule";
-import type { Session } from "./pages/session/SessionSchedule";
+import AppRouter from "./routes/AppRouter";
+// import { RequestSkill } from "./pages/RequestSkill";
+// import { SessionSchedule } from "./pages/session/SessionSchedule";
+// import type { Session } from "./pages/session/SessionSchedule";
 // import { UpcomingSessionCard } from "./pages/session/UpcomingSessionCard";
 
-const mockSessions: Session[] = [
-  {
-    id: "1",
-    category: "Spanish Conversation",
-    title: "Basic of Spanish",
-    date: "Saturday, Dec 16",
-    time: "3:00 PM - 4:00 PM",
-    partnerName: "Jane Cooper",
-  },
-  {
-    id: "2",
-    category: "English Speaking",
-    title: "Business English",
-    date: "Monday, Dec 18",
-    time: "6:00 PM - 7:00 PM",
-    partnerName: "Robert Fox",
-  },
-];
+// const mockSessions: Session[] = [
+//   {
+//     id: "1",
+//     category: "Spanish Conversation",
+//     title: "Basic of Spanish",
+//     date: "Saturday, Dec 16",
+//     time: "3:00 PM - 4:00 PM",
+//     partnerName: "Jane Cooper",
+//   },
+//   {
+//     id: "2",
+//     category: "English Speaking",
+//     title: "Business English",
+//     date: "Monday, Dec 18",
+//     time: "6:00 PM - 7:00 PM",
+//     partnerName: "Robert Fox",
+//   },
+// ];
 function App() {
   return (
     <>
-      {/* <SessionSchedule sessions={mockSessions} /> */}
-      <RequestSkill />
+      <AppRouter />
     </>
   );
 }
