@@ -1,0 +1,162 @@
+import React, { useMemo, useState } from 'react'
+import { ChevronRight, ChevronLeft } from 'lucide-react'
+import { Avatar, RatingDisplay } from '@/components/common'
+import { formatDate } from '@/utils'
+import type { Feedback } from '@/types/index'
+
+interface SessionHistoryListProps {
+    sessions: Array<{
+        id: string
+        date: Date
+        partnerName: string
+        partnerAvatar?: string
+        skillName: string
+        role: 'provider' | 'seeker'
+        feedback?: Feedback
+    }>
+    onViewFeedback?: (sessionId: string) => void
+    emptyMessage?: string
+}
+
+export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
+    sessions,
+    onViewFeedback,
+    emptyMessage = 'No sessions yet',
+}) => {
+    const [filter] = useState<'all' | 'provider' | 'seeker'>('all')
+
+    const filteredSessions = useMemo(() => {
+        return sessions.filter((session) => {
+            if (filter === 'all') return true
+            return session.role === filter
+        })
+    }, [sessions, filter])
+
+    const statusColors: Record<string, string> = {
+        Completed: 'bg-[#F0FDF4] text-[#16A34A] border-[#DCFCE7]',
+        Upcoming: 'bg-[#FFFBEB] text-[#D97706] border-[#FEF3C7]',
+        Canceled: 'bg-[#FEF2F2] text-[#DC2626] border-[#FEE2E2]',
+        'In Progress': 'bg-[#F0F9FF] text-[#0284C7] border-[#E0F2FE]',
+    }
+
+    if (sessions.length === 0) {
+        return (
+            <div className="bg-white rounded-[24px] border border-[#E5E7EB] p-16 text-center shadow-sm">
+                <p className="text-[#666666] text-lg">{emptyMessage}</p>
+            </div>
+        )
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="bg-white rounded-[24px] border border-[#E5E7EB] overflow-hidden shadow-sm">
+                <div className="grid grid-cols-[50px_1.8fr_1fr_1fr_120px_100px_40px] gap-4 px-6 py-5 text-sm font-semibold text-[#666666] border-b border-[#F3F4F6] bg-[#FAFBFC]">
+                    <div className="flex items-center">
+                        <input type="checkbox" className="w-5 h-5 rounded border-[#E5E7EB] text-[#3E8FCC] focus:ring-[#3E8FCC]" />
+                    </div>
+                    <div>Skill & Partner</div>
+                    <div>Date & Time</div>
+                    <div className="text-center">Rating</div>
+                    <div className="text-center">Status</div>
+                    <div className="text-center">Feedback</div>
+                    <div />
+                </div>
+                <div className="divide-y divide-[#F3F4F6]">
+                    {filteredSessions.map((session) => {
+                        const status: 'Upcoming' | 'Completed' | 'Canceled' | 'In Progress' =
+                            session.id === '5' ? 'In Progress' : (session.feedback || session.id === '2' || session.id === '4' ? 'Completed' : (session.id === '14' || session.id === '3' ? 'Canceled' : 'Upcoming'))
+
+                        return (
+                            <div
+                                key={session.id}
+                                className="grid grid-cols-[50px_1.8fr_1fr_1fr_120px_100px_40px] gap-4 px-6 py-5 items-center hover:bg-[#F9FAFB] transition-all group"
+                            >
+                                <div className="flex items-center">
+                                    <input type="checkbox" className="w-5 h-5 rounded border-[#E5E7EB] text-[#3E8FCC] focus:ring-[#3E8FCC]" />
+                                </div>
+
+                                <div className="flex items-center gap-4 min-w-0">
+                                    <Avatar src={session.partnerAvatar} name={session.partnerName} size="md" />
+                                    <div className="min-w-0">
+                                        <div className="text-base font-bold text-[#0C0D0F] truncate">
+                                            {session.skillName}
+                                        </div>
+                                        <div className="text-sm text-[#666666] truncate mt-0.5">
+                                            with {session.partnerName}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="text-sm text-[#0C0D0F]">
+                                    <div className="font-semibold">{formatDate(session.date, 'MMM dd, yyyy')}</div>
+                                    <div className="text-[#9CA3AF] mt-0.5">1 hour</div>
+                                </div>
+
+                                <div className="flex justify-center">
+                                    {(status === 'Completed' || status === 'In Progress') ? (
+                                        <RatingDisplay value={session.id === '2' || session.id === '4' ? 4 : 5} size="sm" showValue={false} />
+                                    ) : (
+                                        <div className="flex gap-1">
+                                            {[1, 2, 3, 4, 5].map((s) => (
+                                                <div key={s} className="w-3.5 h-3.5 border border-[#E5E7EB] rounded-full" />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex justify-center">
+                                    <span className={`px-3 py-1 text-[11px] font-bold rounded-full border ${statusColors[status]}`}>
+                                        {status}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-center">
+                                    {status === 'Completed' || status === 'In Progress' || status === 'Canceled' ? (
+                                        <button
+                                            onClick={() => onViewFeedback?.(session.id)}
+                                            className="text-sm font-bold text-[#3E8FCC] hover:underline"
+                                        >
+                                            View
+                                        </button>
+                                    ) : (
+                                        <button className="text-sm font-bold text-[#3E8FCC] hover:underline">
+                                            Enroll
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="flex justify-end">
+                                    <ChevronRight className="w-5 h-5 text-[#9CA3AF] group-hover:text-[#0C0D0F] transition-colors" />
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+            </div>
+            <div className="flex items-center justify-between px-2 pt-4">
+                <button className="flex items-center gap-2 text-sm font-bold text-[#666666] hover:text-[#0C0D0F] transition-colors px-4 py-2 rounded-xl border border-[#E5E7EB] bg-white">
+                    <ChevronLeft className="w-4 h-4" />
+                    Prev
+                </button>
+
+                <div className="flex items-center gap-2">
+                    {[1, 2, 3, 8, 9, 10].map((page, i) => (
+                        <button
+                            key={i}
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all ${page === 1
+                                ? 'bg-[#EBF5FF] text-[#3E8FCC] border border-[#3E8FCC]'
+                                : 'text-[#666666] hover:bg-[#F9FAFB] hover:text-[#0C0D0F]'
+                                }`}
+                        >
+                            {page}
+                        </button>
+                    ))}
+                </div>
+                <button className="flex items-center gap-2 text-sm font-bold text-[#666666] hover:text-[#0C0D0F] transition-colors px-4 py-2 rounded-xl border border-[#E5E7EB] bg-white">
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                </button>
+            </div>
+        </div>
+    )
+}

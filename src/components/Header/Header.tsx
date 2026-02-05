@@ -72,7 +72,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
           
           <div className="rounded-xl w-12 h-12 overflow-hidden flex-shrink-0 flex items-center justify-center">
             <Avatar 
-              src="https://via.placeholder.com/48" 
+              src="https://api.dicebear.com/7.x/notionists/svg?seed=currentuser" 
               name="User Name" 
               size={40}
             />
