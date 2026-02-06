@@ -1,5 +1,4 @@
 import React from 'react'
-import { motion } from 'framer-motion'
 import { Button } from '@/components/common'
 import { CheckCircle2 } from 'lucide-react'
 
@@ -18,12 +17,7 @@ export const SessionCompletedScreen: React.FC<SessionCompletedScreenProps> = ({
 }) => {
     return (
         <div className="flex items-center justify-center px-4 py-20 min-h-[calc(100vh-140px)]">
-            <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.4 }}
-                className="bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.08)] max-w-[540px] w-full p-10 relative overflow-hidden"
-            >
+            <div className="bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.08)] max-w-[540px] w-full p-10 relative overflow-hidden animate-fade-in">
                 <div className="flex justify-center gap-12 absolute top-8 left-0 right-0">
                     <div className="w-2.5 h-2.5 rounded-full bg-[#A3D9A5]" />
                     <div className="w-2.5 h-2.5 rounded-full bg-[#A5C3E8]" />
@@ -69,7 +63,7 @@ export const SessionCompletedScreen: React.FC<SessionCompletedScreenProps> = ({
                         </Button>
                     </div>
                 </div>
-            </motion.div>
+            </div>
         </div>
     )
 }
