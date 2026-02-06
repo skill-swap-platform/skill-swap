@@ -1,5 +1,4 @@
 import React from 'react'
-import { motion } from 'framer-motion'
 import { Button } from '@/components/common'
 import type { UserBadge } from '@/types/index'
 
@@ -26,64 +25,34 @@ export const BadgeUnlockedScreen: React.FC<BadgeUnlockedScreenProps> = ({
                 </button>
             </div>
             <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 max-w-4xl mx-auto w-full">
-                <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.6 }}
-                    className="relative w-full max-w-[500px] mb-8"
-                >
+                <div className="relative w-full max-w-[500px] mb-8 animate-fade-in">
                     <div className="w-full h-full flex items-end justify-center">
                         <div className="text-[140px] leading-none mb-2">🏆</div>
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <div className="text-[180px] opacity-20">🎊</div>
                         </div>
                     </div>
-                </motion.div>
-                <div className="text-center mb-10">
-                    <motion.h2
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                        className="text-[40px] font-poppins font-bold"
-                    >
-                        Badge Unlocked!
-                    </motion.h2>
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.3 }}
-                        className="text-xl text-white/90 mt-1"
-                    >
-                        {badge.name}
-                    </motion.p>
                 </div>
-                <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="w-full max-w-[600px] bg-white rounded-2xl p-6 shadow-xl mb-6 border border-white/20"
-                >
+                <div className="text-center mb-10">
+                    <h2 className="text-[40px] font-poppins font-bold animate-fade-in">
+                        Badge Unlocked!
+                    </h2>
+                    <p className="text-xl text-white/90 mt-1 animate-fade-in">
+                        {badge.name}
+                    </p>
+                </div>
+                <div className="w-full max-w-[600px] bg-white rounded-2xl p-6 shadow-xl mb-6 border border-white/20 animate-fade-in">
                     <div className="text-[#3E8FCC] font-bold text-center mb-4 text-lg">
                         {badge.description}
                     </div>
                     <div className="w-full h-4 bg-[#E5E7EB] rounded-full overflow-hidden mb-2">
-                        <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: '100%' }}
-                            transition={{ duration: 1.5, ease: "easeOut" }}
-                            className="h-full bg-[#3E8FCC]"
-                        />
+                        <div className="h-full bg-[#3E8FCC] w-full" />
                     </div>
                     <div className="text-[#9CA3AF] text-xs text-center font-medium">
                         Achievement Completed!
                     </div>
-                </motion.div>
-                <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.7 }}
-                    className="w-full max-w-[600px] bg-white rounded-2xl p-6 shadow-xl mb-8 border border-white/20"
-                >
+                </div>
+                <div className="w-full max-w-[600px] bg-white rounded-2xl p-6 shadow-xl mb-8 border border-white/20 animate-fade-in">
                     <div className="text-[#0C0D0F] font-bold mb-4 text-base">
                         Next Badge
                     </div>
@@ -96,7 +65,7 @@ export const BadgeUnlockedScreen: React.FC<BadgeUnlockedScreenProps> = ({
                             <div className="text-[#666666] text-sm mt-1">Complete more sessions to unlock</div>
                         </div>
                     </div>
-                </motion.div>
+                </div>
                 <div className="w-full max-w-[600px] grid grid-cols-2 gap-6">
                     <Button
                         variant="ghost"

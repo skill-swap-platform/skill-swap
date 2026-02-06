@@ -1,1 +1,1 @@
-export { default as RequestSkill } from './RequestSkill/RequestSkill';
+export { default as RequestSkill } from './RequestSkill';
