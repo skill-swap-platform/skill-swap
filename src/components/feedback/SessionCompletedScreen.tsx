@@ -1,5 +1,6 @@
 import React from 'react'
-import { motion } from 'framer-motion'
+import { Button } from '@/components/common'
+import { CheckCircle2 } from 'lucide-react'
 
 interface SessionCompletedScreenProps {
     partnerName: string
@@ -13,18 +14,14 @@ export const SessionCompletedScreen: React.FC<SessionCompletedScreenProps> = ({
     onReport,
 }) => {
     return (
-        <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 max-w-[540px] w-full p-10 relative overflow-hidden flex flex-col items-center"
-        >
-            {/* Progress indicators */}
-            <div className="flex justify-center gap-12 mb-8">
-                <div className="w-2 h-2 rounded-full bg-[#A3D9A5]" />
-                <div className="w-2 h-2 rounded-full bg-[#A5C3E8]" />
-                <div className="w-2 h-2 rounded-full bg-[#E8A5A5]" />
-                <div className="w-2 h-2 rounded-full bg-[#E8D9A5]" />
-            </div>
+        <div className="flex items-center justify-center px-4 py-20 min-h-[calc(100vh-140px)]">
+            <div className="bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.08)] max-w-[540px] w-full p-10 relative overflow-hidden animate-fade-in">
+                <div className="flex justify-center gap-12 absolute top-8 left-0 right-0">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#A3D9A5]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#A5C3E8]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#E8A5A5]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#E8D9A5]" />
+                </div>
 
             <div className="mb-8">
                 {/* Placeholder for the illustration seen in Figma */}
@@ -49,20 +46,24 @@ export const SessionCompletedScreen: React.FC<SessionCompletedScreenProps> = ({
                 </p>
             </div>
 
-            <div className="flex gap-4 w-full mt-auto">
-                <button
-                    onClick={onReport}
-                    className="flex-1 h-12 rounded-xl border-2 border-gray-100 text-gray-600 font-bold hover:bg-gray-50 transition-all"
-                >
-                    Report Issue
-                </button>
-                <button
-                    onClick={onContinue}
-                    className="flex-1 h-12 rounded-xl bg-[#3E8FCC] text-white font-bold hover:bg-[#2F71A3] transition-all shadow-sm"
-                >
-                    Continue
-                </button>
+                    <div className="w-full mt-10 space-y-4">
+                        <Button
+                            variant="primary"
+                            onClick={onRateNow}
+                            className="w-full h-14 rounded-xl bg-[#3E8FCC] hover:bg-[#2F71A3] text-lg font-semibold transition-all shadow-md active:scale-[0.98]"
+                        >
+                            Give Feedback
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={onSkip}
+                            className="w-full h-14 rounded-xl border-2 border-[#E5E7EB] text-[#3E8FCC] hover:bg-[#F9FAFB] text-lg font-medium transition-all"
+                        >
+                            Skip for Now
+                        </Button>
+                    </div>
+                </div>
             </div>
-        </motion.div>
+        </div>
     )
 }
