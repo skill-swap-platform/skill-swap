@@ -1,18 +1,14 @@
 import React, { useState } from 'react'
 import { Info } from 'lucide-react'
 
-interface FeedbackFormProps {
+interface GeneralReviewProps {
     partnerName: string
-    partnerAvatar?: string
-    role: 'teaching' | 'learning' | 'both'
     onSubmit: (data: any) => void
     onSkip: () => void
 }
 
-export const FeedbackForm: React.FC<FeedbackFormProps> = ({
+export const GeneralReview: React.FC<GeneralReviewProps> = ({
     partnerName,
-    partnerAvatar,
-    role,
     onSubmit,
     onSkip,
 }) => {
@@ -23,16 +19,23 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
     const tags = ['clear', 'Helpful', 'Knowledgeable', 'Patient', 'Engaging', 'On time']
 
     const toggleTag = (tag: string) => {
-        setSelectedTags(prev =>
-            prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-        )
+        if (selectedTags.includes(tag)) {
+            // Remove tag from comment
+            const tagPattern = new RegExp(`#${tag}\\s*`, 'gi')
+            setComment(prev => prev.replace(tagPattern, '').trim())
+            setSelectedTags(prev => prev.filter(t => t !== tag))
+        } else {
+            // Add tag to comment
+            setComment(prev => prev ? `${prev} #${tag}` : `#${tag}`)
+            setSelectedTags(prev => [...prev, tag])
+        }
     }
 
     return (
         <div className="flex flex-col lg:flex-row gap-8 max-w-6xl w-full">
             {/* Left Column: Session Details */}
             <div className="lg:w-[320px] shrink-0">
-                <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+                <div className="bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
                     <h3 className="text-lg font-bold text-gray-900 mb-6">Session Details</h3>
 
                     <div className="flex flex-col items-center mb-8 py-4">
@@ -60,7 +63,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
             <div className="flex-1">
                 <div className="bg-white rounded-xl p-8 border border-gray-100 shadow-sm min-h-full flex flex-col">
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Leave a Review</h2>
-                    <p className="text-sm text-gray-500 mb-8">How was your {role} session?</p>
+                    <p className="text-sm text-gray-500 mb-8">How was your teaching session?</p>
 
                     <div className="flex-1 space-y-6">
                         <div className="space-y-4">

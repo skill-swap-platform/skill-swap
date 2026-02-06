@@ -3,26 +3,26 @@ import { Button } from '@/components/common'
 import type { UserBadge } from '@/types/index'
 
 interface BadgeUnlockedScreenProps {
-    badge: UserBadge | null
-    onClose: () => void
+    onContinue: () => void
 }
 
 export const BadgeUnlockedScreen: React.FC<BadgeUnlockedScreenProps> = ({
-    badge,
-    onClose,
+    onContinue,
 }) => {
-    if (!badge) return null
-
     return (
-        <div className="min-h-screen bg-[#3E8FCC] text-white relative flex flex-col overflow-x-hidden">
-            <div className="w-full py-4 px-6 flex justify-between items-center">
-                <div className="text-lg font-semibold">SkillSwap</div>
-                <button
-                    onClick={onClose}
-                    className="text-white hover:text-white/80 text-2xl"
-                >
-                    ×
-                </button>
+        <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-100 max-w-[500px] w-full p-10 relative overflow-hidden flex flex-col items-center"
+        >
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">
+                New Badge Unlocked! 🎉
+            </h2>
+
+            <div className="mb-6 relative">
+                <div className="w-32 h-32 bg-[#E8F5E9] rounded-full flex items-center justify-center">
+                    <Award className="w-16 h-16 text-[#4CAF50]" />
+                </div>
             </div>
             <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 max-w-4xl mx-auto w-full">
                 <div className="relative w-full max-w-[500px] mb-8 animate-fade-in">
@@ -56,14 +56,9 @@ export const BadgeUnlockedScreen: React.FC<BadgeUnlockedScreenProps> = ({
                     <div className="text-[#0C0D0F] font-bold mb-4 text-base">
                         Next Badge
                     </div>
-                    <div className="flex items-center gap-5 p-5 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[20px]">
-                        <div className="w-16 h-16 bg-white border border-[#E5E7EB] rounded-2xl flex items-center justify-center text-3xl shadow-sm">
-                            🎖️
-                        </div>
-                        <div>
-                            <div className="text-[#0C0D0F] font-bold text-lg">Keep Going!</div>
-                            <div className="text-[#666666] text-sm mt-1">Complete more sessions to unlock</div>
-                        </div>
+                    <div>
+                        <div className="text-sm font-bold text-gray-900">Skill Exchanger</div>
+                        <div className="text-[10px] text-gray-500">Complete 25 Sessions</div>
                     </div>
                 </div>
                 <div className="w-full max-w-[600px] grid grid-cols-2 gap-6">
@@ -83,6 +78,13 @@ export const BadgeUnlockedScreen: React.FC<BadgeUnlockedScreenProps> = ({
                     </Button>
                 </div>
             </div>
-        </div>
+
+            <button
+                onClick={onContinue}
+                className="w-full h-12 rounded-xl bg-[#3E8FCC] text-white font-bold hover:bg-[#2F71A3] transition-all shadow-sm"
+            >
+                Continue
+            </button>
+        </motion.div>
     )
 }
