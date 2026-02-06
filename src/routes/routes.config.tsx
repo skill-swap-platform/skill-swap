@@ -1,7 +1,7 @@
 
 import NotFound from "@/pages/NotFound";
 import { RequestSkill } from "@/pages/RequestSkill";
-import { UpcomingSessionCard } from "@/pages/session/UpcomingSessionCard";
+import UpcomingSession from "@/pages/session/UpcomingSession";
 
 export const routesConfig = [
   {
@@ -10,7 +10,7 @@ export const routesConfig = [
   },
   {
     path: "/sessions",
-    element: <UpcomingSessionCard />,
+    element: <UpcomingSession />,
   },
   {
     path: "*",

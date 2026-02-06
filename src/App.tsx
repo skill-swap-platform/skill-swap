@@ -1,9 +1,6 @@
 import "./index.css";
 import AppRouter from "./routes/AppRouter";
-// import { RequestSkill } from "./pages/RequestSkill";
-// import { SessionSchedule } from "./pages/session/SessionSchedule";
-// import type { Session } from "./pages/session/SessionSchedule";
-// import { UpcomingSessionCard } from "./pages/session/UpcomingSessionCard";
+
 
 // const mockSessions: Session[] = [
 //   {
