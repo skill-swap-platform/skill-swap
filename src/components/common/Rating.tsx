@@ -48,8 +48,8 @@ export const Rating: React.FC<RatingProps> = ({
                     >
                         <Star
                             className={`${sizes[size]} ${isFilled
-                                    ? 'fill-[var(--warning)] text-[var(--warning)]'
-                                    : 'fill-none text-[var(--neutral-light)]'
+                                ? 'fill-[#F59E0B] text-[#F59E0B]'
+                                : 'fill-transparent text-[#D1D5DB]'
                                 }`}
                         />
                     </button>

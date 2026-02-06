@@ -9,6 +9,7 @@ export interface Feedback {
     wasHelpful?: boolean
     wouldRecommend?: boolean
     tags?: string[]
+    improvement?: string
     createdAt: Date
     updatedAt?: Date
 }

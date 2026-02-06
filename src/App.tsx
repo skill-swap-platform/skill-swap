@@ -1,10 +1,13 @@
-import RequestSkill from './pages/RequestSkill/RequestSkill';
-import './index.css';
+import { BrowserRouter } from 'react-router-dom'
+import Routers from './routes/Routers'
+import './index.css'
 
 function App() {
   return (
-    <RequestSkill />
-  );
+    <BrowserRouter>
+      <Routers />
+    </BrowserRouter>
+  )
 }
 
-export default App;
+export default App

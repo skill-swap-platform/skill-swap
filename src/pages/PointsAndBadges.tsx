@@ -1,255 +1,151 @@
 import React, { useState } from 'react'
-import { Plus, Filter as FilterIcon, Search, Users, TrendingUp, Award, Activity } from 'lucide-react'
-import { Button } from '@/components/common'
 import {
-    UserListItem,
-    FilterPanel,
-    PointsModal,
-    ManageBadgeModal,
-    CreateBadgeModal,
-} from '@/components/gamification'
-import { useAllBadges, useLeaderboard } from '@/hooks'
-import type { PointsBreakdown } from '@/types'
+    Award,
+    Bell,
+    ChevronDown,
+    Medal,
+    Zap,
+    RefreshCw,
+    Crown,
+    Trophy
+} from 'lucide-react'
+import { AdminSidebar } from '@/components/layout/AdminSidebar'
+import { BadgeCard } from '@/components/gamification/BadgeCard'
+import { EditBadgeConditionModal } from '@/components/gamification/EditBadgeConditionModal'
+import { Avatar } from '@/components/common'
+
+// Mock Badges Data
+const mockBadges = [
+    {
+        id: '1',
+        name: 'First Exchange',
+        condition: '1 completed session',
+        conditionValue: 1,
+        description: 'Unlocked after 1 completed session',
+        usersCount: 847,
+        icon: <Medal className="w-8 h-8 text-[#3E8FCC]" />,
+        iconBgColor: 'bg-[#EBF5FF]',
+    },
+    {
+        id: '2',
+        name: 'Active Member',
+        condition: '10 completed sessions',
+        conditionValue: 10,
+        description: 'Unlocked after 10 completed sessions',
+        usersCount: 847,
+        icon: <Zap className="w-8 h-8 text-[#16A34A]" />,
+        iconBgColor: 'bg-[#F0FDF4]',
+    },
+    {
+        id: '3',
+        name: 'Skill Exchanger',
+        condition: '25 completed sessions',
+        conditionValue: 25,
+        description: 'Unlocked after 25 completed sessions',
+        usersCount: 847,
+        icon: <RefreshCw className="w-8 h-8 text-[#059669]" />,
+        iconBgColor: 'bg-[#ECFDF5]',
+    },
+    {
+        id: '4',
+        name: 'Experienced',
+        condition: '50 completed sessions',
+        conditionValue: 50,
+        description: 'Unlocked after 50 completed sessions',
+        usersCount: 847,
+        icon: <Crown className="w-8 h-8 text-[#7C3AED]" />,
+        iconBgColor: 'bg-[#F5F3FF]',
+    },
+    {
+        id: '5',
+        name: 'Core Contributor',
+        condition: '80 completed sessions',
+        conditionValue: 80,
+        description: 'Unlocked after 80 completed sessions',
+        usersCount: 847,
+        icon: <Trophy className="w-8 h-8 text-[#D97706]" />,
+        iconBgColor: 'bg-[#FFFBEB]',
+    },
+]
 
 export const PointsAndBadges: React.FC = () => {
-    const [showFilter, setShowFilter] = useState(false)
-    const [showCreateBadge, setShowCreateBadge] = useState(false)
-    const [searchQuery, setSearchQuery] = useState('')
-    const [selectedUser, setSelectedUser] = useState<{
-        id: string
-        name: string
-        avatar?: string
-    } | null>(null)
-    const [modalType, setModalType] = useState<'points' | 'badges' | null>(null)
+    const [selectedBadge, setSelectedBadge] = useState<typeof mockBadges[0] | null>(null)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
-    const [filters, setFilters] = useState({
-        pointsRange: undefined as { min: number; max: number | null } | undefined,
-        badges: [] as string[],
-        timeRange: 'all_time' as string,
-    })
-
-
-    const { data: leaderboardData, isLoading: isLoadingLeaderboard } = useLeaderboard({
-        timeRange: filters.timeRange as any,
-        limit: 50,
-    })
-
-    const { data: allBadges } = useAllBadges()
-
-    const handleEditPoints = (userId: string, userName: string, avatar?: string) => {
-        setSelectedUser({ id: userId, name: userName, avatar })
-        setModalType('points')
+    const handleEditCondition = (badge: typeof mockBadges[0]) => {
+        setSelectedBadge(badge)
+        setIsEditModalOpen(true)
     }
 
-    const handleManageBadges = (userId: string, userName: string, avatar?: string) => {
-        setSelectedUser({ id: userId, name: userName, avatar })
-        setModalType('badges')
+    const handleSaveCondition = (newValue: number) => {
+        console.log('Update badge condition:', selectedBadge?.id, newValue)
+        // Here you would typically call an API to update the badge
+        setIsEditModalOpen(false)
+        setSelectedBadge(null)
     }
-
-    const handleResetFilters = () => {
-        setFilters({
-            pointsRange: undefined,
-            badges: [],
-            timeRange: 'all_time',
-        })
-    }
-
-    // Mock points breakdown
-    const mockPointsBreakdown: PointsBreakdown = {
-        sessionPoints: 800,
-        ratingPoints: 300,
-        feedbackPoints: 158,
-        bonusPoints: 100,
-        total: 1358,
-        breakdown: [
-            { type: 'SESSION_COMPLETED', count: 80, totalPoints: 800 },
-            { type: 'SESSION_RATED', count: 60, totalPoints: 300 },
-            { type: 'FEEDBACK_GIVEN', count: 79, totalPoints: 158 },
-            { type: 'CONSECUTIVE_DAY_BONUS', count: 20, totalPoints: 100 },
-        ],
-    }
-    const statsData = [
-        {
-            label: 'Total Users',
-            value: leaderboardData?.entries.length || 2586,
-            icon: Users,
-            bgColor: 'bg-[#EBF5FF]',
-            iconColor: 'text-[#3E8FCC]',
-        },
-        {
-            label: 'Points Issued',
-            value: '2000',
-            icon: TrendingUp,
-            bgColor: 'bg-[#FFE8E8]',
-            iconColor: 'text-[#FF6B6B]',
-        },
-        {
-            label: 'Badge Awarded',
-            value: '256',
-            icon: Award,
-            bgColor: 'bg-[#E8F5E9]',
-            iconColor: 'text-[#4CAF50]',
-        },
-        {
-            label: 'Engagement',
-            value: '85%',
-            icon: Activity,
-            bgColor: 'bg-[#FFF4E6]',
-            iconColor: 'text-[#FF9800]',
-        },
-    ]
 
     return (
-        <div className="min-h-screen bg-[#F5F5F5]">
-            <div className="bg-white border-b border-[#E5E7EB]">
-                <div className="max-w-7xl mx-auto px-6 py-5">
-                    <div className="text-sm text-[#666666] mb-4">
-                        Dashboard <span className="mx-2">›</span>
-                        <span className="text-[#3E8FCC]">Points & Badges Management</span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {statsData.map((stat) => {
-                            const IconComponent = stat.icon
-                            return (
-                                <div
-                                    key={stat.label}
-                                    className="bg-white rounded-xl p-4 border border-[#E5E7EB] shadow-sm"
-                                >
-                                    <div className="flex items-start justify-between">
-                                        <div>
-                                            <p className="text-sm text-[#666666] mb-1">{stat.label}</p>
-                                            <p className="text-2xl font-bold text-[#0C0D0F] font-poppins">
-                                                {stat.value}
-                                            </p>
-                                            <p className="text-xs text-[#9CA3AF] mt-1">
-                                                <span className="text-[#16A34A]">1%</span> Up from yesterday
-                                            </p>
-                                        </div>
-                                        <div className={`w-12 h-12 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
-                                            <IconComponent className={`w-6 h-6 ${stat.iconColor}`} />
-                                        </div>
-                                    </div>
-                                </div>
-                            )
-                        })}
-                    </div>
-                </div>
-            </div>
+        <div className="min-h-screen bg-white">
+            <AdminSidebar />
 
-            <div className="max-w-7xl mx-auto px-6 py-6">
-                <div className="flex items-center justify-between gap-4 mb-6">
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
-                        <input
-                            type="text"
-                            placeholder="Search by name or email"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full h-11 pl-10 pr-4 rounded-lg border border-[#E5E7EB] outline-none focus:ring-2 focus:ring-[#3E8FCC] focus:border-transparent bg-white"
-                        />
+            <main className="ml-64 p-8">
+                {/* Header */}
+                <header className="flex items-center justify-between mb-8">
+                    <div className="text-xl font-poppins font-bold">
+                        <span className="text-[#F59E0B]">Skill</span>
+                        <span className="text-[#3E8FCC]">Swap</span>
+                        <span className="text-[#F59E0B]">.</span>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <Button
-                            variant="secondary"
-                            leftIcon={<FilterIcon className="w-4 h-4" />}
-                            onClick={() => setShowFilter(true)}
-                            className="bg-white border border-[#E5E7EB] text-[#0C0D0F] hover:bg-[#F9FAFB]"
-                        >
-                            Filter
-                        </Button>
-                        <Button
-                            variant="primary"
-                            leftIcon={<Plus className="w-4 h-4" />}
-                            onClick={() => setShowCreateBadge(true)}
-                            className="bg-[#3E8FCC] hover:bg-[#2F71A3]"
-                        >
-                            Create Badge
-                        </Button>
-                    </div>
-                </div>
-
-                {isLoadingLeaderboard ? (
-                    <div className="text-center py-12">
-                        <p className="text-[#666666]">Loading users...</p>
-                    </div>
-                ) : (
-                    <div className="space-y-3">
-                        {leaderboardData?.entries.map((entry) => (
-                            <UserListItem
-                                key={entry.userId}
-                                userName={entry.userName}
-                                userAvatar={entry.userAvatar}
-                                totalPoints={entry.totalPoints}
-                                badges={entry.badges}
-                                rank={entry.rank}
-                                onEditPoints={() => handleEditPoints(entry.userId, entry.userName, entry.userAvatar)}
-                                onManageBadges={() => handleManageBadges(entry.userId, entry.userName, entry.userAvatar)}
-                            />
-                        ))}
-                    </div>
-                )}
-                {leaderboardData && leaderboardData.entries.length > 0 && (
-                    <div className="flex items-center justify-between mt-6">
-                        <p className="text-sm text-[#666666]">
-                            Showing 12 of 275
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <button className="px-3 py-2 text-sm text-[#666666] hover:bg-[#F9FAFB] rounded-lg border border-[#E5E7EB]">
-                                ‹
-                            </button>
-                            <button className="px-3 py-2 text-sm bg-[#3E8FCC] text-white rounded-lg">1</button>
-                            <button className="px-3 py-2 text-sm text-[#666666] hover:bg-[#F9FAFB] rounded-lg">2</button>
-                            <button className="px-3 py-2 text-sm text-[#666666] hover:bg-[#F9FAFB] rounded-lg">3</button>
-                            <button className="px-3 py-2 text-sm text-[#666666] hover:bg-[#F9FAFB] rounded-lg border border-[#E5E7EB]">
-                                ›
-                            </button>
+                    <div className="flex items-center gap-4">
+                        <button className="p-2 hover:bg-[#F9FAFB] rounded-full transition-colors relative">
+                            <Bell className="w-5 h-5 text-[#666666]" />
+                            <span className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-[#EF4444] border-2 border-white"></span>
+                        </button>
+                        <div className="flex items-center gap-3 pl-4 border-l border-[#E5E7EB]">
+                            <Avatar size="sm" name="Wafaa Amjad" />
+                            <div className="flex flex-col">
+                                <span className="text-sm font-bold text-[#0C0D0F]">Wafaa Amjad</span>
+                                <span className="text-xs text-[#666666]">Admin</span>
+                            </div>
+                            <ChevronDown className="w-4 h-4 text-[#9CA3AF]" />
                         </div>
                     </div>
+                </header>
+
+                <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-2 text-[#3E8FCC]">
+                        <Award className="w-5 h-5" />
+                        <h1 className="text-xl font-bold font-poppins text-[#0C0D0F]">Badges Management</h1>
+                    </div>
+                </div>
+
+                <div className="mb-8">
+                    <h2 className="text-base font-bold text-[#0C0D0F] border-b-2 border-[#3E8FCC] inline-block pb-2">
+                        Badges Management
+                    </h2>
+                    <div className="border-b border-[#F3F4F6] mt-[-1px]"></div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {mockBadges.map((badge) => (
+                        <BadgeCard
+                            key={badge.id}
+                            badge={badge}
+                            onEdit={() => handleEditCondition(badge)}
+                        />
+                    ))}
+                </div>
+
+                {selectedBadge && (
+                    <EditBadgeConditionModal
+                        isOpen={isEditModalOpen}
+                        onClose={() => setIsEditModalOpen(false)}
+                        badge={selectedBadge}
+                        onSave={handleSaveCondition}
+                    />
                 )}
-            </div>
-            <FilterPanel
-                isOpen={showFilter}
-                onClose={() => setShowFilter(false)}
-                filters={filters}
-                onFiltersChange={(newFilters) => setFilters(prev => ({ ...prev, ...newFilters }))}
-                onReset={handleResetFilters}
-            />
-            {modalType === 'points' && selectedUser && (
-                <PointsModal
-                    isOpen={true}
-                    onClose={() => {
-                        setModalType(null)
-                        setSelectedUser(null)
-                    }}
-                    userName={selectedUser.name}
-                    userAvatar={selectedUser.avatar}
-                    currentPoints={mockPointsBreakdown.total}
-                />
-            )}
-            {modalType === 'badges' && selectedUser && allBadges && (
-                <ManageBadgeModal
-                    isOpen={true}
-                    onClose={() => {
-                        setModalType(null)
-                        setSelectedUser(null)
-                    }}
-                    userName={selectedUser.name}
-                    userAvatar={selectedUser.avatar}
-                    availableBadges={allBadges}
-                    userBadges={[]}
-                    onAssignBadge={(badgeId) => console.log('Assign badge:', badgeId)}
-                    onRemoveBadge={(badgeId) => console.log('Remove badge:', badgeId)}
-                />
-            )}
-            <CreateBadgeModal
-                isOpen={showCreateBadge}
-                onClose={() => setShowCreateBadge(false)}
-                onSubmit={(data) => {
-                    console.log('Create badge:', data)
-                    setShowCreateBadge(false)
-                }}
-            />
+            </main>
         </div>
     )
 }

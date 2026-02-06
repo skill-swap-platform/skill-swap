@@ -8,7 +8,7 @@ export const PostSessionFooter: React.FC = () => {
                     <div className="text-2xl font-poppins font-bold mb-6 flex items-center gap-0.5">
                         <span className="text-[#F59E0B]">Skill</span>
                         <span className="text-[#3E8FCC]">Swap</span>
-                        <span className="text-[#3E8FCC]">.</span>
+                        <span className="text-[#F59E0B]">.</span>
                     </div>
                     <p className="text-sm text-[#9CA3AF] leading-relaxed">
                         Exchange skills, build connections, and grow together

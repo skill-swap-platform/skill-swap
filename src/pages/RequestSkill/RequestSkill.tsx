@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+/*import React, { useState } from 'react';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import SwapMethodOption from '../../components/SwapMethodOption/SwapMethodOption';
@@ -281,3 +281,4 @@ const RequestSkill: React.FC = () => {
 };
 
 export default RequestSkill;
+*/
