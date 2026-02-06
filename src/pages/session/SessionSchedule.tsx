@@ -1,5 +1,5 @@
 import React from "react";
-import { UpcomingSessionCard } from "./UpcomingSessionCard";
+import { UpcomingSessionCard } from "../../components/Session/UpcomingSessionCard";
 
 export type Session = {
   id: string;

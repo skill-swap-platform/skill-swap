@@ -1,4 +1,12 @@
 import React from "react";
+import docIcon from "../../assets/session/doc.svg";
+import calendarIcon from "../../assets/session/calendar.svg";
+import clockIcon from "../../assets/session/clock.svg";
+import closeIcon from "../../assets/close-circle.svg";
+
+/* =======================
+   Types
+======================= */
 
 type SessionTip = {
   id: string;
@@ -19,110 +27,54 @@ type UpcomingSessionCardProps = {
   onClose?: () => void;
 };
 
+/* =======================
+   Utils
+======================= */
+
 function cn(...classes: Array<string | undefined | false>) {
   return classes.filter(Boolean).join(" ");
 }
 
-function IconWrap({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
+/* =======================
+   IconWrap (IMG based)
+======================= */
+
+type IconWrapProps = {
+  src: string;
+  alt: string;
   className?: string;
-}) {
+  imgClassName?: string;
+};
+
+function IconWrap({
+  src,
+  alt,
+  className,
+  imgClassName,
+}: IconWrapProps) {
   return (
     <div
       className={cn(
-        "grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600",
+        "grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-slate-50",
         className,
       )}
     >
-      {children}
+      <img
+        src={src}
+        alt={alt}
+        className={cn("h-5 w-5 object-contain", imgClassName)}
+      />
     </div>
   );
 }
 
-function CalendarIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M7 3v2M17 3v2M4.5 8.5h15"
-        className="stroke-current"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M6.5 5h11A2.5 2.5 0 0 1 20 7.5v11A2.5 2.5 0 0 1 17.5 21h-11A2.5 2.5 0 0 1 4 18.5v-11A2.5 2.5 0 0 1 6.5 5Z"
-        className="stroke-current"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M8 12h3M8 15.5h7"
-        className="stroke-current"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+/* =======================
+   Close Icon (still SVG)
+======================= */
 
-function ClockIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M12 7v5l3 2"
-        className="stroke-current"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-        className="stroke-current"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
-
-function DocIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M8 7h8M8 11h8M8 15h6"
-        className="stroke-current"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M7 3.5h7l3.5 3.5V20a1.5 1.5 0 0 1-1.5 1.5H7A1.5 1.5 0 0 1 5.5 20V5A1.5 1.5 0 0 1 7 3.5Z"
-        className="stroke-current"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M14 3.5V7h3.5"
-        className="stroke-current"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function XIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M7 7l10 10M17 7L7 17"
-        className="stroke-current"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+/* =======================
+   Main Component
+======================= */
 
 export function UpcomingSessionCard({
   title = "Upcoming Session",
@@ -142,7 +94,7 @@ export function UpcomingSessionCard({
   onClose,
 }: UpcomingSessionCardProps) {
   return (
-    <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="my-6 mx-auto w-full max-w-sm rounded-2xl border border-slate-200 bg-white shadow-sm">
       {/* Header */}
       <div className="flex items-start justify-between px-5 pb-3 pt-5">
         <div>
@@ -156,27 +108,32 @@ export function UpcomingSessionCard({
           className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60"
           aria-label="Close"
         >
-          <XIcon className="h-5 w-5" />
+        <img src={closeIcon} alt="close-circle"/>
         </button>
       </div>
 
-      {/* Info rows */}
+      {/* Info Rows */}
       <div className="px-5">
         <InfoRow
-          icon={<DocIcon className="h-5 w-5" />}
+          iconSrc={docIcon}
+          iconAlt="session title"
           label="Session Title"
           value={sessionTitle}
         />
+
         <div className="mt-3">
           <InfoRow
-            icon={<CalendarIcon className="h-5 w-5" />}
+            iconSrc={calendarIcon}
+            iconAlt="calendar"
             label="Date"
             value={dateLabel}
           />
         </div>
+
         <div className="mt-3">
           <InfoRow
-            icon={<ClockIcon className="h-5 w-5" />}
+            iconSrc={clockIcon}
+            iconAlt="clock"
             label="Time"
             value={timeLabel}
           />
@@ -248,19 +205,25 @@ export function UpcomingSessionCard({
   );
 }
 
+/* =======================
+   InfoRow
+======================= */
+
 function InfoRow({
-  icon,
+  iconSrc,
+  iconAlt,
   label,
   value,
 }: {
-  icon: React.ReactNode;
+  iconSrc: string;
+  iconAlt: string;
   label: string;
   value: string;
 }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
       <div className="flex items-center gap-3">
-        <IconWrap>{icon}</IconWrap>
+        <IconWrap src={iconSrc} alt={iconAlt} />
 
         <div className="min-w-0">
           <p className="text-[12px] text-slate-500">{label}</p>
