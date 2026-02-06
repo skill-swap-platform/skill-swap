@@ -1,6 +1,6 @@
 import "./index.css";
+import LandingPage from "./pages/LandingPage";
 import AppRouter from "./routes/AppRouter";
-
 
 // const mockSessions: Session[] = [
 //   {
@@ -23,7 +23,8 @@ import AppRouter from "./routes/AppRouter";
 function App() {
   return (
     <>
-      <AppRouter />
+      {/* <AppRouter /> */}
+      <LandingPage />
     </>
   );
 }
