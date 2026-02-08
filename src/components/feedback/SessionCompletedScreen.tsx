@@ -64,6 +64,5 @@ export const SessionCompletedScreen: React.FC<SessionCompletedScreenProps> = ({
                     </div>
                 </div>
             </div>
-        </div>
     )
 }
