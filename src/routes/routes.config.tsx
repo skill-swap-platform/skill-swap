@@ -7,7 +7,7 @@ import { Dashboard } from "@/pages/Dashboard";
 import { PointsAndBadges } from "@/pages/PointsAndBadges";
 import { SessionHistory } from "@/pages/SessionHistory";
 import { SessionFeedback } from "@/pages/SessionFeedback";
-
+import Explore from "@/pages/explore/Explore";
 export const routesConfig = [
   {
     path: "/",
@@ -36,6 +36,10 @@ export const routesConfig = [
   {
     path: "/session-feedback",
     element: <SessionFeedback />,
+  },
+  {
+    path: "/explore",
+    element: <Explore />,
   },
   {
     path: "*",
