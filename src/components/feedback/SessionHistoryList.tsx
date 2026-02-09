@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { ChevronRight, ChevronLeft, Star } from 'lucide-react'
-import { Avatar, RatingDisplay } from '@/components/common'
+import { Avatar } from '@/components/common'
 import { formatDate } from '@/utils'
 import type { Feedback } from '@/types/index'
 

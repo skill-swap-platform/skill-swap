@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { User } from 'lucide-react';
 
 interface AvatarProps {
   src?: string | null;
@@ -6,33 +7,30 @@ interface AvatarProps {
   size?: number;
 }
 
-const fallback = (name: string) =>
-  `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-    name || "user"
-  )}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
-
 const Avatar: React.FC<AvatarProps> = ({ src, name = "User", size = 40 }) => {
-  const safeSrc = src?.trim() ? src : fallback(name);
+  const [error, setError] = useState(false);
+  const hasImage = src?.trim() && !error;
 
   return (
     <div
-      className="rounded-full overflow-hidden bg-gray-200 flex-shrink-0"
+      className="rounded-full overflow-hidden bg-gray-100 flex-shrink-0 flex items-center justify-center border border-gray-100"
       style={{
         width: size,
         height: size,
       }}
     >
-      <img
-        src={safeSrc}
-        alt="avatar"
-        width={size}
-        height={size}
-        className="w-full h-full object-cover"
-        onError={(e) => {
-          e.currentTarget.onerror = null;
-          e.currentTarget.src = fallback(name);
-        }}
-      />
+      {hasImage ? (
+        <img
+          src={src!}
+          alt={name}
+          width={size}
+          height={size}
+          className="w-full h-full object-cover"
+          onError={() => setError(true)}
+        />
+      ) : (
+        <User className="text-gray-400" style={{ width: size * 0.5, height: size * 0.5 }} />
+      )}
     </div>
   );
 };
