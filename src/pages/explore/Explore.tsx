@@ -3,8 +3,10 @@ import ProviderCard from "@/components/explore/ProviderCard";
 import Reviews from "@/components/explore/Reviews";
 import SessionDetails from "@/components/explore/SessionDetails";
 import SkillInformationCard from "@/components/explore/SkillInformationCard";
+import { useNavigate } from "react-router";
 
 const Explore = () => {
+  const navigate = useNavigate();
   return (
     <div className="bg-white flex flex-col items-center">
       {/* Header */}
@@ -25,7 +27,10 @@ const Explore = () => {
 
         {/* Request Button */}
         <div className="flex justify-end mb-4">
-          <button className="bg-primary text-white rounded-[10px] px-8 py-3 font-medium hover:opacity-90 transition">
+          <button
+            onClick={() => navigate("/request-skill")}
+            className="bg-primary text-white rounded-[10px] px-8 py-3 font-medium hover:opacity-90 transition"
+          >
             Request Skill Swap
           </button>
         </div>
