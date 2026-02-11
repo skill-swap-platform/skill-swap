@@ -11,7 +11,6 @@ interface FeedbackFormProps {
 
 export const FeedbackForm: React.FC<FeedbackFormProps> = ({
     partnerName,
-    partnerAvatar,
     role,
     onSubmit,
     onSkip,

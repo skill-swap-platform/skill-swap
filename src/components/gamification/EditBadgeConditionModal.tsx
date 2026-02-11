@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { X } from 'lucide-react'
 import { Modal, Button } from '@/components/common'
 
 interface EditBadgeConditionModalProps {

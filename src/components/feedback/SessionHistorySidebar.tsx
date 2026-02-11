@@ -1,5 +1,5 @@
 import React from 'react'
-import { Calendar, User, Clock, Star } from 'lucide-react'
+import { Calendar, Clock, Star } from 'lucide-react'
 import { Avatar } from '@/components/common'
 
 export const SessionHistorySidebar: React.FC = () => {
