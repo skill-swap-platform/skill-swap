@@ -1,5 +1,6 @@
 import React from 'react';
 import Avatar from '../Avatar/Avatar';
+import { Link } from 'react-router-dom';
 
 type HeaderProps = {
   activeTab?: "Chat" | "Explore" | "Home" | "Notifications" | "Requests" | "Sessions" | "Default";
@@ -16,30 +17,30 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
         </div>
 
         <div className="flex gap-6 items-center justify-center w-[520px] flex-shrink-0">
-          <a
-            href="#"
+          <Link
+            to={"/"}
             className={activeTab === "Home" ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0" : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"}
           >
             Home
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link 
+            to="/requests" 
             className={activeTab === "Requests" ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0" : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"}
           >
             Requests
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link 
+            to={"/sessions"} 
             className={activeTab === "Sessions" ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0" : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"}
           >
             Sessions
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link 
+           to={"/explore"}
             className={activeTab === "Explore" ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0" : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"}
           >
             Explore
-          </a>
+          </Link>
         </div>
 
         <div className="flex gap-4 items-center justify-end w-[411px] flex-shrink-0">
