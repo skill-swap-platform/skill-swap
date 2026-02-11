@@ -8,6 +8,7 @@ import { PointsAndBadges } from "@/pages/PointsAndBadges";
 import { SessionHistory } from "@/pages/SessionHistory";
 import { SessionFeedback } from "@/pages/SessionFeedback";
 import Explore from "@/pages/explore/Explore";
+import AllReviews from "@/components/explore/AllReviews";
 export const routesConfig = [
   {
     path: "/",
@@ -40,6 +41,10 @@ export const routesConfig = [
   {
     path: "/explore",
     element: <Explore />,
+  },
+  {
+    path: "/all-reviews",
+    element: <AllReviews />,
   },
   {
     path: "*",

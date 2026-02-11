@@ -1,10 +1,13 @@
+import { useNavigate } from "react-router-dom";
+
 const Reviews = () => {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-text-primary text-4xl font-bold">Reviews</h2>
         <button
-          onClick={() => console.log("Navigate to reviews")}
+          onClick={() => navigate("/all-reviews")}
           className="text-[#666] text-sm hover:opacity-70 transition"
         >
           See All
