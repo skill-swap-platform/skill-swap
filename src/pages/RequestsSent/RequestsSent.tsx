@@ -129,8 +129,11 @@ export const RequestsSent: React.FC = () => {
     setSelectedRequest(null);
   };
 
-  const handleDeclineRequest = (request: RequestCardProps) => {
-    console.log('Decline request:', request);
+  const handleDeclineRequest = (
+    request: RequestCardProps,
+    metadata: { reason: string; additionalContext?: string }
+  ) => {
+    console.log('Decline request:', request, metadata);
     // Handle decline request logic
     setSelectedRequest(null);
   };
