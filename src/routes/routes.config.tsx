@@ -7,6 +7,7 @@ import { SessionHistory } from "@/pages/SessionHistory";
 import { SessionFeedback } from "@/pages/SessionFeedback";
 
 import { RequestSkill } from "@/pages/RequestSkill";
+import RequestsSent from "@/pages/RequestsSent/RequestsSent";
 import UpcomingSession from "@/pages/session/UpcomingSession";
 import Explore from "@/pages/explore/Explore";
 import AllReviews from "@/components/explore/AllReviews";
@@ -60,6 +61,10 @@ export const routesConfig = [
   {
     path: "/request-skill",
     element: <RequestSkill />,
+  },
+  {
+    path: "/requests-sent",
+    element: <RequestsSent />,
   },
   {
     path: "/sessions",
