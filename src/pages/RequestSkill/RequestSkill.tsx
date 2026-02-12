@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import SwapMethodOption from '../../components/SwapMethodOption/SwapMethodOption';
@@ -8,10 +9,12 @@ import SuccessModal from '../../components/SuccessModal';
 import { Dayjs } from 'dayjs';
 
 const RequestSkill: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [selectedSwapMethod, setSelectedSwapMethod] = useState<'skill' | 'free' | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<string>('React Basics');
   const [showSkillDropdown, setShowSkillDropdown] = useState(false);
-  const [userSkills] = useState<string[]>(['React Basics', 'JavaScript Fundamentals', 'CSS Design', 'Node.js Basics']);
+  const [userSkills, setUserSkills] = useState<string[]>(['React Basics', 'JavaScript Fundamentals', 'CSS Design', 'Node.js Basics']);
   const [message, setMessage] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
   const [startTime, setStartTime] = useState<string>('12:00 AM');
@@ -36,8 +39,11 @@ const RequestSkill: React.FC = () => {
   ];
 
   const handleBackClick = () => {
-    // Navigate back logic here
-    window.history.back();
+    navigate(-1);
+  };
+
+  const handleAddNewSkill = () => {
+    navigate('/request-skill/add-skill');
   };
 
   const handleSendRequest = () => {
@@ -67,6 +73,18 @@ const RequestSkill: React.FC = () => {
   const isSection2Complete = message.length > 0;
   const isSection3Complete = !!selectedDate && !!startTime && !!endTime;
   const isFormComplete = isSection1Complete && isSection2Complete && isSection3Complete;
+
+  useEffect(() => {
+    const state = location.state as { newSkill?: string } | null;
+    const incomingSkill = state?.newSkill?.trim();
+
+    if (!incomingSkill) return;
+
+    setUserSkills((prev) => (prev.includes(incomingSkill) ? prev : [incomingSkill, ...prev]));
+    setSelectedSkill(incomingSkill);
+    setShowSkillDropdown(false);
+    navigate(location.pathname, { replace: true });
+  }, [location.pathname, location.state, navigate]);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-light">
@@ -143,7 +161,11 @@ const RequestSkill: React.FC = () => {
                             </div>
                           )}
                         </div>
-                        <button className="border border-primary rounded-md h-8 w-[163px] flex items-center justify-center gap-1 bg-transparent cursor-pointer transition-colors hover:bg-primary-dark/5">
+                        <button
+                          type="button"
+                          onClick={handleAddNewSkill}
+                          className="border border-primary rounded-md h-8 w-[163px] flex items-center justify-center gap-1 bg-transparent cursor-pointer transition-colors hover:bg-primary-dark/5"
+                        >
                           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M12 6V18M6 12H18" stroke="#3272A3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
