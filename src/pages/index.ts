@@ -9,8 +9,6 @@ export {
     PreviewManageBadges,
     PreviewPointsManage,
 } from './PreviewPages'
-<<<<<<< HEAD
-=======
 
 export { default as OnboardingInterests } from './onboarding/OnboardingInterests'
 export { default as OnboardingTeaching } from './onboarding/OnboardingTeaching'
@@ -19,4 +17,3 @@ export { default as OnboardingLoading } from './onboarding/OnboardingLoading'
 export { default as RequestSkill } from './RequestSkill/RequestSkill'
 export { default as Login } from './auth/Login'
 export { default as Register } from './auth/Register'
->>>>>>> main

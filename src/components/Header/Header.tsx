@@ -24,7 +24,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
             Home
           </Link>
           <Link 
-            to="/requests" 
+            to="/requests-sent" 
             className={activeTab === "Requests" ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0" : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"}
           >
             Requests

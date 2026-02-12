@@ -4,15 +4,6 @@ import { Bell, MessageCircle, Search } from 'lucide-react'
 
 export const PostSessionTopNav: React.FC = () => {
     return (
-<<<<<<< HEAD
-        <header className="sticky top-0 z-40 bg-white border-b border-[var(--neutral-light)]">
-            <div className="h-16 max-w-7xl mx-auto px-4 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-8">
-                    <div className="text-xl font-poppins font-bold">
-                        <span className="text-[var(--warning)]">Skill</span>
-                        <span className="text-[var(--primary)]">Swap</span>
-                        <span className="text-[var(--text-primary)]">.</span>
-=======
         <header className="sticky top-0 z-40 bg-white border-b border-[#E5E7EB]">
             <div className="h-16 max-w-7xl mx-auto px-4 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-8">
@@ -20,7 +11,6 @@ export const PostSessionTopNav: React.FC = () => {
                         <span className="text-[#F59E0B]">Skill</span>
                         <span className="text-[#3E8FCC]">Swap</span>
                         <span className="text-[#F59E0B]">.</span>
->>>>>>> main
                     </div>
 
                     <nav className="hidden md:flex items-center gap-6 text-sm">
@@ -35,13 +25,8 @@ export const PostSessionTopNav: React.FC = () => {
                                 to={item.to}
                                 className={({ isActive }) =>
                                     `font-medium ${isActive
-<<<<<<< HEAD
-                                        ? 'text-[var(--primary)]'
-                                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-=======
                                         ? 'text-[#3E8FCC]'
                                         : 'text-[#666666] hover:text-[#0C0D0F]'
->>>>>>> main
                                     }`
                                 }
                             >
@@ -52,17 +37,10 @@ export const PostSessionTopNav: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-<<<<<<< HEAD
-                    <div className="hidden sm:flex items-center gap-2 px-3 h-9 rounded-full border border-[var(--neutral-light)] bg-[var(--neutral-lightest)]">
-                        <Search className="w-4 h-4 text-[var(--text-tertiary)]" />
-                        <input
-                            className="bg-transparent outline-none text-sm placeholder:text-[var(--text-tertiary)] w-40"
-=======
                     <div className="hidden sm:flex items-center gap-2 px-3 h-9 rounded-full border border-[#E5E7EB] bg-[#F9FAFB]">
                         <Search className="w-4 h-4 text-[#9CA3AF]" />
                         <input
                             className="bg-transparent outline-none text-sm placeholder:text-[#9CA3AF] w-40"
->>>>>>> main
                             placeholder="Search..."
                         />
                     </div>
@@ -70,34 +48,19 @@ export const PostSessionTopNav: React.FC = () => {
                     <button
                         title="Messages"
                         aria-label="Messages"
-<<<<<<< HEAD
-                        className="h-9 w-9 rounded-full border border-[var(--neutral-light)] bg-white hover:bg-[var(--neutral-lightest)] grid place-items-center"
-                    >
-                        <MessageCircle className="w-4 h-4 text-[var(--text-secondary)]" />
-=======
                         className="h-9 w-9 rounded-full border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] grid place-items-center"
                     >
                         <MessageCircle className="w-4 h-4 text-[#666666]" />
->>>>>>> main
                     </button>
                     <button
                         title="Notifications"
                         aria-label="Notifications"
-<<<<<<< HEAD
-                        className="h-9 w-9 rounded-full border border-[var(--neutral-light)] bg-white hover:bg-[var(--neutral-lightest)] grid place-items-center"
-                    >
-                        <Bell className="w-4 h-4 text-[var(--text-secondary)]" />
-                    </button>
-
-                    <div className="h-9 w-9 rounded-full bg-[var(--primary)] text-white grid place-items-center text-sm font-semibold">
-=======
                         className="h-9 w-9 rounded-full border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] grid place-items-center"
                     >
                         <Bell className="w-4 h-4 text-[#666666]" />
                     </button>
 
                     <div className="h-9 w-9 rounded-full bg-[#3E8FCC] text-white grid place-items-center text-sm font-semibold">
->>>>>>> main
                         W
                     </div>
                 </div>

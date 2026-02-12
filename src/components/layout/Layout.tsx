@@ -110,11 +110,7 @@ export const Layout: React.FC = () => {
                 <h1 className="text-lg font-bold">
                     <span className="text-[#F59E0B]">Skill</span>
                     <span className="text-[#3E8FCC]">Swap</span>
-<<<<<<< HEAD
-                    <span className="text-[#0C0D0F]">.</span>
-=======
                     <span className="text-[#F59E0B]">.</span>
->>>>>>> main
                 </h1>
 
                 <button
