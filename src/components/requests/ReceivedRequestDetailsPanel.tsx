@@ -1,12 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { RequestCardProps } from './RequestCard';
+
+type DeclineReasonOption = 'not-available' | 'not-good-match' | 'other';
+
+interface DeclineRequestMetadata {
+  reason: DeclineReasonOption | 'no-reason';
+  additionalContext?: string;
+}
 
 interface ReceivedRequestDetailsPanelProps {
   request: RequestCardProps | null;
   isOpen: boolean;
   onClose: () => void;
   onAcceptRequest?: (request: RequestCardProps) => void;
-  onDeclineRequest?: (request: RequestCardProps) => void;
+  onDeclineRequest?: (request: RequestCardProps, metadata: DeclineRequestMetadata) => void;
   onViewProfile?: (userName: string) => void;
 }
 
@@ -18,7 +26,37 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
   onDeclineRequest,
   onViewProfile,
 }) => {
+  const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
+  const [selectedDeclineReason, setSelectedDeclineReason] = useState<DeclineReasonOption | null>(null);
+  const [additionalContext, setAdditionalContext] = useState('');
+
   if (!request || !isOpen) return null;
+
+  const declineReasons: { value: DeclineReasonOption; label: string }[] = [
+    { value: 'not-available', label: 'Not available at this time' },
+    { value: 'not-good-match', label: 'Skill not a good match' },
+    { value: 'other', label: 'Other' },
+  ];
+
+  const handleOpenDeclineModal = () => {
+    setIsDeclineModalOpen(true);
+  };
+
+  const handleCloseDeclineModal = () => {
+    setIsDeclineModalOpen(false);
+    setSelectedDeclineReason(null);
+    setAdditionalContext('');
+  };
+
+  const handleConfirmDecline = () => {
+    const trimmedContext = additionalContext.trim();
+    const payload: DeclineRequestMetadata = {
+      reason: selectedDeclineReason ?? 'no-reason',
+      additionalContext: trimmedContext || undefined,
+    };
+    onDeclineRequest?.(request, payload);
+    handleCloseDeclineModal();
+  };
 
   const statusConfig = {
     pending: { color: '#FFA412', bgColor: '#FFA412', label: 'Pending' },
@@ -31,6 +69,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
   // Render different layouts based on status
   if (request.status === 'pending') {
     return (
+      <>
       <div className="bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
         {/* Header with Status */}
         <div className="bg-white border-b border-[#f3f4f6] flex items-center justify-between pl-[16px] pr-[8px] rounded-tl-[10px] rounded-tr-[10px]">
@@ -197,7 +236,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
         {/* Actions - Accept/Decline Buttons */}
         <div className="flex gap-[10px] h-[48px] items-center justify-center w-full px-[8px]">
           <button
-            onClick={() => onDeclineRequest?.(request)}
+            onClick={handleOpenDeclineModal}
             className="bg-[#f5f5f5] border border-[#e5e7eb] flex flex-1 h-full items-center justify-center rounded-[10px] transition-colors hover:bg-[#e5e5e5]"
           >
             <p className="font-medium leading-[normal] text-[16px] text-[#666]">
@@ -216,7 +255,108 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
             </p>
           </button>
         </div>
+        {isDeclineModalOpen && createPortal(
+          <>
+            <div
+              onClick={handleCloseDeclineModal}
+              className="fixed inset-0 bg-[rgba(94,95,96,0.2)] z-[9999]"
+            />
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4">
+              <div
+                className="bg-white border border-[#e5e7eb] flex flex-col rounded-[10px] w-full max-w-[384px]"
+                style={{ boxShadow: '0px 0px 4.7px 0px rgba(0, 0, 0, 0.25)' }}
+              >
+                <div className="border-b border-[#f3f4f6] flex h-[48px] items-center px-4 rounded-t-[10px]">
+                  <p className="flex-1 font-medium text-[16px] text-[#0c0d0f]">
+                    Decline Request
+                  </p>
+                  <button
+                    onClick={handleCloseDeclineModal}
+                    className="shrink-0 size-[32px] flex items-center justify-center"
+                    aria-label="Close decline modal"
+                  >
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                      <path d="M12 20L20 12M20 20L12 12" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="flex flex-col gap-4 p-4">
+                  <p className="text-[14px] text-[#0c0d0f]">
+                    You can optionally add a reason to help the requester understand.
+                  </p>
+                  <div className="flex flex-col gap-3">
+                    {declineReasons.map((reason) => {
+                      const isSelected = selectedDeclineReason === reason.value;
+                      return (
+                        <label
+                          key={reason.value}
+                          className={`border rounded-[10px] p-3 flex items-center gap-3 cursor-pointer transition-colors ${
+                            isSelected ? 'border-[#3272a3] bg-[rgba(50,114,163,0.08)]' : 'border-[#e5e7eb] bg-white'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="decline-reason"
+                            value={reason.value}
+                            checked={isSelected}
+                            onChange={() => setSelectedDeclineReason(reason.value)}
+                            className="sr-only"
+                          />
+                          <span
+                            className={`flex items-center justify-center size-[18px] rounded-full border ${
+                              isSelected ? 'border-[#3272a3]' : 'border-[#d1d5db]'
+                            }`}
+                          >
+                            <span
+                              className={`size-[10px] rounded-full ${isSelected ? 'bg-[#3272a3]' : 'bg-transparent'}`}
+                            />
+                          </span>
+                          <span className="text-[14px] text-[#0c0d0f]">{reason.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  {selectedDeclineReason === 'other' && (
+                    <div className="flex flex-col gap-2">
+                      <textarea
+                        value={additionalContext}
+                        onChange={(event) =>
+                          setAdditionalContext(event.target.value.slice(0, 200))
+                        }
+                        placeholder="Provide additional context (optional)"
+                        className="min-h-[96px] w-full resize-none rounded-[10px] border border-[#e5e7eb] p-3 text-[14px] text-[#0c0d0f] focus:border-[#3272a3] focus:outline-none"
+                      />
+                      <p className="text-right text-[12px] text-[#999]">
+                        {additionalContext.length} / 200
+                      </p>
+                    </div>
+                  )}
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={handleCloseDeclineModal}
+                      className="flex-1 h-[40px] rounded-[10px] border border-[#e5e7eb] bg-[#f5f5f5] text-[14px] text-[#666] transition-colors hover:bg-[#e5e7eb]"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleConfirmDecline}
+                      className="flex-1 h-[40px] rounded-[10px] text-[14px] text-white transition-opacity"
+                      style={{
+                        background:
+                          'linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%), linear-gradient(90deg, rgb(62, 143, 204) 0%, rgb(62, 143, 204) 100%)',
+                      }}
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>,
+          document.body,
+        )}
       </div>
+        </>
     );
   }
 

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { RequestCardProps } from './RequestCard';
 
 interface RequestDetailsPanelProps {
@@ -16,7 +17,22 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
   onCancelRequest,
   onViewProfile,
 }) => {
+  const [showCancelModal, setShowCancelModal] = useState(false);
+
   if (!request || !isOpen) return null;
+
+  const handleCancelClick = () => {
+    setShowCancelModal(true);
+  };
+
+  const handleUndoCancel = () => {
+    setShowCancelModal(false);
+  };
+
+  const handleConfirmCancel = () => {
+    setShowCancelModal(false);
+    onCancelRequest?.(request);
+  };
 
   const statusConfig = {
     pending: { color: '#FFA412', bgColor: '#FFA412', label: 'Pending' },
@@ -478,7 +494,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
       {/* Actions */}
       <div className="flex flex-col items-center justify-center w-full">
         <button
-          onClick={() => onCancelRequest?.(request)}
+          onClick={handleCancelClick}
           className="bg-white border border-[#dc2626] flex gap-[10px] h-[48px] items-center justify-center rounded-[10px] w-full hover:bg-[#dc2626] hover:text-white transition-colors group"
         >
           <p className="font-medium text-[16px] leading-[normal] text-[#dc2626] group-hover:text-white">
@@ -486,6 +502,62 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
           </p>
         </button>
       </div>
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelModal && createPortal(
+        <>
+          <div
+            onClick={handleUndoCancel}
+            className="fixed inset-0 bg-[rgba(94,95,96,0.2)] z-[9999]"
+          />
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+            <div className="bg-white border border-[#e5e7eb] flex flex-col h-[173px] items-start rounded-[10px] w-[484px]" style={{ boxShadow: '0px 0px 4.7px 0px rgba(0, 0, 0, 0.25)' }}>
+              {/* Modal Header */}
+              <div className="border-b border-[#f3f4f6] flex gap-[10px] h-[40px] items-center justify-center pl-[16px] rounded-tl-[10px] rounded-tr-[10px] shrink-0 w-full">
+                <p className="flex-1 font-medium text-[16px] leading-[normal] text-[#0c0d0f] min-h-px min-w-px">
+                  Cancel Request?
+                </p>
+                <button
+                  onClick={handleUndoCancel}
+                  className="shrink-0 size-[32px] flex items-center justify-center"
+                >
+                  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <path d="M12 20L20 12M20 20L12 12" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="flex flex-col gap-[20px] h-[133px] items-start justify-center p-[16px] shrink-0 w-full">
+                <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] shrink-0">
+                  Are you sure you want to cancel this request? 
+                </p>
+
+                {/* Modal Actions */}
+                <div className="flex gap-[8px] items-start px-[16px] shrink-0 w-full">
+                  <button
+                    onClick={handleUndoCancel}
+                    className="bg-[#f5f5f5] border border-[#e5e7eb] flex-1 flex gap-[10px] h-[40px] items-center justify-center min-h-px min-w-px rounded-[10px] hover:bg-[#e5e7eb] transition-colors"
+                  >
+                    <p className="font-normal text-[14px] leading-[normal] text-[#666] shrink-0">
+                      Undo
+                    </p>
+                  </button>
+                  <button
+                    onClick={handleConfirmCancel}
+                    className="bg-[#dc2626] flex-1 flex gap-[10px] h-[40px] items-center justify-center min-h-px min-w-px rounded-[10px] hover:bg-[#b91c1c] transition-colors"
+                  >
+                    <p className="font-normal text-[14px] leading-[normal] text-white shrink-0">
+                      Cancel
+                    </p>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
     </div>
   );
 };
