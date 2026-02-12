@@ -24,7 +24,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
             Home
           </Link>
           <Link 
-            to="/requests" 
+            to="/requests-sent" 
             className={activeTab === "Requests" ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0" : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"}
           >
             Requests
@@ -72,9 +72,9 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
           </div>
 
           <div className="rounded-xl w-12 h-12 overflow-hidden flex-shrink-0 flex items-center justify-center">
-            <Avatar
-              src={null}
-              name="User Name"
+            <Avatar 
+              src="https://api.dicebear.com/7.x/notionists/svg?seed=currentuser" 
+              name="User Name" 
               size={40}
             />
           </div>
