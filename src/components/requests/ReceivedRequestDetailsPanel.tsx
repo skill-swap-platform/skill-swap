@@ -1,19 +1,21 @@
 import React from 'react';
 import type { RequestCardProps } from './RequestCard';
 
-interface RequestDetailsPanelProps {
+interface ReceivedRequestDetailsPanelProps {
   request: RequestCardProps | null;
   isOpen: boolean;
   onClose: () => void;
-  onCancelRequest?: (request: RequestCardProps) => void;
+  onAcceptRequest?: (request: RequestCardProps) => void;
+  onDeclineRequest?: (request: RequestCardProps) => void;
   onViewProfile?: (userName: string) => void;
 }
 
-export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
+export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelProps> = ({
   request,
   isOpen,
   onClose,
-  onCancelRequest,
+  onAcceptRequest,
+  onDeclineRequest,
   onViewProfile,
 }) => {
   if (!request || !isOpen) return null;
@@ -27,7 +29,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
   const currentStatus = statusConfig[request.status];
 
   // Render different layouts based on status
-  if (request.status === 'accepted') {
+  if (request.status === 'pending') {
     return (
       <div className="bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
         {/* Header with Status */}
@@ -51,11 +53,11 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
           </button>
         </div>
 
-        {/* Provider Section */}
+        {/* Seeker Section */}
         <div className="bg-white border-b border-[#f3f4f6] flex flex-col items-start w-full">
           <div className="flex h-[24px] items-center justify-center px-[16px] w-full">
             <p className="flex-1 font-semibold leading-[normal] text-[16px] text-[#0c0d0f] min-w-0">
-              Provider
+              Seeker
             </p>
           </div>
           <div className="flex flex-col items-start px-[16px] py-[8px] w-full">
@@ -66,25 +68,12 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
                 className="shrink-0 w-[56px] h-[56px] rounded-full object-cover"
               />
               <div className="flex flex-1 flex-col gap-[4px] items-start justify-center min-w-0">
-                <div className="flex flex-col items-start w-full">
-                  <p className="font-medium text-[16px] leading-[normal] text-black w-full truncate">
-                    {request.userName}
-                  </p>
-                </div>
-                <div className="flex gap-[2px] items-end">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path
-                      d="M7 1.16667L8.8025 4.81917L12.8333 5.405L9.91667 8.24917L10.605 12.2617L7 10.365L3.395 12.2617L4.08333 8.24917L1.16667 5.405L5.1975 4.81917L7 1.16667Z"
-                      fill="#FFE947"
-                      stroke="#FFE947"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <p className="font-normal text-[12px] leading-[normal] text-[#666] text-center">
-                    {request.userRating.toFixed(1)}
-                  </p>
-                </div>
+                <p className="font-medium text-[16px] leading-[normal] text-black w-full truncate">
+                  {request.userName}
+                </p>
+                <p className="font-medium text-[14px] leading-[normal] text-[#5e5e5f] truncate">
+                  Photographer & Filmmaker
+                </p>
               </div>
               <button
                 onClick={() => onViewProfile?.(request.userName)}
@@ -183,8 +172,8 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
             </p>
           </div>
           <div className="flex flex-col items-start px-[16px] py-[8px] w-full">
-            <div className="bg-[#fafafa] border border-[#e6e6e6] flex flex-col h-[70px] items-center justify-center p-[8px] rounded-[10px] w-full">
-              <p className="font-normal h-[40px] leading-[normal] text-[12px] text-[#666] text-center w-full">
+            <div className="bg-[#fafafa] border border-[#e6e6e6] flex flex-col min-h-[70px] items-center justify-center p-[8px] rounded-[10px] w-full">
+              <p className="font-normal leading-[normal] text-[12px] text-[#666] text-center w-full">
                 "Hi! I'd love to learn this skill and start building my portfolio. I'm a beginner and looking for guidance on the core concepts of performance optimization."
               </p>
             </div>
@@ -192,7 +181,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
         </div>
 
         {/* Preferred Time */}
-        <div className="bg-white flex flex-col items-start rounded-bl-[10px] rounded-br-[10px] w-full">
+        <div className="bg-white border-b border-[#f3f4f6] flex flex-col items-start w-full">
           <div className="flex h-[24px] items-center justify-center px-[16px] w-full">
             <p className="flex-1 font-semibold leading-[normal] text-[16px] text-[#0c0d0f] min-w-0">
               Preferred Time
@@ -205,14 +194,25 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
           </div>
         </div>
 
-        {/* Actions - Go to Chat */}
-        <div className="flex flex-col items-center justify-center w-full">
+        {/* Actions - Accept/Decline Buttons */}
+        <div className="flex gap-[10px] h-[48px] items-center justify-center w-full px-[8px]">
           <button
-            className="flex gap-[10px] h-[48px] items-center justify-center rounded-[10px] w-full text-white transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%), linear-gradient(90deg, rgb(62, 143, 204) 0%, rgb(62, 143, 204) 100%)' }}
+            onClick={() => onDeclineRequest?.(request)}
+            className="bg-[#f5f5f5] border border-[#e5e7eb] flex flex-1 h-full items-center justify-center rounded-[10px] transition-colors hover:bg-[#e5e5e5]"
           >
-            <p className="font-medium text-[16px] leading-[normal]">
-              Go to Chat
+            <p className="font-medium leading-[normal] text-[16px] text-[#666]">
+              Decline
+            </p>
+          </button>
+          <button
+            onClick={() => onAcceptRequest?.(request)}
+            className="flex flex-1 h-full items-center justify-center rounded-[10px] transition-opacity hover:opacity-90"
+            style={{
+              background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%), linear-gradient(90deg, rgb(62, 143, 204) 0%, rgb(62, 143, 204) 100%)',
+            }}
+          >
+            <p className="font-medium leading-[normal] text-[16px] text-white">
+              Accept
             </p>
           </button>
         </div>
@@ -220,6 +220,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
     );
   }
 
+  // For declined status - simplified view
   if (request.status === 'declined') {
     return (
       <div className="bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
@@ -244,11 +245,11 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
           </button>
         </div>
 
-        {/* Provider Section */}
+        {/* Seeker Section - Simplified for Declined */}
         <div className="bg-white border-b border-[#f3f4f6] flex flex-col items-start w-full">
           <div className="flex h-[24px] items-center justify-center px-[16px] w-full">
             <p className="flex-1 font-semibold leading-[normal] text-[16px] text-[#0c0d0f] min-w-0">
-              Provider
+              Seeker
             </p>
           </div>
           <div className="flex flex-col items-start px-[16px] py-[8px] w-full">
@@ -259,33 +260,30 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
                 className="shrink-0 w-[56px] h-[56px] rounded-full object-cover"
               />
               <div className="flex flex-1 flex-col gap-[4px] items-start justify-center min-w-0">
-                <div className="flex flex-col gap-[4px] items-start w-full">
-                  <p className="font-medium text-[16px] leading-[normal] text-black w-full truncate">
-                    {request.userName}
-                  </p>
-                  <p className="font-medium text-[14px] leading-[normal] text-[#5e5e5f] truncate">
-                    Photographer & Filmmaker
-                  </p>
-                </div>
+                <p className="font-medium text-[16px] leading-[normal] text-black w-full truncate">
+                  {request.userName}
+                </p>
+                <p className="font-medium text-[14px] leading-[normal] text-[#5e5e5f] truncate">
+                  Designer
+                </p>
               </div>
             </div>
-            <p className="font-normal text-[12px] leading-[normal] text-[#999] text-right w-full">
+            <p className="font-normal leading-[normal] text-[#999] text-[12px] text-right w-full mt-2">
               {request.sentTime}
             </p>
           </div>
         </div>
 
-        {/* Decline Container */}
+        {/* Declined Message */}
         <div className="bg-white flex flex-col h-[86px] items-center justify-center rounded-[10px] w-full">
           <div className="flex flex-col gap-[8px] items-center p-[16px] w-full">
             <div className="flex items-center justify-center rounded-full shrink-0 w-[24px] h-[24px]">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M9.17 14.83L14.83 9.17" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M14.83 14.83L9.17 9.17" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="12" r="9" stroke="#DC2626" strokeWidth="1.5"/>
+                <path d="M15 9L9 15M9 9L15 15" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             </div>
-            <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] text-center">
+            <p className="font-normal leading-[normal] text-[14px] text-[#0c0d0f] text-center">
               This request was declined.
             </p>
           </div>
@@ -294,7 +292,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
     );
   }
 
-  // Default: Pending status
+  // For accepted status - full details with "Go to Chat" button
   return (
     <div className="bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
       {/* Header with Status */}
@@ -318,11 +316,11 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
         </button>
       </div>
 
-      {/* Provider Section */}
+      {/* Seeker Section */}
       <div className="bg-white border-b border-[#f3f4f6] flex flex-col items-start w-full">
         <div className="flex h-[24px] items-center justify-center px-[16px] w-full">
           <p className="flex-1 font-semibold leading-[normal] text-[16px] text-[#0c0d0f] min-w-0">
-            Provider
+            Seeker
           </p>
         </div>
         <div className="flex flex-col items-start px-[16px] py-[8px] w-full">
@@ -333,14 +331,9 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
               className="shrink-0 w-[56px] h-[56px] rounded-full object-cover"
             />
             <div className="flex flex-1 flex-col gap-[4px] items-start justify-center min-w-0">
-              <div className="flex flex-col gap-[4px] items-start w-full">
-                <p className="font-medium text-[16px] leading-[normal] text-black w-full truncate">
-                  {request.userName}
-                </p>
-                <p className="font-medium text-[14px] leading-[normal] text-[#5e5e5f] truncate">
-                  Photographer & Filmmaker
-                </p>
-              </div>
+              <p className="font-medium text-[16px] leading-[normal] text-black w-full truncate">
+                {request.userName}
+              </p>
               <div className="flex gap-[2px] items-end">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                   <path
@@ -358,7 +351,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
             </div>
             <button
               onClick={() => onViewProfile?.(request.userName)}
-              className="border border-[#3272a3] flex h-[24px] items-center justify-center p-[8px] rounded-[10px] shrink-0"
+              className="border border-[#3272a3] flex h-[24px] items-center justify-center px-[8px] rounded-[10px] shrink-0"
             >
               <p className="font-normal text-[12px] leading-[normal] text-[#3272a3]">
                 View Profile
@@ -453,8 +446,8 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
           </p>
         </div>
         <div className="flex flex-col items-start px-[16px] py-[8px] w-full">
-          <div className="bg-[#fafafa] border border-[#e6e6e6] flex flex-col h-[70px] items-center justify-center p-[8px] rounded-[10px] w-full">
-            <p className="font-normal h-[40px] leading-[normal] text-[12px] text-[#666] text-center w-full">
+          <div className="bg-[#fafafa] border border-[#e6e6e6] flex flex-col min-h-[70px] items-center justify-center p-[8px] rounded-[10px] w-full">
+            <p className="font-normal leading-[normal] text-[12px] text-[#666] text-center w-full">
               "Hi! I'd love to learn this skill and start building my portfolio. I'm a beginner and looking for guidance on the core concepts of performance optimization."
             </p>
           </div>
@@ -462,7 +455,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
       </div>
 
       {/* Preferred Time */}
-      <div className="bg-white flex flex-col items-start rounded-bl-[10px] rounded-br-[10px] w-full">
+      <div className="bg-white border-b border-[#f3f4f6] flex flex-col items-start w-full">
         <div className="flex h-[24px] items-center justify-center px-[16px] w-full">
           <p className="flex-1 font-semibold leading-[normal] text-[16px] text-[#0c0d0f] min-w-0">
             Preferred Time
@@ -475,14 +468,16 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
         </div>
       </div>
 
-      {/* Actions */}
+      {/* Go to Chat Button */}
       <div className="flex flex-col items-center justify-center w-full">
         <button
-          onClick={() => onCancelRequest?.(request)}
-          className="bg-white border border-[#dc2626] flex gap-[10px] h-[48px] items-center justify-center rounded-[10px] w-full hover:bg-[#dc2626] hover:text-white transition-colors group"
+          className="flex gap-[10px] h-[48px] items-center justify-center rounded-[10px] w-full transition-opacity hover:opacity-90"
+          style={{
+            background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%), linear-gradient(90deg, rgb(62, 143, 204) 0%, rgb(62, 143, 204) 100%)',
+          }}
         >
-          <p className="font-medium text-[16px] leading-[normal] text-[#dc2626] group-hover:text-white">
-            Cancel Request
+          <p className="font-medium leading-[normal] text-[16px] text-white">
+            Go to Chat
           </p>
         </button>
       </div>
