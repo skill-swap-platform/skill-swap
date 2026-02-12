@@ -6,7 +6,7 @@ import { PointsAndBadges } from "@/pages/PointsAndBadges";
 import { SessionHistory } from "@/pages/SessionHistory";
 import { SessionFeedback } from "@/pages/SessionFeedback";
 
-import { RequestSkill } from "@/pages/RequestSkill";
+import { AddSkill, RequestSkill } from "@/pages/RequestSkill";
 import RequestsSent from "@/pages/RequestsSent/RequestsSent";
 import UpcomingSession from "@/pages/session/UpcomingSession";
 import Explore from "@/pages/explore/Explore";
@@ -61,6 +61,10 @@ export const routesConfig = [
   {
     path: "/request-skill",
     element: <RequestSkill />,
+  },
+  {
+    path: "/request-skill/add-skill",
+    element: <AddSkill />,
   },
   {
     path: "/requests-sent",
