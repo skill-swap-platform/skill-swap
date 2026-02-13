@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button } from '@/components/common'
+import { Award, ArrowRight } from 'lucide-react'
 
 interface BadgeUnlockedScreenProps {
     onContinue: () => void
@@ -9,77 +9,54 @@ export const BadgeUnlockedScreen: React.FC<BadgeUnlockedScreenProps> = ({
     onContinue,
 }) => {
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 max-w-[500px] w-full p-10 relative overflow-hidden flex flex-col items-center animate-scale-in">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">
-                New Badge Unlocked! 🎉
-            </h2>
+        <div className="flex items-center justify-center px-4 py-12 w-full">
+            <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 max-w-[640px] w-full p-12">
+                <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+                    New Badge Unlocked!
+                </h2>
 
-            <div className="mb-6 relative">
-                <div className="w-32 h-32 bg-[#E8F5E9] rounded-full flex items-center justify-center">
-                    <Award className="w-16 h-16 text-[#4CAF50]" />
+                <div className="flex justify-center mb-6">
+                    <div className="w-24 h-24 bg-[#E8F5E9] rounded-full flex items-center justify-center">
+                        <Award className="w-12 h-12 text-[#4CAF50]" />
+                    </div>
                 </div>
-            </div>
-            <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 max-w-4xl mx-auto w-full">
-                <div className="relative w-full max-w-[500px] mb-8 animate-fade-in">
-                    <div className="w-full h-full flex items-end justify-center">
-                        <div className="text-[140px] leading-none mb-2">🏆</div>
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div className="text-[180px] opacity-20">🎊</div>
+
+                <div className="text-center mb-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Active Member</h3>
+                    <p className="text-sm text-gray-600">
+                        You've completed 10 sessions in a row!
+                    </p>
+                </div>
+
+                <div className="w-full bg-white rounded-xl p-4 mb-6 border border-gray-200">
+                    <div className="w-full h-2 bg-[#E5E7EB] rounded-full overflow-hidden mb-2">
+                        <div className="h-full bg-[#4CAF50] w-full transition-all" />
+                    </div>
+                    <div className="text-xs text-gray-500 text-center font-medium">
+                        10/10 Sessions Completed
+                    </div>
+                </div>
+
+                <div className="mb-8">
+                    <h4 className="text-sm font-bold text-gray-900 mb-3">Next Badge</h4>
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div className="w-10 h-10 bg-[#E0F2FE] rounded-full flex items-center justify-center flex-shrink-0">
+                            <ArrowRight className="w-5 h-5 text-[#3E8FCC]" />
+                        </div>
+                        <div>
+                            <div className="text-sm font-semibold text-gray-900">Skill Exchanger</div>
+                            <div className="text-xs text-gray-500">Complete 25 Sessions</div>
                         </div>
                     </div>
                 </div>
-                <div className="text-center mb-10">
-                    <h2 className="text-[40px] font-poppins font-bold animate-fade-in">
-                        Badge Unlocked!
-                    </h2>
-                    <p className="text-xl text-white/90 mt-1 animate-fade-in">
-                        {badge.name}
-                    </p>
-                </div>
-                <div className="w-full max-w-[600px] bg-white rounded-2xl p-6 shadow-xl mb-6 border border-white/20 animate-fade-in">
-                    <div className="text-[#3E8FCC] font-bold text-center mb-4 text-lg">
-                        {badge.description}
-                    </div>
-                    <div className="w-full h-4 bg-[#E5E7EB] rounded-full overflow-hidden mb-2">
-                        <div className="h-full bg-[#3E8FCC] w-full" />
-                    </div>
-                    <div className="text-[#9CA3AF] text-xs text-center font-medium">
-                        Achievement Completed!
-                    </div>
-                </div>
-                <div className="w-full max-w-[600px] bg-white rounded-2xl p-6 shadow-xl mb-8 border border-white/20 animate-fade-in">
-                    <div className="text-[#0C0D0F] font-bold mb-4 text-base">
-                        Next Badge
-                    </div>
-                    <div>
-                        <div className="text-sm font-bold text-gray-900">Skill Exchanger</div>
-                        <div className="text-[10px] text-gray-500">Complete 25 Sessions</div>
-                    </div>
-                </div>
-                <div className="w-full max-w-[600px] grid grid-cols-2 gap-6">
-                    <Button
-                        variant="ghost"
-                        onClick={onClose}
-                        className="h-14 rounded-xl bg-white text-[#3E8FCC] hover:bg-white/90 font-bold text-lg shadow-lg"
-                    >
-                        Continue
-                    </Button>
-                    <Button
-                        variant="primary"
-                        onClick={onClose}
-                        className="h-14 rounded-xl bg-[#2F71A3] hover:bg-[#1F5D86] text-white font-bold text-lg shadow-lg"
-                    >
-                        View All Badges
-                    </Button>
-                </div>
-            </div>
 
-            <button
-                onClick={onContinue}
-                className="w-full h-12 rounded-xl bg-[#3E8FCC] text-white font-bold hover:bg-[#2F71A3] transition-all shadow-sm"
-            >
-                Continue
-            </button>
+                <button
+                    onClick={onContinue}
+                    className="w-full h-12 rounded-xl bg-[#3E8FCC] text-white font-semibold hover:bg-[#2F71A3] transition-colors"
+                >
+                    Continue
+                </button>
+            </div>
         </div>
     )
 }
