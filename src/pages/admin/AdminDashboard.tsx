@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
-import { ArrowLeftRight, Bell, ChevronDown, ClipboardCheck, TriangleAlert, Users } from 'lucide-react'
+import { ArrowLeftRight, ChevronDown, ClipboardCheck, TriangleAlert, Users } from 'lucide-react'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import {
     adminService,
@@ -262,7 +262,10 @@ export const AdminDashboard: React.FC = () => {
                 <header className="flex h-[80px] items-center justify-end border-b border-[#F3F4F6] px-4 md:px-6">
                     <div className="flex items-center gap-4 md:gap-6">
                         <button type="button" className="rounded-full p-2 text-[#1C1C1C] hover:bg-[#F3F4F6]">
-                            <Bell className="h-5 w-5" />
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path fillRule="evenodd" clipRule="evenodd" d="M12 17.8476C17.6392 17.8476 20.2481 17.1242 20.5 14.2205C20.5 11.3188 18.6812 11.5054 18.6812 7.94511C18.6812 5.16414 16.0452 2 12 2C7.95477 2 5.31885 5.16414 5.31885 7.94511C5.31885 11.5054 3.5 11.3188 3.5 14.2205C3.75295 17.1352 6.36177 17.8476 12 17.8476Z" stroke="#0C0D0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M14.3887 20.8572C13.0246 22.372 10.8966 22.3899 9.51941 20.8572" stroke="#0C0D0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
                         </button>
                         <div className="flex items-center gap-2">
                             <img
