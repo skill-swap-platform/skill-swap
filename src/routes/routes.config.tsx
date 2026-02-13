@@ -1,7 +1,7 @@
 import NotFound from "@/pages/NotFound";
 import LandingPage from "@/pages/LandingPage";
 
-import { Dashboard } from "@/pages/Dashboard";
+// import { Dashboard } from "@/pages/Dashboard";
 import { AdminDashboard } from "@/pages/admin/AdminDashboard";
 import { PointsAndBadges } from "@/pages/PointsAndBadges";
 import { SessionHistory } from "@/pages/SessionHistory";
@@ -42,10 +42,10 @@ export const routesConfig = [
     element: <Register />,
   },
 
-  {
-    path: "/dashboard",
-    element: <Dashboard />,
-  },
+  // {
+  //   path: "/dashboard",
+  //   element: <Dashboard />,
+  // },
   {
     path: "/admin/dashboard",
     element: <AdminDashboard />,
@@ -71,6 +71,7 @@ export const routesConfig = [
     path: "/request-skill/add-skill",
     element: <AddSkill />,
   },
+  // to be edited
   {
     path: "/requests-sent",
     element: <RequestsSent />,
@@ -105,7 +106,7 @@ export const routesConfig = [
     path: "/onboarding/loading",
     element: <OnboardingLoading />,
   },
-
+  // to be checked
   {
     path: "/preview/session-completed",
     element: <PreviewSessionCompleted />,
@@ -122,6 +123,7 @@ export const routesConfig = [
     path: "/preview/manage-badges",
     element: <PreviewManageBadges />,
   },
+  // to be checked
   {
     path: "/preview/points-manage",
     element: <PreviewPointsManage />,
