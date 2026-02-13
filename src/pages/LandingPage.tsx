@@ -4,12 +4,14 @@ import Grid from "@mui/material/Grid";
 import PhoneImageContainer from "../assets/landingPage/Phone-Image-Container.png";
 import WhyChooseSkillSwap from "@/components/LandingPage/WhyChooseSkillSwap";
 import Header from "@/components/LandingPage/Header";
+import AboutSkillSwap from "@/components/LandingPage/AboutSkillSwap";
 const LandingPage = () => {
   return (
     <>
       <Header logoSrc="./Logo.png"/>
       <HeroSection />
       <WhyChooseSkillSwap />
+      <AboutSkillSwap />
     </>
   );
 };
