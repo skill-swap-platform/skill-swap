@@ -88,7 +88,7 @@ export const PointsAndBadges: React.FC = () => {
         <div className="min-h-screen bg-white">
             <AdminSidebar />
 
-            <main className="ml-64 p-8">
+            <main className="p-4 md:ml-[236px] md:p-8">
                 {/* Header */}
                 <header className="flex items-center justify-between mb-8">
                     <div className="text-xl font-poppins font-bold">

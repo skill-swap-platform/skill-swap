@@ -2,6 +2,7 @@ import NotFound from "@/pages/NotFound";
 import LandingPage from "@/pages/LandingPage";
 
 import { Dashboard } from "@/pages/Dashboard";
+import { AdminDashboard } from "@/pages/admin/AdminDashboard";
 import { PointsAndBadges } from "@/pages/PointsAndBadges";
 import { SessionHistory } from "@/pages/SessionHistory";
 import { SessionFeedback } from "@/pages/SessionFeedback";
@@ -44,6 +45,10 @@ export const routesConfig = [
   {
     path: "/dashboard",
     element: <Dashboard />,
+  },
+  {
+    path: "/admin/dashboard",
+    element: <AdminDashboard />,
   },
   {
     path: "/points-badges",
