@@ -1,6 +1,5 @@
 import React from 'react'
 import { Button } from '@/components/common'
-import type { UserBadge } from '@/types/index'
 
 interface BadgeUnlockedScreenProps {
     onContinue: () => void
@@ -10,11 +9,7 @@ export const BadgeUnlockedScreen: React.FC<BadgeUnlockedScreenProps> = ({
     onContinue,
 }) => {
     return (
-        <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 max-w-[500px] w-full p-10 relative overflow-hidden flex flex-col items-center"
-        >
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 max-w-[500px] w-full p-10 relative overflow-hidden flex flex-col items-center animate-scale-in">
             <h2 className="text-2xl font-bold text-gray-900 mb-8">
                 New Badge Unlocked! 🎉
             </h2>
@@ -85,6 +80,6 @@ export const BadgeUnlockedScreen: React.FC<BadgeUnlockedScreenProps> = ({
             >
                 Continue
             </button>
-        </motion.div>
+        </div>
     )
 }

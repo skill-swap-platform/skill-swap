@@ -9,10 +9,7 @@ export interface Feedback {
     wasHelpful?: boolean
     wouldRecommend?: boolean
     tags?: string[]
-<<<<<<< HEAD
-=======
     improvement?: string
->>>>>>> main
     createdAt: Date
     updatedAt?: Date
 }
