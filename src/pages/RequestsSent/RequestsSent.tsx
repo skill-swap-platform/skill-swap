@@ -5,11 +5,12 @@ import type { RequestStatus } from '../../components/requests/StatusFilterTabs';
 import { RequestCard } from '../../components/requests/RequestCard';
 import type { RequestCardProps } from '../../components/requests/RequestCard';
 import { RequestDetailsPanel } from '../../components/requests/RequestDetailsPanel';
+import { ReceivedRequestDetailsPanel } from '../../components/requests/ReceivedRequestDetailsPanel';
 import { Header } from '../../components/Header';
 import { Footer } from '../../components/Footer';
 
-// Sample data - replace with actual data from API
-const sampleRequests: RequestCardProps[] = [
+// Sample data - Sent requests (replace with actual data from API)
+const sampleSentRequests: RequestCardProps[] = [
   {
     userName: 'Haya Al Rubi',
     userAvatar: 'https://api.dicebear.com/7.x/notionists/svg?seed=haya',
@@ -51,19 +52,62 @@ const sampleRequests: RequestCardProps[] = [
   },
 ];
 
+// Sample data - Received requests (replace with actual data from API)
+const sampleReceivedRequests: RequestCardProps[] = [
+  {
+    userName: 'Haya Al Rubi',
+    userAvatar: 'https://api.dicebear.com/7.x/notionists/svg?seed=haya',
+    userRating: 4.9,
+    requestedSkill: 'Photography Basics',
+    offeredSkill: 'React Basics',
+    status: 'pending',
+    sessionType: 'skill-swap',
+    sentTime: 'Received 2 days ago',
+  },
+  {
+    userName: 'Haya Al Rubi',
+    userAvatar: 'https://api.dicebear.com/7.x/notionists/svg?seed=haya',
+    userRating: 4.9,
+    requestedSkill: 'Photography Basics',
+    offeredSkill: 'React Basics',
+    status: 'accepted',
+    sessionType: 'skill-swap',
+    sentTime: 'Received 2 days ago',
+  },
+  {
+    userName: 'Haya Al Rubi',
+    userAvatar: 'https://api.dicebear.com/7.x/notionists/svg?seed=haya',
+    userRating: 4.9,
+    requestedSkill: 'Photography Basics',
+    offeredSkill: 'React Basics',
+    status: 'accepted',
+    sessionType: 'skill-swap',
+    sentTime: 'Received 2 days ago',
+  },
+  {
+    userName: 'Haya Al Rubi',
+    userAvatar: 'https://api.dicebear.com/7.x/notionists/svg?seed=haya',
+    userRating: 4.9,
+    requestedSkill: 'Photography Basics',
+    status: 'declined',
+    sessionType: 'free-session',
+    sentTime: 'Received 2 days ago',
+  },
+];
+
 export const RequestsSent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'sent' | 'received'>('sent');
   const [activeFilter, setActiveFilter] = useState<RequestStatus>('all');
   const [selectedRequest, setSelectedRequest] = useState<RequestCardProps | null>(null);
 
+  // Get appropriate requests based on active tab
+  const currentRequests = activeTab === 'sent' ? sampleSentRequests : sampleReceivedRequests;
+
   // Filter requests based on active filter
-  // Show empty for 'received' tab since it's not implemented yet
-  const filteredRequests = activeTab === 'received' 
-    ? [] 
-    : sampleRequests.filter((request) => {
-        if (activeFilter === 'all') return true;
-        return request.status === activeFilter;
-      });
+  const filteredRequests = currentRequests.filter((request) => {
+    if (activeFilter === 'all') return true;
+    return request.status === activeFilter;
+  });
 
   const handleRequestClick = (request: RequestCardProps) => {
     setSelectedRequest(request);
@@ -76,6 +120,21 @@ export const RequestsSent: React.FC = () => {
   const handleCancelRequest = (request: RequestCardProps) => {
     console.log('Cancel request:', request);
     // Handle cancel request logic
+    setSelectedRequest(null);
+  };
+
+  const handleAcceptRequest = (request: RequestCardProps) => {
+    console.log('Accept request:', request);
+    // Handle accept request logic
+    setSelectedRequest(null);
+  };
+
+  const handleDeclineRequest = (
+    request: RequestCardProps,
+    metadata: { reason: string; additionalContext?: string }
+  ) => {
+    console.log('Decline request:', request, metadata);
+    // Handle decline request logic
     setSelectedRequest(null);
   };
 
@@ -131,13 +190,26 @@ export const RequestsSent: React.FC = () => {
           </div>
 
           {/* Right Side - Details Panel */}
-          {selectedRequest && (
+          {selectedRequest && activeTab === 'sent' && (
             <div className="flex-1 min-w-0 animate-slideIn">
               <RequestDetailsPanel
                 request={selectedRequest}
                 isOpen={!!selectedRequest}
                 onClose={handleClosePanel}
                 onCancelRequest={handleCancelRequest}
+                onViewProfile={handleViewProfile}
+              />
+            </div>
+          )}
+          
+          {selectedRequest && activeTab === 'received' && (
+            <div className="flex-1 min-w-0 animate-slideIn">
+              <ReceivedRequestDetailsPanel
+                request={selectedRequest}
+                isOpen={!!selectedRequest}
+                onClose={handleClosePanel}
+                onAcceptRequest={handleAcceptRequest}
+                onDeclineRequest={handleDeclineRequest}
                 onViewProfile={handleViewProfile}
               />
             </div>
