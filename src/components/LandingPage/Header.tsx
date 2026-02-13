@@ -66,7 +66,7 @@ export default function Header({
               key={item.sectionId}
               type="button"
               onClick={() => scrollToSection(item.sectionId)}
-              className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
+              className="text-base font-medium text-slate-600 transition-colors hover:text-slate-900"
             >
               {item.label}
             </button>

@@ -5,13 +5,19 @@ import PhoneImageContainer from "../assets/landingPage/Phone-Image-Container.png
 import WhyChooseSkillSwap from "@/components/LandingPage/WhyChooseSkillSwap";
 import Header from "@/components/LandingPage/Header";
 import AboutSkillSwap from "@/components/LandingPage/AboutSkillSwap";
+import { SkillsGrid } from "@/components/LandingPage/SkillsGrid";
+import { HowItWorks } from "@/components/LandingPage/HowItWorks";
+import { Footer } from "@/components/Footer";
 const LandingPage = () => {
   return (
     <>
-      <Header logoSrc="./Logo.png"/>
+      <Header logoSrc="./Logo.png" />
       <HeroSection />
       <WhyChooseSkillSwap />
       <AboutSkillSwap />
+      <SkillsGrid />
+      <HowItWorks />
+      <Footer />
     </>
   );
 };

@@ -1,4 +1,3 @@
-
 import LandingPage from "@/pages/LandingPage";
 import NotFound from "@/pages/NotFound";
 import UpcomingSession from "@/pages/session/UpcomingSession";
@@ -22,8 +21,7 @@ export const routesConfig = [
     path: "/signup",
     element: <SignUp />,
   },
-  
-  
+
   {
     path: "*",
     element: <NotFound />,
