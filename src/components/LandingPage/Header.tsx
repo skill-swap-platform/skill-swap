@@ -71,14 +71,14 @@ export default function Header({
         {/* Right actions (desktop) */}
         <div className="hidden items-center gap-4 md:flex">
           <Link
-            to="/signin"
+            to="/auth/login"
             className="px-4 py-2 bg-blue-600 text-white rounded inline-flex items-center justify-center"
           >
             Sign In
           </Link>
 
           <Link
-            to="/signup"
+            to="/auth/register"
             className="px-4 py-2 border border-blue-600 text-blue-600 rounded inline-flex items-center justify-center"
           >
             Sign Up
