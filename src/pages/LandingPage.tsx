@@ -2,14 +2,22 @@ import React from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import PhoneImageContainer from "../assets/landingPage/Phone-Image-Container.png";
-import { Header } from "@/components";
 import WhyChooseSkillSwap from "@/components/LandingPage/WhyChooseSkillSwap";
+import Header from "@/components/LandingPage/Header";
+import AboutSkillSwap from "@/components/LandingPage/AboutSkillSwap";
+import { SkillsGrid } from "@/components/LandingPage/SkillsGrid";
+import { HowItWorks } from "@/components/LandingPage/HowItWorks";
+import { Footer } from "@/components/Footer";
 const LandingPage = () => {
   return (
     <>
       <Header />
       <HeroSection />
       <WhyChooseSkillSwap />
+      <AboutSkillSwap />
+      <SkillsGrid />
+      <HowItWorks />
+      <Footer />
     </>
   );
 };
@@ -82,6 +90,7 @@ const HeroSection = () => {
               alt="phone-image-container"
               style={{
                 maxHeight: "100%",
+                minHeight: "fit-content",
                 maxWidth: "100%",
                 objectFit: "contain",
               }}

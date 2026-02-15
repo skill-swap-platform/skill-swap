@@ -1,9 +1,16 @@
-import React from 'react';
-import Avatar from '../Avatar/Avatar';
-import { Link } from 'react-router-dom';
+import React from "react";
+import Avatar from "../Avatar/Avatar";
+import { Link } from "react-router-dom";
 
 type HeaderProps = {
-  activeTab?: "Chat" | "Explore" | "Home" | "Notifications" | "Requests" | "Sessions" | "Default";
+  activeTab?:
+    | "Chat"
+    | "Explore"
+    | "Home"
+    | "Notifications"
+    | "Requests"
+    | "Sessions"
+    | "Default";
 };
 
 const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
@@ -19,7 +26,11 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
         <div className="flex gap-6 items-center justify-center w-[520px] flex-shrink-0">
           <Link
             to={"/"}
-            className={activeTab === "Home" ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0" : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"}
+            className={
+              activeTab === "Home"
+                ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0"
+                : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"
+            }
           >
             Home
           </Link>
@@ -29,15 +40,23 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
           >
             Requests
           </Link>
-          <Link 
-            to={"/sessions"} 
-            className={activeTab === "Sessions" ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0" : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"}
+          <Link
+            to={"/sessions"}
+            className={
+              activeTab === "Sessions"
+                ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0"
+                : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"
+            }
           >
             Sessions
           </Link>
-          <Link 
-           to={"/explore"}
-            className={activeTab === "Explore" ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0" : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"}
+          <Link
+            to={"/explore"}
+            className={
+              activeTab === "Explore"
+                ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0"
+                : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"
+            }
           >
             Explore
           </Link>

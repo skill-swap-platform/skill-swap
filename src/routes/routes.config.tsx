@@ -128,6 +128,15 @@ export const routesConfig = [
   },
 
   {
+    path: "/signin",
+    element: <SignIn />,
+  },
+  {
+    path: "/signup",
+    element: <SignUp />,
+  },
+
+  {
     path: "*",
     element: <NotFound />,
   },
