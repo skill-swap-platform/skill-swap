@@ -1,7 +1,6 @@
 import React from "react";
 import Avatar from "../Avatar/Avatar";
 import { Link } from "react-router-dom";
-import Logo from "/Logo.png";
 type HeaderProps = {
   activeTab?:
     | "Chat"
@@ -18,7 +17,9 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
     <header className="bg-white border-b border-[#e8e8e8] sticky top-0 z-[100] w-full h-20 flex items-center justify-center">
       <nav className="flex items-center justify-between px-20 max-w-[1440px] mx-auto h-12">
         <div className="text-2xl text-center w-[304px] flex-shrink-0">
-          <img src={Logo} alt="Logo" />
+          <span className="font-poppins font-normal text-warning">Skill</span>
+          <span className="font-poppins font-bold text-primary">Swap</span>
+          <span className="font-poppins font-bold text-warning">.</span>
         </div>
 
         <div className="flex gap-6 items-center justify-center w-[520px] flex-shrink-0">
