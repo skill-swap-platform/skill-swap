@@ -46,7 +46,7 @@ export default function Header({
     <header className="w-full bg-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         {/* Logo */}
-        <Link to={"/"} aria-label="Go to home">
+        <Link to={homePath} aria-label="Go to home">
           <div className="text-2xl text-center w-[304px] flex-shrink-0">
             <span className="font-poppins font-normal text-warning">Skill</span>
             <span className="font-poppins font-bold text-primary">Swap</span>
