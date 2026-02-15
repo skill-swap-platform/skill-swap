@@ -11,7 +11,7 @@ import { Footer } from "@/components/Footer";
 const LandingPage = () => {
   return (
     <>
-      <Header logoSrc="./Logo.png" />
+      <Header />
       <HeroSection />
       <WhyChooseSkillSwap />
       <AboutSkillSwap />
@@ -90,6 +90,7 @@ const HeroSection = () => {
               alt="phone-image-container"
               style={{
                 maxHeight: "100%",
+                minHeight: "fit-content",
                 maxWidth: "100%",
                 objectFit: "contain",
               }}
