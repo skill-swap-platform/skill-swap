@@ -9,8 +9,6 @@ type SectionLink = {
 };
 
 type HeaderProps = {
-  logoSrc: string;
-  logoAlt?: string;
   links?: SectionLink[];
   signInPath?: string;
   getStartedPath?: string;
@@ -18,8 +16,6 @@ type HeaderProps = {
 };
 
 export default function Header({
-  logoSrc,
-  logoAlt = "SkillSwap",
   links,
   signInPath = "/signin",
   getStartedPath = "/signup",
@@ -56,7 +52,7 @@ export default function Header({
           className="flex items-center gap-2"
           aria-label="Go to home"
         >
-          <img src={logoSrc} alt={logoAlt} className="h-6 w-auto" />
+          
         </button>
 
         {/* Center links (desktop) */}

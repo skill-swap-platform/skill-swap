@@ -1,4 +1,3 @@
-import React from "react";
 import { SkillCard } from "./SkillCard";
 import { SKILLS } from "@/constants/landingPage";
 import type { SkillCard as SkillCardType } from "@/types/landingPage.types";
@@ -10,7 +9,7 @@ type SkillsGridProps = {
 
 export function SkillsGrid({ skills = SKILLS }: SkillsGridProps) {
   return (
-    <div className="py-10">
+    <div className="py-10 bg-white">
       <h2 className="text-center w-6/12 text-2xl font-semibold tracking-tight text-slate-800 sm:text-3xl mx-auto py-4">
         Some of the skills provided by the skills swap application
       </h2>
