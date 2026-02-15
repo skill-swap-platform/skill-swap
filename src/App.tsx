@@ -1,5 +1,4 @@
 import "./index.css";
-import LandingPage from "./pages/LandingPage";
 import AppRouter from "./routes/AppRouter";
 
 // const mockSessions: Session[] = [
@@ -25,7 +24,8 @@ function App() {
     <>
       <AppRouter />
     </>
+    
   );
 }
 
-export default App;
+export default App

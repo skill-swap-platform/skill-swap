@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
-import { ChevronRight, ChevronLeft } from 'lucide-react'
-import { Avatar, RatingDisplay } from '@/components/common'
+import { ChevronRight, ChevronLeft, Star } from 'lucide-react'
+import { Avatar } from '@/components/common'
 import { formatDate } from '@/utils'
 import type { Feedback } from '@/types/index'
 
@@ -49,10 +49,10 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
 
     return (
         <div className="space-y-6">
-            <div className="bg-white rounded-[24px] border border-[#E5E7EB] overflow-hidden shadow-sm">
-                <div className="grid grid-cols-[50px_1.8fr_1fr_1fr_120px_100px_40px] gap-4 px-6 py-5 text-sm font-semibold text-[#666666] border-b border-[#F3F4F6] bg-[#FAFBFC]">
+            <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden shadow-sm">
+                <div className="grid grid-cols-[50px_2fr_1.5fr_1.2fr_1.2fr_120px_40px] gap-4 px-6 py-5 text-[11px] font-bold text-[#666666] border-b border-[#F3F4F6] bg-white">
                     <div className="flex items-center">
-                        <input type="checkbox" className="w-5 h-5 rounded border-[#E5E7EB] text-[#3E8FCC] focus:ring-[#3E8FCC]" />
+                        <input type="checkbox" className="w-4 h-4 rounded border-[#E5E7EB] text-[#3E8FCC] focus:ring-[#3E8FCC]" />
                     </div>
                     <div>Skill & Partner</div>
                     <div>Date & Time</div>
@@ -69,32 +69,38 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                         return (
                             <div
                                 key={session.id}
-                                className="grid grid-cols-[50px_1.8fr_1fr_1fr_120px_100px_40px] gap-4 px-6 py-5 items-center hover:bg-[#F9FAFB] transition-all group"
+                                className="grid grid-cols-[50px_2fr_1.5fr_1.2fr_1.2fr_120px_40px] gap-4 px-6 py-4 items-center hover:bg-[#F9FAFB] transition-all group"
                             >
                                 <div className="flex items-center">
-                                    <input type="checkbox" className="w-5 h-5 rounded border-[#E5E7EB] text-[#3E8FCC] focus:ring-[#3E8FCC]" />
+                                    <input type="checkbox" className="w-4 h-4 rounded border-[#E5E7EB] text-[#3E8FCC] focus:ring-[#3E8FCC]" />
                                 </div>
 
                                 <div className="flex items-center gap-4 min-w-0">
                                     <Avatar src={session.partnerAvatar} name={session.partnerName} size="md" />
                                     <div className="min-w-0">
-                                        <div className="text-base font-bold text-[#0C0D0F] truncate">
+                                        <div className="text-sm font-bold text-[#0C0D0F] truncate">
                                             {session.skillName}
                                         </div>
-                                        <div className="text-sm text-[#666666] truncate mt-0.5">
+                                        <div className="text-[10px] text-[#666666] truncate mt-0.5">
                                             with {session.partnerName}
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="text-sm text-[#0C0D0F]">
-                                    <div className="font-semibold">{formatDate(session.date, 'MMM dd, yyyy')}</div>
+                                <div className="text-[11px] text-[#0C0D0F]">
+                                    <div className="font-bold">{formatDate(session.date, 'MMM dd, yyyy')}</div>
                                     <div className="text-[#9CA3AF] mt-0.5">1 hour</div>
                                 </div>
 
                                 <div className="flex justify-center">
                                     {(status === 'Completed' || status === 'In Progress') ? (
-                                        <RatingDisplay value={session.id === '2' || session.id === '4' ? 4 : 5} size="sm" showValue={false} />
+                                        <div className="flex gap-0.5 text-[#F59E0B]">
+                                            <Star className="w-3.5 h-3.5 fill-current" />
+                                            <Star className="w-3.5 h-3.5 fill-current" />
+                                            <Star className="w-3.5 h-3.5 fill-current" />
+                                            <Star className="w-3.5 h-3.5 fill-current" />
+                                            <Star className="w-3.5 h-3.5 text-[#E5E7EB]" />
+                                        </div>
                                     ) : (
                                         <div className="flex gap-1">
                                             {[1, 2, 3, 4, 5].map((s) => (
@@ -105,7 +111,7 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                                 </div>
 
                                 <div className="flex justify-center">
-                                    <span className={`px-3 py-1 text-[11px] font-bold rounded-full border ${statusColors[status]}`}>
+                                    <span className={`px-2.5 py-0.5 text-[9px] font-bold rounded-full border ${statusColors[status]}`}>
                                         {status}
                                     </span>
                                 </div>
@@ -114,45 +120,52 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                                     {status === 'Completed' || status === 'In Progress' || status === 'Canceled' ? (
                                         <button
                                             onClick={() => onViewFeedback?.(session.id)}
-                                            className="text-sm font-bold text-[#3E8FCC] hover:underline"
+                                            className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-white text-[10px] font-bold text-[#3E8FCC] hover:bg-gray-50 transition-colors"
                                         >
                                             View
                                         </button>
                                     ) : (
-                                        <button className="text-sm font-bold text-[#3E8FCC] hover:underline">
+                                        <button className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-[#F5F9FC] text-[10px] font-bold text-[#3E8FCC] hover:bg-[#EBF5FF] transition-colors">
                                             Enroll
                                         </button>
                                     )}
                                 </div>
 
                                 <div className="flex justify-end">
-                                    <ChevronRight className="w-5 h-5 text-[#9CA3AF] group-hover:text-[#0C0D0F] transition-colors" />
+                                    <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                                        <ChevronRight className="w-4 h-4 text-[#9CA3AF] group-hover:text-[#0C0D0F]" />
+                                    </button>
                                 </div>
                             </div>
                         )
                     })}
                 </div>
             </div>
+
+            {/* Pagination */}
             <div className="flex items-center justify-between px-2 pt-4">
-                <button className="flex items-center gap-2 text-sm font-bold text-[#666666] hover:text-[#0C0D0F] transition-colors px-4 py-2 rounded-xl border border-[#E5E7EB] bg-white">
+                <button className="flex items-center gap-2 text-[10px] font-bold text-[#666666] hover:text-[#0C0D0F] transition-colors px-3 py-1.5 rounded-lg border border-[#E5E7EB] bg-white">
                     <ChevronLeft className="w-4 h-4" />
                     Prev
                 </button>
 
-                <div className="flex items-center gap-2">
-                    {[1, 2, 3, 8, 9, 10].map((page, i) => (
+                <div className="flex items-center gap-1.5">
+                    {[1, 2, 3, '...', 8, 9, 10].map((page, i) => (
                         <button
                             key={i}
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all ${page === 1
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold transition-all ${page === 1
                                 ? 'bg-[#EBF5FF] text-[#3E8FCC] border border-[#3E8FCC]'
-                                : 'text-[#666666] hover:bg-[#F9FAFB] hover:text-[#0C0D0F]'
+                                : page === '...'
+                                    ? 'text-[#9CA3AF] cursor-default'
+                                    : 'text-[#666666] hover:bg-[#F9FAFB] hover:text-[#0C0D0F]'
                                 }`}
                         >
                             {page}
                         </button>
                     ))}
                 </div>
-                <button className="flex items-center gap-2 text-sm font-bold text-[#666666] hover:text-[#0C0D0F] transition-colors px-4 py-2 rounded-xl border border-[#E5E7EB] bg-white">
+
+                <button className="flex items-center gap-2 text-[10px] font-bold text-[#666666] hover:text-[#0C0D0F] transition-colors px-3 py-1.5 rounded-lg border border-[#E5E7EB] bg-white">
                     Next
                     <ChevronRight className="w-4 h-4" />
                 </button>

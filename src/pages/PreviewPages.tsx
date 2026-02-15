@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { SessionCompletedScreen, FeedbackForm } from '@/components/feedback'
-import { BadgeUnlockedScreen, PointsModal } from '@/components/gamification'
+import { SessionCompletedScreen } from '@/components/feedback/SessionCompletedScreen'
+import { FeedbackForm } from '@/components/feedback/FeedbackForm'
+import { BadgeUnlockedScreen } from '@/components/gamification/BadgeUnlockedScreen'
+import { PointsModal } from '@/components/gamification/PointsModal'
 import { ManageBadgeModal } from '@/components/gamification/ManageBadgeModal'
-import type { Badge, UserBadge } from '@/types'
+import type { Badge } from '@/types'
 
 // Mock data
 const mockBadges: Badge[] = [
@@ -16,77 +18,45 @@ const mockBadges: Badge[] = [
         category: 'community' as const,
         requiredPoints: 100,
         requiredSessions: 10
-    },
-    {
-        id: '2',
-        name: 'Fast Learner',
-        description: 'Finished 5 sessions in a week',
-        icon: '🚀',
-        color: '#3E8FCC',
-        category: 'learning' as const,
-        requiredPoints: 50,
-        requiredSessions: 5
-    },
+    }
 ]
 
 export const PreviewSessionCompleted: React.FC = () => {
-    const [showFeedback, setShowFeedback] = useState(false)
     const navigate = useNavigate()
-
-    if (showFeedback) {
-        return (
-            <div className="min-h-screen bg-[#F9FAFB] py-8 px-4">
-                <FeedbackForm
-                    partnerName="Sarah Jones"
-                    role="seeker"
-                    onSubmit={(data) => {
-                        console.log('Submit', data)
-                        navigate('/dashboard')
-                    }}
-                    onCancel={() => navigate('/dashboard')}
-                    isSubmitting={false}
-                />
-            </div>
-        )
-    }
-
     return (
-        <SessionCompletedScreen
-            sessionId="s1"
-            partnerName="Sarah Jones"
-            onRateNow={() => setShowFeedback(true)}
-            onSkip={() => navigate('/dashboard')}
-        />
+        <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
+            <SessionCompletedScreen
+                partnerName="Sarah Jones"
+                onContinue={() => navigate('/preview/feedback-form')}
+                onReport={() => console.log('Report issue')}
+            />
+        </div>
     )
 }
 
 export const PreviewBadgeUnlocked: React.FC = () => {
     const navigate = useNavigate()
-    const userBadge: UserBadge = {
-        ...mockBadges[0],
-        awardedAt: new Date(),
-    }
     return (
-        <BadgeUnlockedScreen
-            badge={userBadge}
-            onClose={() => navigate('/dashboard')}
-        />
+        <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
+            <BadgeUnlockedScreen
+                onContinue={() => navigate('/dashboard')}
+            />
+        </div>
     )
 }
 
 export const PreviewFeedbackForm: React.FC = () => {
     const navigate = useNavigate()
     return (
-        <div className="min-h-screen bg-[#F9FAFB] py-8 px-4">
+        <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center py-12 px-4">
             <FeedbackForm
                 partnerName="Sarah Jones"
-                role="seeker"
+                role="learning"
                 onSubmit={(data) => {
                     console.log('Submit', data)
-                    navigate('/dashboard')
+                    navigate('/preview/badge-unlocked')
                 }}
-                onCancel={() => navigate('/dashboard')}
-                isSubmitting={false}
+                onSkip={() => navigate('/dashboard')}
             />
         </div>
     )

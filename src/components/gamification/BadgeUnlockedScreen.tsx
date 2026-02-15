@@ -1,118 +1,61 @@
 import React from 'react'
-import { motion } from 'framer-motion'
-import { Button } from '@/components/common'
-import type { UserBadge } from '@/types/index'
+import { Award, ArrowRight } from 'lucide-react'
 
 interface BadgeUnlockedScreenProps {
-    badge: UserBadge | null
-    onClose: () => void
+    onContinue: () => void
 }
 
 export const BadgeUnlockedScreen: React.FC<BadgeUnlockedScreenProps> = ({
-    badge,
-    onClose,
+    onContinue,
 }) => {
-    if (!badge) return null
-
     return (
-        <div className="min-h-screen bg-[#3E8FCC] text-white relative flex flex-col overflow-x-hidden">
-            <div className="w-full py-4 px-6 flex justify-between items-center">
-                <div className="text-lg font-semibold">SkillSwap</div>
-                <button
-                    onClick={onClose}
-                    className="text-white hover:text-white/80 text-2xl"
-                >
-                    ×
-                </button>
-            </div>
-            <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 max-w-4xl mx-auto w-full">
-                <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.6 }}
-                    className="relative w-full max-w-[500px] mb-8"
-                >
-                    <div className="w-full h-full flex items-end justify-center">
-                        <div className="text-[140px] leading-none mb-2">🏆</div>
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div className="text-[180px] opacity-20">🎊</div>
-                        </div>
+        <div className="flex items-center justify-center px-4 py-12 w-full">
+            <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 max-w-[640px] w-full p-12">
+                <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+                    New Badge Unlocked!
+                </h2>
+
+                <div className="flex justify-center mb-6">
+                    <div className="w-24 h-24 bg-[#E8F5E9] rounded-full flex items-center justify-center">
+                        <Award className="w-12 h-12 text-[#4CAF50]" />
                     </div>
-                </motion.div>
-                <div className="text-center mb-10">
-                    <motion.h2
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                        className="text-[40px] font-poppins font-bold"
-                    >
-                        Badge Unlocked!
-                    </motion.h2>
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.3 }}
-                        className="text-xl text-white/90 mt-1"
-                    >
-                        {badge.name}
-                    </motion.p>
                 </div>
-                <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="w-full max-w-[600px] bg-white rounded-2xl p-6 shadow-xl mb-6 border border-white/20"
-                >
-                    <div className="text-[#3E8FCC] font-bold text-center mb-4 text-lg">
-                        {badge.description}
+
+                <div className="text-center mb-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Active Member</h3>
+                    <p className="text-sm text-gray-600">
+                        You've completed 10 sessions in a row!
+                    </p>
+                </div>
+
+                <div className="w-full bg-white rounded-xl p-4 mb-6 border border-gray-200">
+                    <div className="w-full h-2 bg-[#E5E7EB] rounded-full overflow-hidden mb-2">
+                        <div className="h-full bg-[#4CAF50] w-full transition-all" />
                     </div>
-                    <div className="w-full h-4 bg-[#E5E7EB] rounded-full overflow-hidden mb-2">
-                        <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: '100%' }}
-                            transition={{ duration: 1.5, ease: "easeOut" }}
-                            className="h-full bg-[#3E8FCC]"
-                        />
+                    <div className="text-xs text-gray-500 text-center font-medium">
+                        10/10 Sessions Completed
                     </div>
-                    <div className="text-[#9CA3AF] text-xs text-center font-medium">
-                        Achievement Completed!
-                    </div>
-                </motion.div>
-                <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.7 }}
-                    className="w-full max-w-[600px] bg-white rounded-2xl p-6 shadow-xl mb-8 border border-white/20"
-                >
-                    <div className="text-[#0C0D0F] font-bold mb-4 text-base">
-                        Next Badge
-                    </div>
-                    <div className="flex items-center gap-5 p-5 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[20px]">
-                        <div className="w-16 h-16 bg-white border border-[#E5E7EB] rounded-2xl flex items-center justify-center text-3xl shadow-sm">
-                            🎖️
+                </div>
+
+                <div className="mb-8">
+                    <h4 className="text-sm font-bold text-gray-900 mb-3">Next Badge</h4>
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div className="w-10 h-10 bg-[#E0F2FE] rounded-full flex items-center justify-center flex-shrink-0">
+                            <ArrowRight className="w-5 h-5 text-[#3E8FCC]" />
                         </div>
                         <div>
-                            <div className="text-[#0C0D0F] font-bold text-lg">Keep Going!</div>
-                            <div className="text-[#666666] text-sm mt-1">Complete more sessions to unlock</div>
+                            <div className="text-sm font-semibold text-gray-900">Skill Exchanger</div>
+                            <div className="text-xs text-gray-500">Complete 25 Sessions</div>
                         </div>
                     </div>
-                </motion.div>
-                <div className="w-full max-w-[600px] grid grid-cols-2 gap-6">
-                    <Button
-                        variant="ghost"
-                        onClick={onClose}
-                        className="h-14 rounded-xl bg-white text-[#3E8FCC] hover:bg-white/90 font-bold text-lg shadow-lg"
-                    >
-                        Continue
-                    </Button>
-                    <Button
-                        variant="primary"
-                        onClick={onClose}
-                        className="h-14 rounded-xl bg-[#2F71A3] hover:bg-[#1F5D86] text-white font-bold text-lg shadow-lg"
-                    >
-                        View All Badges
-                    </Button>
                 </div>
+
+                <button
+                    onClick={onContinue}
+                    className="w-full h-12 rounded-xl bg-[#3E8FCC] text-white font-semibold hover:bg-[#2F71A3] transition-colors"
+                >
+                    Continue
+                </button>
             </div>
         </div>
     )

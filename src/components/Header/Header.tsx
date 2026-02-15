@@ -34,13 +34,9 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
           >
             Home
           </Link>
-          <Link
-            to="/requests-sent"
-            className={
-              activeTab === "Requests"
-                ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0"
-                : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"
-            }
+          <Link 
+            to="/requests-sent" 
+            className={activeTab === "Requests" ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0" : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"}
           >
             Requests
           </Link>
@@ -68,27 +64,9 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
 
         <div className="flex gap-4 items-center justify-end w-[411px] flex-shrink-0">
           <div className="bg-gray-light border border-gray-border flex flex-1 gap-1 h-10 items-center px-4 rounded-2xl">
-            <svg
-              className="flex-shrink-0"
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-            >
-              <path
-                d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z"
-                stroke="#9CA3AF"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M14 14L11.1 11.1"
-                stroke="#9CA3AF"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+            <svg className="flex-shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M14 14L11.1 11.1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <input
               type="text"
@@ -100,42 +78,21 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
           <div className="flex gap-2 items-center">
             <button className="bg-background-light flex items-center justify-center rounded-3xl w-10 h-10 border-none cursor-pointer flex-shrink-0 hover:bg-[#e8e8ee]">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M8.5 19H8C4 19 2 18 2 13V8C2 4 4 2 8 2H16C20 2 22 4 22 8V13C22 17 20 19 16 19H15.5C15.19 19 14.89 19.15 14.7 19.4L13.2 21.4C12.54 22.28 11.46 22.28 10.8 21.4L9.3 19.4C9.14 19.18 8.77 19 8.5 19Z"
-                  stroke="#0C0D0F"
-                  strokeWidth="1.5"
-                  strokeMiterlimit="10"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+                <path d="M8.5 19H8C4 19 2 18 2 13V8C2 4 4 2 8 2H16C20 2 22 4 22 8V13C22 17 20 19 16 19H15.5C15.19 19 14.89 19.15 14.7 19.4L13.2 21.4C12.54 22.28 11.46 22.28 10.8 21.4L9.3 19.4C9.14 19.18 8.77 19 8.5 19Z" stroke="#0C0D0F" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
             <button className="bg-background-light flex items-center justify-center rounded-3xl w-10 h-10 border-none cursor-pointer flex-shrink-0 hover:bg-[#e8e8ee]">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M12 17.8476C17.6392 17.8476 20.2481 17.1242 20.5 14.2205C20.5 11.3188 18.6812 11.5054 18.6812 7.94511C18.6812 5.16414 16.0452 2 12 2C7.95477 2 5.31885 5.16414 5.31885 7.94511C5.31885 11.5054 3.5 11.3188 3.5 14.2205C3.75295 17.1352 6.36177 17.8476 12 17.8476Z"
-                  stroke="#0C0D0F"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M14.3887 20.8572C13.0246 22.372 10.8966 22.3899 9.51941 20.8572"
-                  stroke="#0C0D0F"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+                <path fillRule="evenodd" clipRule="evenodd" d="M12 17.8476C17.6392 17.8476 20.2481 17.1242 20.5 14.2205C20.5 11.3188 18.6812 11.5054 18.6812 7.94511C18.6812 5.16414 16.0452 2 12 2C7.95477 2 5.31885 5.16414 5.31885 7.94511C5.31885 11.5054 3.5 11.3188 3.5 14.2205C3.75295 17.1352 6.36177 17.8476 12 17.8476Z" stroke="#0C0D0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M14.3887 20.8572C13.0246 22.372 10.8966 22.3899 9.51941 20.8572" stroke="#0C0D0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
           </div>
 
           <div className="rounded-xl w-12 h-12 overflow-hidden flex-shrink-0 flex items-center justify-center">
-            <Avatar
-              src="https://api.dicebear.com/7.x/notionists/svg?seed=currentuser"
-              name="User Name"
+            <Avatar 
+              src="https://api.dicebear.com/7.x/notionists/svg?seed=currentuser" 
+              name="User Name" 
               size={40}
             />
           </div>
