@@ -1,3 +1,4 @@
+
 import React from "react";
 
 import rightImage from "@/assets/auth/right-container.png";
