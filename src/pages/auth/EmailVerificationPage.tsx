@@ -154,11 +154,9 @@ export default function EmailVerificationPage({
   }
 
   return (
-    <div className="min-h-screen bg-white p-4">
-      {/* Outer frame like the screenshot */}
-      <div className="relative mx-auto min-h-[calc(100vh-2rem)] w-full rounded-2xl border-4 border-black bg-white">
+      <div className="max-h-screen p-4 mx-auto w-full rounded-2xl border-4 bg-white">
         {/* Logo */}
-        <div className="absolute left-6 top-5 select-none text-sm font-semibold">
+        <div className="absolute left-6 top-5 select-none text-2xl font-semibold">
           <span className="text-orange-500">Skill</span>
           <span className="text-sky-700">Swap</span>
           <span className="text-sky-700">.</span>
@@ -237,6 +235,6 @@ export default function EmailVerificationPage({
           </div>
         </div>
       </div>
-    </div>
+   
   );
 }
