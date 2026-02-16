@@ -1,6 +1,7 @@
 import ConnectionIcon from "../../assets/landingPage/connections.svg";
 import PeopleIcon from "../../assets/landingPage/people.svg";
 import AccessibleIcon from "../../assets/landingPage/accessible.svg";
+import { Box } from "@mui/material";
 
 type Feature = {
   title: string;
@@ -37,10 +38,20 @@ export default function WhyChooseSkillSwap() {
   return (
     <section className="w-full bg-white py-12">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <h2 className="text-center text-2xl font-semibold tracking-tight text-slate-800 sm:text-3xl">
-          Why choose Skill Swap
-        </h2>
-
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <h2
+            className="text-center text-2xl font-semibold tracking-tight text-slate-800 sm:text-3xl heading-brush-highlight"
+          >
+            Why choose Skill Swap
+          </h2>
+          {/* <BrushHighlight /> */}
+        </Box>
         <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
             <div

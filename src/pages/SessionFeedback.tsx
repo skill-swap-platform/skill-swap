@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { PostSessionLayout } from '@/components/layout/PostSessionLayout'
+import Header from '@/components/Header/Header'
+import Footer from '@/components/Footer/Footer'
 import { RoleSelection } from '@/components/feedback/RoleSelection'
 import { SessionCompletedScreen } from '@/components/feedback/SessionCompletedScreen'
 import { GeneralReview } from '@/components/feedback/GeneralReview'
@@ -35,7 +36,6 @@ export const SessionFeedback: React.FC = () => {
     const handleRoleContinue = (role: 'teaching' | 'learning' | 'both') => {
         setSelectedRole(role)
         if (role === 'both') {
-            // Start with learning role first
             setCurrentFeedbackRole('learning')
         } else {
             setCurrentFeedbackRole(role)
@@ -46,11 +46,9 @@ export const SessionFeedback: React.FC = () => {
     const handleRoleFeedbackSubmit = (data: any) => {
         console.log('Role feedback submitted:', data)
 
-        // If user selected 'both' and just finished first feedback (learning)
         if (selectedRole === 'both' && currentFeedbackRole === 'learning') {
             setCurrentStep('second-role-prompt')
         } else {
-            // For single role (teaching or learning only), go to history
             handleFlowComplete()
         }
     }
@@ -62,13 +60,12 @@ export const SessionFeedback: React.FC = () => {
 
     const handleSecondRoleFeedbackSubmit = (data: any) => {
         console.log('Second role feedback submitted:', data)
-        // After second feedback, go to history
         handleFlowComplete()
     }
 
     const handleFlowComplete = () => {
         console.log('Flow completed! Redirecting to session history...')
-        navigate('/history')
+        navigate('/session-history')
     }
 
     const renderCurrentStep = () => {
@@ -134,8 +131,12 @@ export const SessionFeedback: React.FC = () => {
     }
 
     return (
-        <PostSessionLayout>
-            {renderCurrentStep()}
-        </PostSessionLayout>
+        <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
+            <Header activeTab="Sessions" />
+            <main className="flex-1 flex items-center justify-center py-8">
+                {renderCurrentStep()}
+            </main>
+            <Footer />
+        </div>
     )
 }
