@@ -128,16 +128,6 @@ export const routesConfig = [
     path: "/preview/points-manage",
     element: <PreviewPointsManage />,
   },
-
-  {
-    path: "/signin",
-    element: <SignIn />,
-  },
-  {
-    path: "/signup",
-    element: <SignUp />,
-  },
-
   {
     path: "*",
     element: <NotFound />,
