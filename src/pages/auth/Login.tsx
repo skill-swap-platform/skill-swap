@@ -145,6 +145,31 @@ export default function LoginPage() {
                     Sign up
                   </Link>
                 </div>
+                <p className="text-center text-[10px] leading-relaxed text-gray-500">
+                  By continuing, you agree to our{" "}
+                  <a
+                    href="#"
+                    className="underline underline-offset-2 hover:text-gray-700"
+                  >
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="#"
+                    className="underline underline-offset-2 hover:text-gray-700"
+                  >
+                    Privacy Policy
+                  </a>
+                  .
+                  <br />
+                  Having trouble?{" "}
+                  <a
+                    href="#"
+                    className="underline underline-offset-2 hover:text-gray-700"
+                  >
+                    support@swap.xyz
+                  </a>
+                </p>
               </form>
             </div>
           </div>
