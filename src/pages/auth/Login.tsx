@@ -2,6 +2,7 @@ import React from "react";
 
 import rightImage from "@/assets/auth/right-container.png";
 import Brand from "@/components/Auth/Brand";
+import { Link } from "react-router-dom";
 
 type Provider = "google" | "facebook" | "apple";
 
@@ -137,12 +138,12 @@ export default function LoginPage() {
                 {/* Footer */}
                 <div className="pt-2 text-center text-xs text-gray-600">
                   <span>Don’t have an account? </span>
-                  <a
-                    href="#"
+                  <Link
+                    to={"/auth/register"}
                     className="font-semibold text-blue-600 hover:underline"
                   >
                     Sign up
-                  </a>
+                  </Link>
                 </div>
               </form>
             </div>
