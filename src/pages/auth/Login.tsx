@@ -1,15 +1,56 @@
-import React from "react";
+import React, { useState } from "react";
+import type { AxiosError } from "axios";
 
 import rightImage from "@/assets/auth/right-container.png";
 import Brand from "@/components/Auth/Brand";
-import { Link } from "react-router-dom";
+import { authService } from "@/api/services/auth.service";
+import type { LoginDto } from "@/types/api.types";
+import { Link, useNavigate } from "react-router-dom";
 
 type Provider = "google" | "facebook" | "apple";
 
 export default function LoginPage() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState<LoginDto>({ email: "", password: "" });
+  const [errorMessage, setErrorMessage] = useState("");
+  const canSubmit = !!formData.email.trim() && !!formData.password.trim();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: login submit
+    setErrorMessage("");
+
+    if (!formData.email.trim() || !formData.password.trim()) {
+      setErrorMessage("Email and password are required.");
+      return;
+    }
+
+    try {
+      const response = await authService.login({
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+
+      if (!response.success || !response.data) {
+        setErrorMessage(response.message || "Login failed. Please try again.");
+        return;
+      }
+
+      const nextPath =
+        response.data.user.role === "ADMIN" ? "/admin/dashboard" : "/explore";
+      navigate(nextPath, { replace: true });
+    } catch (error) {
+      const apiMessage = (
+        error as AxiosError<{ message?: string | string[] }>
+      )?.response?.data?.message;
+      const normalizedMessage = Array.isArray(apiMessage)
+        ? apiMessage.join(", ")
+        : apiMessage;
+
+      setErrorMessage(
+        normalizedMessage ||
+          "Invalid credentials, account not verified, or account inactive."
+      );
+    }
   };
 
   const onSocial = (provider: Provider) => {
@@ -36,6 +77,11 @@ export default function LoginPage() {
               </p>
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+                {errorMessage && (
+                  <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    {errorMessage}
+                  </div>
+                )}
                 {/* Email */}
                 <div>
                   <label
@@ -50,6 +96,10 @@ export default function LoginPage() {
                     type="email"
                     autoComplete="email"
                     placeholder="Enter your email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, email: e.target.value }))
+                    }
                     className="
                       h-14 w-full rounded-xl border border-gray-300 px-5
                       text-lg text-gray-900 outline-none transition
@@ -71,6 +121,10 @@ export default function LoginPage() {
                     name="password"
                     type="password"
                     autoComplete="current-password"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, password: e.target.value }))
+                    }
                     placeholder="••••••••"
                     className="
                       h-14 w-full rounded-xl border border-gray-300 px-5
@@ -130,7 +184,8 @@ export default function LoginPage() {
                 {/* Continue */}
                 <button
                   type="submit"
-                  className="h-11 w-full rounded-md bg-blue-600 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/30"
+                  disabled={!canSubmit}
+                  className="h-11 w-full rounded-md bg-[#3272A3] text-sm font-semibold text-white shadow-sm transition hover:bg-[#3272A3] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3272A3]/30 disabled:cursor-not-allowed disabled:bg-[#9CA3AF] disabled:shadow-none"
                 >
                   Continue
                 </button>
