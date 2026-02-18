@@ -8,30 +8,74 @@ import type { LoginDto } from "@/types/api.types";
 import { Link, useNavigate } from "react-router-dom";
 
 type Provider = "google" | "facebook" | "apple";
+type LoginFieldErrors = { email?: string; password?: string };
+
+const EMAIL_ERROR = "Please enter a valid email address";
+const PASSWORD_ERROR = "Please enter a valid password";
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const mapAuthErrorToFields = (message?: string): LoginFieldErrors => {
+  const normalized = (message || "").toLowerCase();
+
+  const hasEmail = normalized.includes("email");
+  const hasPassword = normalized.includes("password");
+  const isGenericAuthError =
+    normalized.includes("credential") ||
+    normalized.includes("invalid input") ||
+    normalized.includes("not verified") ||
+    normalized.includes("inactive");
+
+  if (isGenericAuthError || (hasEmail && hasPassword) || !normalized) {
+    return { email: EMAIL_ERROR, password: PASSWORD_ERROR };
+  }
+
+  if (hasEmail) {
+    return { email: EMAIL_ERROR };
+  }
+
+  if (hasPassword) {
+    return { password: PASSWORD_ERROR };
+  }
+
+  return { email: EMAIL_ERROR, password: PASSWORD_ERROR };
+};
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<LoginDto>({ email: "", password: "" });
-  const [errorMessage, setErrorMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const canSubmit = !!formData.email.trim() && !!formData.password.trim();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage("");
+    setFieldErrors({});
 
-    if (!formData.email.trim() || !formData.password.trim()) {
-      setErrorMessage("Email and password are required.");
+    const email = formData.email.trim();
+    const password = formData.password.trim();
+    const nextErrors: LoginFieldErrors = {};
+    const isValidEmail = emailRegex.test(email);
+
+    if (!isValidEmail) {
+      nextErrors.email = EMAIL_ERROR;
+    }
+
+    if (!password) {
+      nextErrors.password = PASSWORD_ERROR;
+    }
+
+    if (nextErrors.email || nextErrors.password) {
+      setFieldErrors(nextErrors);
       return;
     }
 
     try {
       const response = await authService.login({
-        email: formData.email.trim(),
+        email,
         password: formData.password,
       });
 
       if (!response.success || !response.data) {
-        setErrorMessage(response.message || "Login failed. Please try again.");
+        setFieldErrors(mapAuthErrorToFields(response.message));
         return;
       }
 
@@ -45,11 +89,7 @@ export default function LoginPage() {
       const normalizedMessage = Array.isArray(apiMessage)
         ? apiMessage.join(", ")
         : apiMessage;
-
-      setErrorMessage(
-        normalizedMessage ||
-          "Invalid credentials, account not verified, or account inactive."
-      );
+      setFieldErrors(mapAuthErrorToFields(normalizedMessage));
     }
   };
 
@@ -77,11 +117,6 @@ export default function LoginPage() {
               </p>
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-                {errorMessage && (
-                  <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                    {errorMessage}
-                  </div>
-                )}
                 {/* Email */}
                 <div>
                   <label
@@ -97,15 +132,26 @@ export default function LoginPage() {
                     autoComplete="email"
                     placeholder="Enter your email"
                     value={formData.email}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, email: e.target.value }))
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData((prev) => ({ ...prev, email: value }));
+                      setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                    }}
+                    onBlur={() => {
+                      const emailError = emailRegex.test(formData.email.trim())
+                        ? undefined
+                        : EMAIL_ERROR;
+                      setFieldErrors((prev) => ({ ...prev, email: emailError }));
+                    }}
                     className="
                       h-14 w-full rounded-xl border border-gray-300 px-5
                       text-lg text-gray-900 outline-none transition
                       focus:border-gray-400 focus:ring-2 focus:ring-gray-900/10
                     "
                   />
+                  {fieldErrors.email && (
+                    <p className="mt-2 text-sm text-[#D14343]">{fieldErrors.email}</p>
+                  )}
                 </div>
 
                 {/* Password */}
@@ -122,9 +168,17 @@ export default function LoginPage() {
                     type="password"
                     autoComplete="current-password"
                     value={formData.password}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, password: e.target.value }))
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData((prev) => ({ ...prev, password: value }));
+                      setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                    }}
+                    onBlur={() => {
+                      const passwordError = formData.password.trim()
+                        ? undefined
+                        : PASSWORD_ERROR;
+                      setFieldErrors((prev) => ({ ...prev, password: passwordError }));
+                    }}
                     placeholder="••••••••"
                     className="
                       h-14 w-full rounded-xl border border-gray-300 px-5
@@ -134,22 +188,27 @@ export default function LoginPage() {
                   />
                 </div>
 
-                {/* Remember / Forgot */}
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-base text-gray-600">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
-                    />
-                    Remember me?
-                  </label>
+                <div className="-mt-3 space-y-1">
+                  {/* Remember / Forgot */}
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 text-base text-gray-600">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                      />
+                      Remember me?
+                    </label>
 
-                  <a
-                    href="#"
-                    className="text-base text-gray-600 hover:underline"
-                  >
-                    Forgot Password?
-                  </a>
+                    <a
+                      href="#"
+                      className="text-base text-gray-600 hover:underline"
+                    >
+                      Forgot Password?
+                    </a>
+                  </div>
+                  {fieldErrors.password && (
+                    <p className="text-sm text-[#D14343]">{fieldErrors.password}</p>
+                  )}
                 </div>
 
                 {/* Divider */}
