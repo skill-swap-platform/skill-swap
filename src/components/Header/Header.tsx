@@ -18,29 +18,29 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
 
   return (
     <header className="bg-white border-b border-[#e8e8e8] sticky top-0 z-[100] w-full">
-      <nav className="flex items-center justify-between px-4 sm:px-6 md:px-10 lg:px-20 max-w-[1440px] mx-auto h-16 md:h-20">
+      <nav className="flex items-center justify-between px-4 sm:px-6 md:px-10 lg:px-20 max-w-[1440px] mx-auto h-16 md:h-20 w-full">
         {/* Logo */}
-        <div className="text-xl md:text-2xl flex-shrink-0">
+        <div className="text-xl md:text-2xl flex-shrink-0 lg:w-[304px]">
           <span className="font-poppins font-normal text-warning">Skill</span>
           <span className="font-poppins font-bold text-primary">Swap</span>
           <span className="font-poppins font-bold text-warning">.</span>
         </div>
 
         {/* Desktop Navigation */}
-        <div className="hidden lg:flex gap-4 xl:gap-6 items-center justify-center">
+        <div className="hidden lg:flex gap-4 xl:gap-6 items-center justify-center lg:w-[520px] flex-shrink-0">
           <Link
             to={"/"}
             className={
               activeTab === "Home"
-                ? "font-poppins font-medium text-sm xl:text-base text-primary no-underline"
-                : "font-poppins font-normal text-sm xl:text-base text-dark no-underline hover:text-primary"
+                ? "font-poppins font-medium text-base text-primary no-underline"
+                : "font-poppins font-normal text-base text-dark no-underline hover:text-primary"
             }
           >
             Home
           </Link>
           <Link 
             to="/requests-sent" 
-            className={activeTab === "Requests" ? "font-poppins font-medium text-sm xl:text-base text-primary no-underline" : "font-poppins font-normal text-sm xl:text-base text-dark no-underline hover:text-primary"}
+            className={activeTab === "Requests" ? "font-poppins font-medium text-base text-primary no-underline" : "font-poppins font-normal text-base text-dark no-underline hover:text-primary"}
           >
             Requests
           </Link>
@@ -48,8 +48,8 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
             to={"/sessions"}
             className={
               activeTab === "Sessions"
-                ? "font-poppins font-medium text-sm xl:text-base text-primary no-underline"
-                : "font-poppins font-normal text-sm xl:text-base text-dark no-underline hover:text-primary"
+                ? "font-poppins font-medium text-base text-primary no-underline"
+                : "font-poppins font-normal text-base text-dark no-underline hover:text-primary"
             }
           >
             Sessions
@@ -58,8 +58,8 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
             to={"/explore"}
             className={
               activeTab === "Explore"
-                ? "font-poppins font-medium text-sm xl:text-base text-primary no-underline"
-                : "font-poppins font-normal text-sm xl:text-base text-dark no-underline hover:text-primary"
+                ? "font-poppins font-medium text-base text-primary no-underline"
+                : "font-poppins font-normal text-base text-dark no-underline hover:text-primary"
             }
           >
             Explore
@@ -67,9 +67,9 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
         </div>
 
         {/* Desktop Actions */}
-        <div className="hidden md:flex gap-2 lg:gap-4 items-center">
+        <div className="hidden md:flex gap-2 lg:gap-4 items-center justify-end lg:w-[411px] flex-shrink-0">
           {/* Search Bar - Hidden on tablets, shown on desktop */}
-          <div className="hidden lg:flex bg-gray-light border border-gray-border gap-1 h-10 items-center px-4 rounded-2xl w-32 xl:w-48">
+          <div className="hidden lg:flex bg-gray-light border border-gray-border gap-1 h-10 items-center px-4 rounded-2xl flex-1 max-w-[200px]">
             <svg className="flex-shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M14 14L11.1 11.1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -95,7 +95,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
             </button>
           </div>
 
-          <div className="rounded-xl w-10 h-10 lg:w-12 lg:h-12 overflow-hidden flex items-center justify-center">
+          <div className="rounded-xl w-12 h-12 overflow-hidden flex items-center justify-center flex-shrink-0">
             <Avatar 
               src="https://api.dicebear.com/7.x/notionists/svg?seed=currentuser" 
               name="User Name" 
