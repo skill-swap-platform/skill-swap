@@ -63,15 +63,15 @@ export const RequestCard: React.FC<RequestCardProps> = ({
       className="bg-white border border-[#e5e7eb] flex flex-col gap-4 items-start p-4 rounded-[10px] w-full cursor-pointer transition-colors hover:bg-[rgba(0,0,0,0.05)] text-left"
     >
       {/* Header */}
-      <div className="flex gap-2 items-start w-full">
+      <div className="flex flex-wrap sm:flex-nowrap gap-2 items-start w-full">
         <img
           src={userAvatar}
           alt={userName}
           className="shrink-0 w-12 h-12 rounded-full object-cover"
         />
         <div className="flex flex-1 flex-col gap-1 items-start justify-center px-2 min-w-0">
-          <div className="flex gap-2 items-center">
-            <p className="font-semibold text-[#0c0d0f] text-[20px] leading-[normal] text-center">
+          <div className="flex gap-2 items-center min-w-0">
+            <p className="font-semibold text-[#0c0d0f] text-[20px] leading-[normal] text-left truncate">
               {userName}
             </p>
             <div className="flex gap-[2px] items-end">
@@ -103,7 +103,7 @@ export const RequestCard: React.FC<RequestCardProps> = ({
             </p>
           </div>
         </div>
-        <div className="flex gap-1 items-center justify-end min-w-[64px]">
+        <div className="flex gap-1 items-center justify-start sm:justify-end min-w-0 sm:min-w-[64px] w-full sm:w-auto pl-[56px] sm:pl-0">
           <div
             className="shrink-0 w-2 h-2 rounded-full"
             style={{ backgroundColor: currentStatus.bgColor }}
@@ -115,16 +115,16 @@ export const RequestCard: React.FC<RequestCardProps> = ({
       </div>
 
       {/* Request Details */}
-      <div className="flex gap-3 items-start w-full">
-        <div className="flex gap-1 items-center text-[13px] text-center">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start w-full">
+        <div className="flex flex-wrap gap-1 items-center text-[13px] text-left">
           <p className="text-[#9ca3af] font-normal">Requested Skill</p>
           <p className="text-[#0c0d0f] font-normal">{requestedSkill}</p>
         </div>
         {offeredSkill && (
           <>
-            <p className="font-normal text-[#9ca3af] text-[13px] text-center">|</p>
-            <div className="flex flex-1 flex-col items-start justify-center min-w-0">
-              <div className="flex gap-1 items-center text-[13px] text-center">
+            <p className="hidden sm:block font-normal text-[#9ca3af] text-[13px] text-center">|</p>
+            <div className="flex flex-1 flex-col items-start justify-center min-w-0 w-full sm:w-auto">
+              <div className="flex flex-wrap gap-1 items-center text-[13px] text-left">
                 <p className="text-[#9ca3af] font-normal">You offer:</p>
                 <p className="text-[#0c0d0f] font-normal">{offeredSkill}</p>
               </div>

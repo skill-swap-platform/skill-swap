@@ -10,10 +10,10 @@ export const RequestTabs: React.FC<RequestTabsProps> = ({
   onTabChange 
 }) => {
   return (
-    <div className="bg-white border border-[#e5e7eb] flex gap-4 h-12 items-center px-6 rounded-[10px] w-[846px]">
+    <div className="bg-white border border-[#e5e7eb] flex gap-4 h-12 items-center px-4 sm:px-6 rounded-[10px] w-full max-w-[846px]">
       <button
         onClick={() => onTabChange('sent')}
-        className={`flex h-full items-center justify-center w-[88px] ${
+        className={`flex h-full items-center justify-center flex-1 sm:flex-none sm:w-[88px] ${
           activeTab === 'sent' 
             ? 'border-b-2 border-[#3272a3]' 
             : ''
@@ -29,7 +29,7 @@ export const RequestTabs: React.FC<RequestTabsProps> = ({
       </button>
       <button
         onClick={() => onTabChange('received')}
-        className={`flex h-full items-center justify-center w-[88px] ${
+        className={`flex h-full items-center justify-center flex-1 sm:flex-none sm:w-[88px] ${
           activeTab === 'received' 
             ? 'border-b-2 border-[#3272a3]' 
             : ''
