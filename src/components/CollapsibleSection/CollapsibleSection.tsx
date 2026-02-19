@@ -25,16 +25,16 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 
   return (
     <div className={`bg-white border rounded-2xl p-4 w-full ${isCompleted ? 'border-success shadow-none' : 'border-gray-border'} ${isExpanded ? 'shadow-[0_0_4.7px_rgba(0,0,0,0.25)]' : ''}`}>
-      <div className="flex gap-4 items-center justify-between w-full cursor-pointer flex-shrink-0 h-12" onClick={toggleExpanded}>
+      <div className="flex gap-3 sm:gap-4 items-start sm:items-center justify-between w-full cursor-pointer flex-shrink-0 min-h-12" onClick={toggleExpanded}>
         <div className="flex flex-1 flex-col gap-1 items-start justify-center min-h-0 min-w-0">
           <div className="flex flex-col gap-1 w-full">
-            <ol className="font-semibold text-lg text-dark m-0 p-0 w-full flex-shrink-0 list-decimal list-outside pl-[27px]" start={number}>
+            <ol className="font-semibold text-base sm:text-lg text-dark m-0 p-0 w-full flex-shrink-0 list-decimal list-outside pl-[27px]" start={number}>
               <li className="whitespace-pre-wrap">
                 <span className="leading-normal">{title}</span>
               </li>
             </ol>
             {description && !isExpanded && (
-              <p className="font-normal text-sm text-dark-light m-0 w-full whitespace-pre-wrap flex-shrink-0">{description}</p>
+              <p className="font-normal text-xs sm:text-sm text-dark-light m-0 w-full whitespace-pre-wrap flex-shrink-0">{description}</p>
             )}
           </div>
         </div>
