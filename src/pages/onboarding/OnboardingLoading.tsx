@@ -6,7 +6,7 @@ const OnboardingLoading: React.FC = () => {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            navigate('/dashboard');
+            navigate('/');
         }, 2500);
         return () => clearTimeout(timer);
     }, [navigate]);

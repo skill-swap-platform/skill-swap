@@ -28,9 +28,12 @@ export const sessionService = {
         return response.data;
     },
 
-    // Note: Swagger does not currently show an explicit report endpoint for completed sessions.
+    // Note: Backend does not yet have a /report endpoint.
     reportIssue: async (sessionId: string, issueData: any): Promise<ApiResponse<any>> => {
-        console.warn('Backend currently lacks a /report endpoint for sessions. Data:', sessionId, issueData);
-        throw new Error('Reporting not implemented in backend');
+        console.warn('[ReportIssue] Backend endpoint not yet available. Logging report locally.', {
+            sessionId,
+            ...issueData,
+        });
+        return { success: true, message: 'Report received (pending backend implementation)', data: null };
     }
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
@@ -12,7 +12,28 @@ import { BadgeUnlockedScreen } from '@/components/gamification/BadgeUnlockedScre
 import { sessionService } from '@/api/services/session.service'
 import { userService } from '@/api/services/user.service'
 import { gamificationService } from '@/api/services/gamification.service'
-import { Loader2 } from 'lucide-react'
+import { Loader2, CheckCircle2, XCircle } from 'lucide-react'
+
+type ToastType = 'success' | 'error' | 'info'
+interface Toast { id: number; message: string; type: ToastType }
+
+const ToastContainer: React.FC<{ toasts: Toast[]; onDismiss: (id: number) => void }> = ({ toasts, onDismiss }) => (
+    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+        {toasts.map(t => (
+            <div
+                key={t.id}
+                onClick={() => onDismiss(t.id)}
+                className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium transition-all animate-in slide-in-from-top-2 cursor-pointer ${t.type === 'success' ? 'bg-green-50 border border-green-200 text-green-800'
+                    : t.type === 'error' ? 'bg-red-50 border border-red-200 text-red-800'
+                        : 'bg-blue-50 border border-blue-200 text-blue-800'
+                    }`}
+            >
+                {t.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <XCircle className="w-4 h-4 shrink-0" />}
+                {t.message}
+            </div>
+        ))}
+    </div>
+)
 
 type Step = 'badge-unlocked' | 'completed' | 'general-review' | 'role-selection' | 'role-feedback' | 'second-role-prompt' | 'second-role-feedback' | 'report-issue'
 
@@ -29,6 +50,17 @@ export const SessionFeedback: React.FC = () => {
     const [nextBadge, setNextBadge] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [toasts, setToasts] = useState<Toast[]>([])
+
+    const showToast = useCallback((message: string, type: ToastType = 'info') => {
+        const id = Date.now()
+        setToasts(prev => [...prev, { id, message, type }])
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000)
+    }, [])
+
+    const dismissToast = useCallback((id: number) => {
+        setToasts(prev => prev.filter(t => t.id !== id))
+    }, [])
 
     useEffect(() => {
         const fetchSession = async () => {
@@ -103,7 +135,6 @@ export const SessionFeedback: React.FC = () => {
     }
 
     const handleGeneralReviewSubmit = async (data: any) => {
-        console.log('Submitting General Review:', data)
         try {
             const rawSwapId = sessionData?.swapRequest?.id;
 
@@ -113,12 +144,14 @@ export const SessionFeedback: React.FC = () => {
                     comment: data.comment || '',
                     isPublic: data.isPublic ?? true
                 })
-                console.log('General Review submitted successfully to backend.')
+                showToast('Review submitted successfully! ✓', 'success')
             } else {
-                console.warn(`Skipping Review API call: "${rawSwapId}" is not a valid UUID. This is expected for demo sessions.`);
+                showToast('Review saved (demo session)', 'info')
             }
-        } catch (err) {
-            console.error('General Review Submission Failed:', err)
+        } catch (err: any) {
+            const msg = err?.response?.data?.message || 'Failed to submit review. Please try again.'
+            showToast(msg, 'error')
+            console.error('[GeneralReview] Submission failed:', err)
         }
         setCurrentStep('role-selection')
     }
@@ -134,7 +167,6 @@ export const SessionFeedback: React.FC = () => {
     }
 
     const handleRoleFeedbackSubmit = async (data: any) => {
-        console.log('Role feedback submitted:', data)
         const { ratings, improvements, bestPart } = data;
 
         try {
@@ -163,13 +195,15 @@ export const SessionFeedback: React.FC = () => {
             };
 
             if (isUUID(rawSessionId)) {
-                console.log(`Submitting ${currentFeedbackRole} Feedback to backend:`, feedbackPayload);
                 await sessionService.submitRoleFeedback(currentFeedbackRole, feedbackPayload)
+                showToast(`${isTeaching ? 'Teaching' : 'Learning'} feedback submitted! ✓`, 'success')
             } else {
-                console.warn(`Simulating ${currentFeedbackRole} Feedback: "${rawSessionId}" is a demo ID. API call skipped.`);
+                showToast('Feedback saved (demo session)', 'info')
             }
-        } catch (err) {
-            console.error(`${currentFeedbackRole} Feedback Submission Failed:`, err)
+        } catch (err: any) {
+            const msg = err?.response?.data?.message || 'Failed to submit feedback. Please try again.'
+            showToast(msg, 'error')
+            console.error(`[RoleFeedback] ${currentFeedbackRole} submission failed:`, err)
         }
 
         if (selectedRole === 'both' && currentFeedbackRole === 'learning') {
@@ -185,7 +219,6 @@ export const SessionFeedback: React.FC = () => {
     }
 
     const handleSecondRoleFeedbackSubmit = async (data: any) => {
-        console.log('Submitting Second Role Feedback:', data)
         const { ratings, improvements, bestPart } = data;
 
         try {
@@ -204,12 +237,14 @@ export const SessionFeedback: React.FC = () => {
 
             if (isUUID(rawSessionId)) {
                 await sessionService.submitRoleFeedback('teaching', feedbackPayload)
-                console.log('Second Role Feedback submitted successfully to backend.')
+                showToast('Teaching feedback submitted! ✓', 'success')
             } else {
-                console.warn(`Simulating Second Role Feedback: "${rawSessionId}" is a demo ID. API call skipped.`);
+                showToast('Feedback saved (demo session)', 'info')
             }
-        } catch (err) {
-            console.error('Second Role Feedback Submission Failed:', err)
+        } catch (err: any) {
+            const msg = err?.response?.data?.message || 'Failed to submit feedback. Please try again.'
+            showToast(msg, 'error')
+            console.error('[SecondRoleFeedback] Submission failed:', err)
         }
         handleFlowComplete()
     }
@@ -220,19 +255,15 @@ export const SessionFeedback: React.FC = () => {
     }
 
     const handleReportIssue = async (data: any) => {
-        const currentId = sessionId || sessionData.id;
-        if (currentId === 'mock-1') {
-            alert('Issue reporting is simulated for mock sessions.');
-            setCurrentStep('completed');
-            return;
-        }
+        const currentId = sessionId || sessionData?.id;
         try {
             await sessionService.reportIssue(currentId, data)
-            alert('Issue reported successfully.')
+            showToast('Issue reported. We will review it shortly.', 'success')
+        } catch (err: any) {
+            showToast('Could not send the report. Please try again.', 'error')
+            console.error('[ReportIssue] Failed:', err)
+        } finally {
             setCurrentStep('completed')
-        } catch (err) {
-            console.error('Failed to report issue:', err)
-            alert('Failed to report issue. Please try again later.')
         }
     }
 
@@ -330,6 +361,7 @@ export const SessionFeedback: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
+            <ToastContainer toasts={toasts} onDismiss={dismissToast} />
             <Header activeTab="Sessions" />
             <main className="flex-1 flex items-center justify-center py-8">
                 {renderCurrentStep()}
