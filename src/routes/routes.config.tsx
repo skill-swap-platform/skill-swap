@@ -26,6 +26,7 @@ import {
   PreviewManageBadges,
   PreviewPointsManage,
 } from "@/pages";
+import VerifyEmailRoute from "@/components/Auth/VerifyEmailRoute";
 
 export const routesConfig = [
   {
@@ -40,6 +41,10 @@ export const routesConfig = [
   {
     path: "/auth/register",
     element: <Register />,
+  },
+  {
+    path: "/auth/verify-email",
+    element: <VerifyEmailRoute />,
   },
 
   // {
@@ -128,6 +133,7 @@ export const routesConfig = [
     path: "/preview/points-manage",
     element: <PreviewPointsManage />,
   },
+
   {
     path: "*",
     element: <NotFound />,
