@@ -30,7 +30,7 @@ const Register: React.FC = () => {
             const response = await authService.signup(formData);
             if (response.success) {
                 setIsSuccess(true);
-                setTimeout(() => navigate('/auth/login'), 2000);
+                setTimeout(() => navigate('/onboarding/interests'), 2000);
             } else {
                 setError(response.message || 'Registration failed');
             }
@@ -49,7 +49,7 @@ const Register: React.FC = () => {
                         <CheckCircle2 className="w-10 h-10 text-green-500" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Registration Successful!</h2>
-                    <p className="text-gray-500">Redirecting you to the login page...</p>
+                    <p className="text-gray-500">Welcome to SkillSwap! Redirecting you to set up your profile...</p>
                 </div>
             </div>
         );

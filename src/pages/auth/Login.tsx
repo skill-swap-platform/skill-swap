@@ -17,7 +17,7 @@ const Login: React.FC = () => {
         try {
             const response = await authService.login(formData);
             if (response.success) {
-                navigate('/onboarding/interests');
+                navigate('/explore');
             } else {
                 setError(response.message || 'Invalid email or password');
             }

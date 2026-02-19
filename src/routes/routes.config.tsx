@@ -35,7 +35,7 @@ export const routesConfig = [
     element: <SessionHistory />,
   },
   {
-    path: "/session-feedback",
+    path: "/session-feedback/:sessionId",
     element: <SessionFeedback />,
   },
   {

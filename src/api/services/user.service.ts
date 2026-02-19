@@ -73,7 +73,17 @@ export const skillService = {
     },
 
     searchSkills: async (name: string): Promise<ApiResponse<any>> => {
-        const response = await axiosInstance.get(`/api/v1/skills/search?name=${name}`);
+        const response = await axiosInstance.get(`/api/v1/skills/autocomplete?name=${name}`);
+        return response.data;
+    },
+
+    createSkill: async (name: string): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.post('/api/v1/skills/create', { name });
+        return response.data;
+    },
+
+    getAllSkills: async (): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.get('/api/v1/skills');
         return response.data;
     }
 };

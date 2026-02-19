@@ -3,12 +3,14 @@ import { Info } from 'lucide-react'
 
 interface GeneralReviewProps {
     partnerName: string
+    swapRequestId: string
     onSubmit: (data: any) => void
     onSkip: () => void
 }
 
 export const GeneralReview: React.FC<GeneralReviewProps> = ({
     partnerName,
+    swapRequestId,
     onSubmit,
     onSkip,
 }) => {
@@ -126,8 +128,12 @@ export const GeneralReview: React.FC<GeneralReviewProps> = ({
                             Skip
                         </button>
                         <button
-                            onClick={() => onSubmit({ comment, selectedTags, isPublic })}
-                            className="flex-1 h-12 rounded-xl bg-[#3E8FCC] text-white font-bold hover:bg-[#2F71A3] transition-all shadow-sm"
+                            onClick={() => onSubmit({ swapRequestId, comment, isPublic })}
+                            disabled={!comment.trim() && selectedTags.length === 0}
+                            className={`flex-1 h-12 rounded-lg font-bold transition-all shadow-sm ${(!comment.trim() && selectedTags.length === 0)
+                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                : 'bg-[#3E8FCC] text-white hover:bg-[#2F71A3]'
+                                }`}
                         >
                             Submit Review
                         </button>

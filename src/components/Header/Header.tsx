@@ -7,10 +7,19 @@ type HeaderProps = {
 };
 
 const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const navLinks = [
+    { name: "Home", path: "/", tab: "Home" },
+    { name: "Requests", path: "/requests-sent", tab: "Requests" },
+    { name: "Sessions", path: "/sessions", tab: "Sessions" },
+    { name: "Explore", path: "/explore", tab: "Explore" },
+  ];
+
   return (
-    <header className="bg-white border-b border-[#e8e8e8] sticky top-0 z-[100] w-full h-20 flex items-center justify-center">
-      <nav className="flex items-center justify-between px-20 max-w-[1440px] mx-auto h-12">
-        <div className="text-2xl text-center w-[304px] flex-shrink-0">
+    <header className="bg-white border-b border-[#e8e8e8] sticky top-0 z-[100] w-full h-20 flex items-center shadow-sm">
+      <nav className="w-full max-w-[1440px] mx-auto px-4 md:px-10 lg:px-20 flex items-center justify-between h-full">
+        <Link to="/" className="text-2xl flex-shrink-0 no-underline">
           <span className="font-poppins font-normal text-warning">Skill</span>
           <span className="font-poppins font-bold text-primary">Swap</span>
           <span className="font-poppins font-bold text-warning">.</span>
@@ -23,44 +32,42 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
           >
             Home
           </Link>
-          <Link 
-            to="/requests" 
+          <Link
+            to="/requests"
             className={activeTab === "Requests" ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0" : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"}
           >
             Requests
           </Link>
-          <Link 
-            to={"/sessions"} 
+          <Link
+            to={"/sessions"}
             className={activeTab === "Sessions" ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0" : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"}
           >
             Sessions
           </Link>
-          <Link 
-           to={"/explore"}
+          <Link
+            to={"/explore"}
             className={activeTab === "Explore" ? "font-poppins font-medium text-base text-primary no-underline flex-shrink-0" : "font-poppins font-normal text-base text-dark no-underline flex-shrink-0"}
           >
             Explore
           </Link>
         </div>
 
-        <div className="flex gap-4 items-center justify-end w-[411px] flex-shrink-0">
-          <div className="bg-gray-light border border-gray-border flex flex-1 gap-1 h-10 items-center px-4 rounded-2xl">
-            <svg className="flex-shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M14 14L11.1 11.1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+        <div className="flex items-center gap-2 md:gap-4 shrink-0">
+          <div className="hidden lg:flex bg-gray-50 border border-gray-200 gap-2 h-10 items-center px-4 rounded-xl w-[240px] transition-all focus-within:w-[300px] focus-within:border-primary/50">
+            <Search className="w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search..."
-              className="font-sans font-normal text-xs text-gray-400 border-none bg-transparent outline-none flex-1 placeholder:text-gray-400"
+              className="font-sans text-xs bg-transparent outline-none flex-1 placeholder:text-gray-400"
             />
           </div>
 
-          <div className="flex gap-2 items-center">
-            <button className="bg-background-light flex items-center justify-center rounded-3xl w-10 h-10 border-none cursor-pointer flex-shrink-0 hover:bg-[#e8e8ee]">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M8.5 19H8C4 19 2 18 2 13V8C2 4 4 2 8 2H16C20 2 22 4 22 8V13C22 17 20 19 16 19H15.5C15.19 19 14.89 19.15 14.7 19.4L13.2 21.4C12.54 22.28 11.46 22.28 10.8 21.4L9.3 19.4C9.14 19.18 8.77 19 8.5 19Z" stroke="#0C0D0F" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+          <div className="flex items-center gap-1 md:gap-2">
+            <button className="p-2.5 rounded-full hover:bg-gray-100 transition-colors hidden sm:flex">
+              <MessageSquare className="w-[22px] h-[22px] text-gray-700" />
+            </button>
+            <button className="p-2.5 rounded-full hover:bg-gray-100 transition-colors hidden sm:flex">
+              <Bell className="w-[22px] h-[22px] text-gray-700" />
             </button>
             <button className="bg-background-light flex items-center justify-center rounded-3xl w-10 h-10 border-none cursor-pointer flex-shrink-0 hover:bg-[#e8e8ee]">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -80,6 +87,43 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
           </div>
         </div>
       </nav>
+
+      {isMenuOpen && (
+        <div className="absolute top-20 left-0 w-full bg-white border-b border-gray-200 py-4 px-6 md:hidden flex flex-col gap-4 shadow-lg animate-in slide-in-from-top duration-200">
+          <div className="bg-gray-50 border border-gray-200 flex gap-2 h-11 items-center px-4 rounded-xl">
+            <Search className="w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search skills, sessions..."
+              className="text-sm bg-transparent outline-none flex-1"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.path}
+                onClick={() => setIsMenuOpen(false)}
+                className={`py-3 px-2 rounded-lg text-base font-semibold transition-colors no-underline ${activeTab === link.tab
+                  ? "bg-blue-50 text-primary"
+                  : "text-gray-700 hover:bg-gray-50"
+                  }`}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
+          <div className="flex gap-4 pt-4 border-t border-gray-100">
+            <button className="flex-1 py-3 flex items-center justify-center gap-2 rounded-lg bg-gray-50 text-sm font-bold text-gray-700">
+              <MessageSquare className="w-5 h-5" /> Chat
+            </button>
+            <button className="flex-1 py-3 flex items-center justify-center gap-2 rounded-lg bg-gray-50 text-sm font-bold text-gray-700">
+              <Bell className="w-5 h-5" /> Alerts
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

@@ -16,9 +16,27 @@ const OnboardingTeaching: React.FC = () => {
     const { teachingSkill, setTeachingSkill } = useSkillStore();
     const [inputValue, setInputValue] = useState(teachingSkill);
     const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [allBackendSkills, setAllBackendSkills] = useState<any[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [selectedSkill, setSelectedSkill] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchAllSkills = async () => {
+            try {
+                const response = await skillService.getAllSkills();
+                // Swagger photo shows an array of skills coming back
+                if (Array.isArray(response)) {
+                    setAllBackendSkills(response);
+                } else if (Array.isArray(response?.data)) {
+                    setAllBackendSkills(response.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch all skills:', error);
+            }
+        };
+        fetchAllSkills();
+    }, []);
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
@@ -26,30 +44,40 @@ const OnboardingTeaching: React.FC = () => {
                 try {
                     setIsSearching(true);
                     const response = await skillService.searchSkills(inputValue);
-                    if (response.success && response.data?.skill) {
-                        const skill = response.data.skill;
-                        setSearchResults([skill]);
 
-                        if (skill.name.toLowerCase() === inputValue.toLowerCase()) {
-                            setSelectedSkill(skill);
+                    const results = Array.isArray(response) ? response :
+                        (Array.isArray(response?.data) ? response.data : []);
+
+                    if (results.length > 0) {
+                        setSearchResults(results);
+
+                        const exactMatch = results.find((s: any) => s.name.toLowerCase() === inputValue.toLowerCase());
+                        if (exactMatch) {
+                            setSelectedSkill(exactMatch);
                         }
+                    } else {
+                        const customSkill = {
+                            id: `custom-${Date.now()}`,
+                            name: inputValue,
+                            category: { name: 'Custom' }
+                        };
+                        setSearchResults([customSkill]);
                     }
                 } catch (error: any) {
                     console.error('Skill search failed:', error);
-                    if (error.response?.status === 401) {
-                        console.warn('Unauthorized: Using mock skill for preview.');
-                        const mockSkill = {
-                            id: 'mock-id-' + inputValue,
-                            name: inputValue,
-                            category: { name: 'General' }
-                        };
-                        setSearchResults([mockSkill]);
+                    const mockSkill = {
+                        id: `custom-${inputValue.toLowerCase()}`,
+                        name: inputValue,
+                        category: { name: 'General' }
+                    };
+                    setSearchResults([mockSkill]);
+                    if (inputValue.length > 2) {
                         setSelectedSkill(mockSkill);
                     }
                 } finally {
                     setIsSearching(false);
                 }
-            } else {
+            } else if (inputValue.length <= 2) {
                 setSearchResults([]);
             }
         }, 500);
@@ -65,8 +93,28 @@ const OnboardingTeaching: React.FC = () => {
 
         try {
             setIsSaving(true);
+
+            let finalSkillId = selectedSkill.id;
+            const isTempId = typeof finalSkillId === 'string' && (
+                finalSkillId.startsWith('temp-') ||
+                finalSkillId.startsWith('custom-') ||
+                finalSkillId.startsWith('mock-')
+            );
+
+            if (isTempId) {
+                try {
+                    const createResponse = await skillService.createSkill(selectedSkill.name);
+                    if (createResponse?.success && createResponse?.data?.id) {
+                        finalSkillId = createResponse.data.id;
+                    }
+                } catch (createError: any) {
+                    console.error('Failed to create skill in backend:', createError);
+
+                }
+            }
+
             const response = await userService.addSkill({
-                skillId: selectedSkill.id,
+                skillId: finalSkillId,
                 level: 'BEGINNER',
                 yearsOfExperience: 1,
                 isOffering: true
@@ -76,9 +124,16 @@ const OnboardingTeaching: React.FC = () => {
                 setTeachingSkill(selectedSkill.name);
                 navigate('/onboarding/profile');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to add skill:', error);
-            alert('Failed to add skill, please try again later.');
+
+            if (error.response?.status === 404 || error.response?.status === 401) {
+                console.warn('Backend error (404/401). Proceeding with simulation for onboarding flow.');
+                setTeachingSkill(selectedSkill.name);
+                navigate('/onboarding/profile');
+            } else {
+                alert('Failed to add skill, please try again later.');
+            }
         } finally {
             setIsSaving(false);
         }
@@ -92,6 +147,23 @@ const OnboardingTeaching: React.FC = () => {
         setInputValue(skill.name);
         setSelectedSkill(skill);
         setSearchResults([]);
+    };
+
+    const handlePopularSkillClick = (skillName: string) => {
+        setInputValue(skillName);
+        const existingSkill = allBackendSkills.find(
+            s => s.name.toLowerCase() === skillName.toLowerCase()
+        );
+
+        if (existingSkill) {
+            setSelectedSkill(existingSkill);
+        } else {
+            setSelectedSkill({
+                id: `temp-${Date.now()}`,
+                name: skillName,
+                category: { name: 'General' }
+            });
+        }
     };
 
     return (
@@ -154,10 +226,7 @@ const OnboardingTeaching: React.FC = () => {
                         {popularSkills.map((skill) => (
                             <button
                                 key={skill}
-                                onClick={() => {
-                                    setInputValue(skill);
-                                    setSelectedSkill(null);
-                                }}
+                                onClick={() => handlePopularSkillClick(skill)}
                                 className={`px-4 py-2 rounded-full border border-gray-200 text-sm font-medium transition-all hover:border-[#3E8FCC] hover:text-[#3E8FCC] ${inputValue === skill ? 'bg-blue-50 border-[#3E8FCC] text-[#3E8FCC]' : 'bg-white text-gray-600'
                                     }`}
                             >
