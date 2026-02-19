@@ -1,7 +1,7 @@
 // src/pages/auth/VerifyEmailRoute.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import EmailVerificationPage from "@/components/Auth/EmailVerificationPage"; // عدّل المسار حسب مكانه
+import EmailVerificationPage from "@/pages/auth/EmailVerificationPage";
 import { authService } from "@/api/services/auth.service";
 
 const PENDING_KEY = "pending_signup_v1";
