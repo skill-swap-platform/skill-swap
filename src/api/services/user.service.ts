@@ -11,6 +11,7 @@ export const userService = {
         const response = await axiosInstance.patch('/api/v1/user/me', data);
         return response.data;
     },
+
     updateInterests: async (categoryIds: string[]): Promise<ApiResponse<any>> => {
         const response = await axiosInstance.patch('/api/v1/user/me/categories', {
             selectedCatIds: categoryIds
@@ -19,7 +20,13 @@ export const userService = {
     },
 
     addSkill: async (skillData: AddUserSkillDto): Promise<ApiResponse<any>> => {
-        const response = await axiosInstance.post('/api/v1/user/me/skills', skillData);
+        const payload = {
+            skillId: skillData.skillId,
+            level: skillData.level,
+            yearsOfExperience: skillData.yearsOfExperience,
+        };
+        console.log('--- DEBUG: Sending addSkill payload ---', payload);
+        const response = await axiosInstance.post('/api/v1/user/me/skills', payload);
         return response.data;
     },
 
@@ -27,6 +34,7 @@ export const userService = {
         const response = await axiosInstance.get('/api/v1/user/me/skills');
         return response.data;
     },
+
     removeSkill: async (skillId: string, isOffering: boolean): Promise<ApiResponse<any>> => {
         const response = await axiosInstance.delete(`/api/v1/user/me/skills/${skillId}`, {
             params: { isOffering: isOffering.toString() }
@@ -62,6 +70,12 @@ export const userService = {
 };
 
 export const skillService = {
+    // ✅ جيب كل الـ skills دفعة وحدة للـ local filtering
+    getAllSkills: async (): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.get('/api/v1/skills');
+        return response.data;
+    },
+
     getCategories: async (): Promise<ApiResponse<CategoryResponseDto[]>> => {
         const response = await axiosInstance.get('/api/v1/skills/categories');
         return response.data;
@@ -74,6 +88,11 @@ export const skillService = {
 
     searchSkills: async (name: string): Promise<ApiResponse<any>> => {
         const response = await axiosInstance.get(`/api/v1/skills/search?name=${name}`);
+        return response.data;
+    },
+
+    createSkill: async (name: string): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.post('/api/v1/skills/create', { name });
         return response.data;
     }
 };

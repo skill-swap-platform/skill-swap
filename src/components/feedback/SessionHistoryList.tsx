@@ -13,6 +13,7 @@ interface SessionHistoryListProps {
         skillName: string
         role: 'provider' | 'seeker'
         feedback?: Feedback
+        status?: string
     }>
     onViewFeedback?: (sessionId: string) => void
     emptyMessage?: string
@@ -63,8 +64,16 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                 </div>
                 <div className="divide-y divide-[#F3F4F6]">
                     {filteredSessions.map((session) => {
-                        const status: 'Upcoming' | 'Completed' | 'Canceled' | 'In Progress' =
-                            session.id === '5' ? 'In Progress' : (session.feedback || session.id === '2' || session.id === '4' ? 'Completed' : (session.id === '14' || session.id === '3' ? 'Canceled' : 'Upcoming'))
+                        const getDisplayStatus = (backendStatus?: string): 'Upcoming' | 'Completed' | 'Canceled' | 'In Progress' => {
+                            switch (backendStatus) {
+                                case 'COMPLETED': return 'Completed'
+                                case 'CANCELLED': return 'Canceled'
+                                case 'RESCHEDULED': return 'Upcoming'
+                                case 'SCHEDULED': return 'Upcoming'
+                                default: return 'Upcoming'
+                            }
+                        }
+                        const status = getDisplayStatus(session.status)
 
                         return (
                             <div
@@ -125,8 +134,11 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                                             View
                                         </button>
                                     ) : (
-                                        <button className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-[#F5F9FC] text-[10px] font-bold text-[#3E8FCC] hover:bg-[#EBF5FF] transition-colors">
-                                            Enroll
+                                        <button
+                                            onClick={() => (onViewFeedback as any)?.(session.id, 'complete')}
+                                            className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-[#3E8FCC] text-[10px] font-bold text-white hover:bg-[#357db3] transition-colors"
+                                        >
+                                            Complete
                                         </button>
                                     )}
                                 </div>
@@ -141,8 +153,6 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                     })}
                 </div>
             </div>
-
-            {/* Pagination */}
             <div className="flex items-center justify-between px-2 pt-4">
                 <button className="flex items-center gap-2 text-[10px] font-bold text-[#666666] hover:text-[#0C0D0F] transition-colors px-3 py-1.5 rounded-lg border border-[#E5E7EB] bg-white">
                     <ChevronLeft className="w-4 h-4" />

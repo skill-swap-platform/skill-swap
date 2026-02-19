@@ -74,13 +74,12 @@ export interface SkillDto {
     category: CategoryResponseDto;
 }
 
-export interface AddUserSkillDto {
-    skillId: string;
-    level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
-    yearsOfExperience: number;
-    isOffering: boolean;
-}
 
+export interface AddUserSkillDto {
+    skillId: string
+    level: string
+    yearsOfExperience: number
+}
 
 export interface CategoryResponseDto {
     id: string;

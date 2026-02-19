@@ -24,9 +24,9 @@ export const SessionCompletedScreen: React.FC<SessionCompletedScreenProps> = ({
                 <div className="flex justify-center mb-10">
                     <div className="relative w-64 h-64">
                         <img
-                            src="https://img.freepik.com/free-vector/completed-concept-illustration_114360-3891.jpg"
+                            src="/session-completed.png"
                             alt="Session Completed"
-                            className="w-full h-full object-contain mix-blend-multiply"
+                            className="w-full h-full object-contain"
                         />
                     </div>
                 </div>

@@ -93,14 +93,14 @@ const OnboardingProfile: React.FC = () => {
 
             if (response.success) {
                 updateStoreProfile(formData);
-                navigate('/onboarding/loading');
+                navigate('/');
             }
         } catch (error: any) {
             console.error('Saving profile failed:', error);
             if (error.response?.status === 401) {
                 console.warn('Unauthorized: Simulating success for preview.');
                 updateStoreProfile(formData);
-                navigate('/onboarding/loading');
+                navigate('/');
             } else {
                 alert('Failed to save profile. Please check your connection.');
             }
@@ -120,7 +120,7 @@ const OnboardingProfile: React.FC = () => {
             onBack={handleBack}
             onNext={handleNext}
         >
-            <div className="w-[615px] h-full flex flex-col items-center gap-[25px]">
+            <div className="w-full max-w-[615px] h-full flex flex-col items-center gap-[25px]">
                 <h2 className="w-full text-[20px] font-semibold leading-[24px] text-black text-left">Profile Setup</h2>
 
                 <input
@@ -225,7 +225,7 @@ const OnboardingProfile: React.FC = () => {
                     <button
                         onClick={handleNext}
                         disabled={!formData.full_name || !formData.bio || formData.location === 'Country' || isSaving}
-                        className={`w-[415px] h-[48px] rounded-[10px] flex items-center justify-center transition-all ${(!formData.full_name || !formData.bio || formData.location === 'Country' || isSaving)
+                        className={`w-full max-w-[415px] h-[48px] rounded-[10px] flex items-center justify-center transition-all ${(!formData.full_name || !formData.bio || formData.location === 'Country' || isSaving)
                             ? 'bg-[#9CA3AF] cursor-not-allowed opacity-70'
                             : 'bg-[#3E8FCC] hover:bg-[#357db3] shadow-md shadow-blue-100'
                             }`}

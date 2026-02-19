@@ -9,7 +9,6 @@ const axiosInstance = axios.create({
     },
 });
 
-// Request interceptor
 axiosInstance.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('accessToken');
@@ -28,7 +27,6 @@ axiosInstance.interceptors.response.use(
     async (error) => {
         if (error.response?.status === 401) {
             const path = window.location.pathname;
-            // Only redirect if NOT on an auth page AND if we don't have sensitive onboarding state
             if (!path.includes('/auth/') && !path.includes('/onboarding/')) {
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');

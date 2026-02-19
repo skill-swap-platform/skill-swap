@@ -3,6 +3,7 @@ import { Star } from 'lucide-react'
 
 interface RoleSpecificFeedbackProps {
     partnerName: string
+    sessionId: string
     role: 'teaching' | 'learning' | 'both'
     onSubmit: (data: any) => void
     onSkip: () => void
@@ -10,6 +11,7 @@ interface RoleSpecificFeedbackProps {
 
 export const RoleSpecificFeedback: React.FC<RoleSpecificFeedbackProps> = ({
     partnerName,
+    sessionId,
     role,
     onSubmit,
     onSkip,
@@ -22,24 +24,23 @@ export const RoleSpecificFeedback: React.FC<RoleSpecificFeedbackProps> = ({
     const getQuestions = () => {
         if (role === 'learning') {
             return [
-                { id: 'clarity', label: 'Did they show up on time?' },
-                { id: 'helpfulness', label: 'Were they focused the whole session?' },
-                { id: 'communication', label: 'Were they actively inquisitive?' },
-                { id: 'patience', label: 'Was they ready for feedback?' }
+                { id: 'communication', label: 'Communication Quality' },
+                { id: 'learningFocus', label: 'Focus during session' },
+                { id: 'clarity', label: 'Clarity of goals' },
+                { id: 'patience', label: 'Patience & Engagement' },
+                { id: 'sessionStructure', label: 'Structure of the learning' }
             ]
         } else if (role === 'teaching') {
             return [
-                { id: 'clarity', label: 'Did they show up on time?' },
-                { id: 'engagement', label: 'Were they focused & Engagement' },
-                { id: 'communication', label: 'Were they actively inquisitive?' },
-                { id: 'patience', label: 'Patience' },
-                { id: 'structure', label: 'Session Structure' }
+                { id: 'communication', label: 'Communication Quality' },
+                { id: 'sessionFocus', label: 'Focus & Preparation' },
+                { id: 'activeParticipation', label: 'Active Participation' },
+                { id: 'openToFeedback', label: 'Openness to Feedback' }
             ]
         } else {
             return [
-                { id: 'overall', label: 'Overall Experience' },
                 { id: 'communication', label: 'Communication' },
-                { id: 'engagement', label: 'Engagement' }
+                { id: 'overall', label: 'Overall Experience' }
             ]
         }
     }
@@ -150,8 +151,12 @@ export const RoleSpecificFeedback: React.FC<RoleSpecificFeedbackProps> = ({
                                 Later
                             </button>
                             <button
-                                onClick={() => onSubmit({ ratings, improvements, bestPart })}
-                                className="flex-1 h-12 rounded-lg bg-[#3E8FCC] text-white font-bold hover:bg-[#2F71A3] transition-all shadow-sm"
+                                onClick={() => onSubmit({ sessionId, ratings, improvements, bestPart })}
+                                disabled={Object.keys(ratings).length < questions.length}
+                                className={`flex-1 h-12 rounded-lg font-bold transition-all shadow-sm ${(Object.keys(ratings).length < questions.length)
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'bg-[#3E8FCC] text-white hover:bg-[#2F71A3]'
+                                    }`}
                             >
                                 Submit Feedback
                             </button>
