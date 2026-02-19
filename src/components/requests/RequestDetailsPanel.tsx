@@ -45,7 +45,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
   // Render different layouts based on status
   if (request.status === 'accepted') {
     return (
-      <div className="bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
+      <div className="requests-details-panel bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
         {/* Header with Status */}
         <div className="bg-white border-b border-[#f3f4f6] flex items-center justify-between pl-[16px] pr-[8px] rounded-tl-[10px] rounded-tr-[10px]">
           <div className="flex flex-1 gap-[4px] items-center min-w-0">
@@ -238,7 +238,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
 
   if (request.status === 'declined') {
     return (
-      <div className="bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
+      <div className="requests-details-panel bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
         {/* Header with Status */}
         <div className="bg-white border-b border-[#f3f4f6] flex items-center justify-between pl-[16px] pr-[8px] rounded-tl-[10px] rounded-tr-[10px]">
           <div className="flex flex-1 gap-[4px] items-center min-w-0">
@@ -312,7 +312,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
 
   // Default: Pending status
   return (
-    <div className="bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
+    <div className="requests-details-panel bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
       {/* Header with Status */}
       <div className="bg-white border-b border-[#f3f4f6] flex items-center justify-between pl-[16px] pr-[8px] rounded-tl-[10px] rounded-tr-[10px]">
         <div className="flex flex-1 gap-[4px] items-center min-w-0">
@@ -510,8 +510,8 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
             onClick={handleUndoCancel}
             className="fixed inset-0 bg-[rgba(94,95,96,0.2)] z-[9999]"
           />
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-            <div className="bg-white border border-[#e5e7eb] flex flex-col h-[173px] items-start rounded-[10px] w-[484px]" style={{ boxShadow: '0px 0px 4.7px 0px rgba(0, 0, 0, 0.25)' }}>
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4">
+            <div className="requests-cancel-modal bg-white border border-[#e5e7eb] flex flex-col h-[173px] items-start rounded-[10px] w-full max-w-[484px]" style={{ boxShadow: '0px 0px 4.7px 0px rgba(0, 0, 0, 0.25)' }}>
               {/* Modal Header */}
               <div className="border-b border-[#f3f4f6] flex gap-[10px] h-[40px] items-center justify-center pl-[16px] rounded-tl-[10px] rounded-tr-[10px] shrink-0 w-full">
                 <p className="flex-1 font-medium text-[16px] leading-[normal] text-[#0c0d0f] min-h-px min-w-px">
@@ -534,7 +534,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
                 </p>
 
                 {/* Modal Actions */}
-                <div className="flex gap-[8px] items-start px-[16px] shrink-0 w-full">
+                <div className="requests-cancel-actions flex gap-[8px] items-start px-[16px] shrink-0 w-full">
                   <button
                     onClick={handleUndoCancel}
                     className="bg-[#f5f5f5] border border-[#e5e7eb] flex-1 flex gap-[10px] h-[40px] items-center justify-center min-h-px min-w-px rounded-[10px] hover:bg-[#e5e7eb] transition-colors"

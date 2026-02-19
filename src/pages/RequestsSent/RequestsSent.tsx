@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { RequestTabs } from '../../components/requests/RequestTabs';
 import { StatusFilterTabs } from '../../components/requests/StatusFilterTabs';
 import type { RequestStatus } from '../../components/requests/StatusFilterTabs';
@@ -99,6 +99,7 @@ export const RequestsSent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'sent' | 'received'>('sent');
   const [activeFilter, setActiveFilter] = useState<RequestStatus>('all');
   const [selectedRequest, setSelectedRequest] = useState<RequestCardProps | null>(null);
+  const detailsPanelRef = useRef<HTMLDivElement | null>(null);
 
   // Get appropriate requests based on active tab
   const currentRequests = activeTab === 'sent' ? sampleSentRequests : sampleReceivedRequests;
@@ -143,20 +144,35 @@ export const RequestsSent: React.FC = () => {
     // Handle view profile logic
   };
 
+  useEffect(() => {
+    if (!selectedRequest) return;
+    if (typeof window === 'undefined') return;
+    if (!window.matchMedia('(max-width: 1279px)').matches) return;
+
+    const rafId = window.requestAnimationFrame(() => {
+      detailsPanelRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+
+    return () => window.cancelAnimationFrame(rafId);
+  }, [selectedRequest, activeTab]);
+
   return (
-    <div className="bg-[#f9fafb] flex flex-col items-center min-h-screen overflow-auto">
+    <div className="requests-page bg-[#f9fafb] flex flex-col items-center min-h-screen overflow-auto">
       {/* Header */}
       <div className="w-full">
         <Header activeTab="Requests" />
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col gap-4 items-center w-full px-20 py-6">
-        <div className={`flex gap-6 items-start w-full transition-all duration-300 ${
+      <div className="flex flex-col gap-4 items-center w-full px-4 py-6 sm:px-6 lg:px-20">
+        <div className={`flex flex-col xl:flex-row gap-6 items-start w-full transition-all duration-300 ${
           selectedRequest ? 'max-w-[1280px]' : 'max-w-[846px] justify-center'
         }`}>
           {/* Left Side - Requests List */}
-          <div className="flex flex-col gap-4 items-start w-[846px] flex-shrink-0">
+          <div className="flex flex-col gap-4 items-start w-full max-w-[846px] flex-shrink-0">
             {/* Tabs */}
             <RequestTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -191,7 +207,7 @@ export const RequestsSent: React.FC = () => {
 
           {/* Right Side - Details Panel */}
           {selectedRequest && activeTab === 'sent' && (
-            <div className="flex-1 min-w-0 animate-slideIn">
+            <div ref={detailsPanelRef} className="w-full xl:flex-1 min-w-0 animate-slideIn">
               <RequestDetailsPanel
                 request={selectedRequest}
                 isOpen={!!selectedRequest}
@@ -203,7 +219,7 @@ export const RequestsSent: React.FC = () => {
           )}
           
           {selectedRequest && activeTab === 'received' && (
-            <div className="flex-1 min-w-0 animate-slideIn">
+            <div ref={detailsPanelRef} className="w-full xl:flex-1 min-w-0 animate-slideIn">
               <ReceivedRequestDetailsPanel
                 request={selectedRequest}
                 isOpen={!!selectedRequest}

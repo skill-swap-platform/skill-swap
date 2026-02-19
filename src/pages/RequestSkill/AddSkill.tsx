@@ -68,9 +68,9 @@ const AddSkill: React.FC = () => {
   return (
     <div className="flex min-h-screen flex-col bg-gray-light">
       <Header activeTab="Requests" />
-      <div className="flex flex-1 flex-col items-center px-5 py-10">
-        <div className="w-full max-w-[846px] rounded-[20px] bg-white p-6 shadow-sm">
-          <div className="mb-6 flex items-center gap-4">
+      <div className="flex flex-1 flex-col items-center px-4 py-6 sm:px-5 sm:py-10">
+        <div className="w-full max-w-[846px] rounded-[20px] bg-white p-4 sm:p-6 shadow-sm">
+          <div className="mb-5 sm:mb-6 flex items-center gap-3 sm:gap-4">
             <button
               type="button"
               onClick={handleBack}
@@ -82,7 +82,7 @@ const AddSkill: React.FC = () => {
                 <path d="M27.3333 18H4.66663" stroke="#0C0D0F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
-            <h1 className="m-0 text-3xl font-bold text-[#0c0d0f]">Add a Skill</h1>
+            <h1 className="m-0 text-2xl sm:text-3xl font-bold text-[#0c0d0f]">Add a Skill</h1>
           </div>
 
           <form className="flex flex-col gap-5">
@@ -215,7 +215,7 @@ const AddSkill: React.FC = () => {
                 type="button"
                 onClick={handlePublish}
                 disabled={isPublishDisabled}
-                className={`h-12 w-[160px] rounded-[10px] text-[16px] font-medium text-white transition-opacity ${
+                className={`h-12 w-full sm:w-[160px] rounded-[10px] text-[16px] font-medium text-white transition-opacity ${
                   isPublishDisabled ? 'bg-[#9ca3af] opacity-70' : 'bg-[#3272a3] hover:opacity-90'
                 }`}
               >
