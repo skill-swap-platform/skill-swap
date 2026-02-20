@@ -4,12 +4,12 @@ import image from "@/assets/landingPage/pana.png";
 export function HowItWorks({
   title = "How Skill Swap works",
   steps = DEFAULT_STEPS,
-  className = "h-[480px] px-40",
+  className = "xs:px-20 md:px-40 ",
 }: HowItWorksProps) {
   return (
     <section className={className}>
       <div className="rounded-3xl bg-slate-50/80 shadow-sm">
-        <div className="grid md:grid-cols-2 items-center">
+        <div className="grid md:grid-cols-2 items-center justify-center">
           {/* Left */}
           <div className="h-full">
             {/* Title with very soft brush */}

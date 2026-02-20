@@ -13,7 +13,7 @@ export function SkillsGrid({ skills = SKILLS }: SkillsGridProps) {
       <h2 className="text-center w-6/12 text-2xl font-semibold tracking-tight text-slate-800 sm:text-3xl mx-auto py-4">
         Some of the skills provided by the skills swap application
       </h2>
-      <section className={"bg-white px-40 py-10"}>
+      <section className={"bg-white px-20 py-10"}>
         <div
           className="
           grid gap-10
