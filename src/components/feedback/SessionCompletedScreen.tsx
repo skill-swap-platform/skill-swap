@@ -1,14 +1,17 @@
 import React from 'react'
+import { Button } from '@/components/common/Button'
 
 interface SessionCompletedScreenProps {
     partnerName: string
     onContinue: () => void
+    onSkip?: () => void
     onReport: () => void
 }
 
 export const SessionCompletedScreen: React.FC<SessionCompletedScreenProps> = ({
     partnerName,
     onContinue,
+    onSkip,
     onReport,
 }) => {
     return (
@@ -43,7 +46,7 @@ export const SessionCompletedScreen: React.FC<SessionCompletedScreenProps> = ({
                 <div className="w-full mt-10 space-y-4">
                     <Button
                         variant="primary"
-                        onClick={onRateNow}
+                        onClick={onContinue}
                         className="w-full h-14 rounded-xl bg-[#3E8FCC] hover:bg-[#2F71A3] text-lg font-semibold transition-all shadow-md active:scale-[0.98]"
                     >
                         Give Feedback
@@ -51,11 +54,17 @@ export const SessionCompletedScreen: React.FC<SessionCompletedScreenProps> = ({
                     <Button
                         variant="ghost"
                         onClick={onSkip}
-                        className="w-full h-14 rounded-xl border-2 border-[#E5E7EB] text-[#3E8FCC] hover:bg-[#F9FAFB] text-lg font-medium transition-all"
+                        className="w-full h-14 rounded-xl border-2 border-[#E5E7EB] text-[#34D399] hover:bg-[#F9FAFB] text-lg font-medium transition-all"
                     >
                         Skip for Now
                     </Button>
                 </div>
+                <button
+                    onClick={onReport}
+                    className="absolute top-6 right-6 text-gray-300 hover:text-red-400 text-xs font-bold transition-colors"
+                >
+                    Report Issue
+                </button>
             </div>
         </div>
     )

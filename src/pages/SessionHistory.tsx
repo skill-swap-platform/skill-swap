@@ -56,95 +56,76 @@ export const SessionHistory: React.FC = () => {
             try {
                 setIsLoading(true)
 
-                const [userRes, sessionRes] = await Promise.all([
-                    userService.getCurrentProfile(),
-                    sessionService.getHistory(),
-                ])
-
+                const userRes = await userService.getCurrentProfile()
                 if (userRes.success) {
                     setCurrentUser(userRes.data)
                 }
 
-                if (sessionRes.success) {
-                    const rawSessions: any[] = sessionRes.data.data || []
-                    const currentUserId = userRes.data?.id
+                const response = await sessionService.getHistory()
+                if (response.success && userRes.success) {
+                    const rawSessions = response.data.data || []
+                    const currentUserId = userRes.data.id
 
                     if (rawSessions.length === 0) {
-                        // Restore Demo Mode for this specific UUID
                         setSessions([{
                             id: '3b6f1d2e-1111-4b2c-9c2f-1a2b3c4d5e6f',
                             date: new Date(),
                             partnerName: 'Test Partner',
-                            partnerAvatar: undefined,
-                            skillName: 'React & AI Assistant',
+                            partnerAvatar: '',
+                            skillName: 'JavaScript Basics',
                             role: 'seeker',
-                            status: 'SCHEDULED',
-                            swapRequestId: 'd979cfc4-b2e0-4d0a-93cd-6f1f8c53f01e'
+                            status: 'SCHEDULED'
                         }])
-                        return
+                    } else {
+                        const transformed = rawSessions.map((s: any) => {
+                            const isHost = s.host?.id === currentUserId
+                            const partner = isHost ? s.attendee : s.host
+
+                            return {
+                                id: s.id,
+                                date: new Date(s.scheduledAt),
+                                partnerName: partner?.userName || 'Unknown Partner',
+                                partnerAvatar: partner?.image,
+                                skillName: s.skill?.name || s.title,
+                                role: isHost ? 'provider' : 'seeker',
+                                status: s.status
+                            }
+                        })
+                        setSessions(transformed)
                     }
-
-                    const transformed = rawSessions.map((s: any) => {
-                        const isHost = s.host?.id === currentUserId
-                        const partner = isHost ? s.attendee : s.host
-                        return {
-                            id: s.id,
-                            date: new Date(s.scheduledAt),
-                            partnerName: partner?.userName || 'Unknown Partner',
-                            partnerAvatar: partner?.image ?? undefined,
-                            skillName: s.skill?.name || s.title || 'Skill Session',
-                            role: isHost ? 'provider' : 'seeker',
-                            status: s.status,
-                            swapRequestId: s.swapRequest?.id,
-                        }
-                    })
-
-                    setSessions(transformed)
-                } else {
-                    setError('Failed to load session history.')
+                } else if (!response.success) {
+                    setError('Failed to load session history')
                 }
             } catch (err: any) {
                 console.error('Failed to fetch session history:', err)
-                if (err.response?.status === 401) {
+                setError('An error occurred while fetching your sessions.')
+                if (err.response?.status === 401 || err.response?.status === 404) {
                     setSessions([])
-                } else {
-                    setError('An error occurred while fetching your sessions.')
                 }
             } finally {
                 setIsLoading(false)
             }
         }
-
         fetchSessions()
     }, [])
 
     const handleViewFeedback = async (sessionId: string, action?: 'view' | 'complete') => {
         if (action === 'complete') {
-            if (sessionId?.toLowerCase().includes('3b6f1d2e')) {
+            if (sessionId === '3b6f1d2e-1111-4b2c-9c2f-1a2b3c4d5e6f') {
                 navigate(`/session-feedback/${sessionId}`)
                 return
             }
-
             try {
-                const session = sessions.find((s) => s.id === sessionId)
-                if (session?.status === 'SCHEDULED') {
-                    const response = await sessionService.completeSession(
-                        sessionId,
-                        'Completed via history page'
-                    )
-                    if (!response.success) {
-                        alert('Failed to complete session. Please try again.')
-                        return
-                    }
+                const response = await sessionService.completeSession(sessionId, 'Completed via history page')
+                if (response.success) {
+                    navigate(`/session-feedback/${sessionId}`)
                 }
-                navigate(`/session-feedback/${sessionId}`)
-            } catch (err: any) {
+            } catch (err) {
                 console.error('Failed to complete session:', err)
-                alert(err.response?.data?.message || 'Failed to complete session. Please try again.')
+                alert('Failed to complete session. Please try again.')
             }
             return
         }
-
         setSelectedSessionId(sessionId)
         setIsViewFeedbackOpen(true)
     }
@@ -155,7 +136,6 @@ export const SessionHistory: React.FC = () => {
 
             <div className="flex-1 pb-20">
                 <div className="max-w-7xl mx-auto px-4 py-8">
-
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-2 text-[10px] text-[#9CA3AF]">
                             <Link to="/" className="hover:text-[#3E8FCC]">Home</Link>
@@ -163,10 +143,7 @@ export const SessionHistory: React.FC = () => {
                             <span className="text-[#0C0D0F] font-bold">Sessions</span>
                         </div>
                         {currentUser && (
-                            <span className="text-xs text-gray-500">
-                                Welcome back,{' '}
-                                <span className="font-bold text-[#3E8FCC]">{currentUser.userName}</span>
-                            </span>
+                            <span className="text-xs text-gray-500">Welcome back, <span className="font-bold text-[#3E8FCC]">{currentUser.userName}</span></span>
                         )}
                     </div>
 
@@ -206,10 +183,8 @@ export const SessionHistory: React.FC = () => {
                                 </div>
                             ) : sessions.length === 0 ? (
                                 <div className="p-20 text-center bg-white rounded-[24px] border border-gray-100">
-                                    <p className="text-gray-500 mb-2">No sessions found yet.</p>
-                                    <Link to="/explore" className="text-[#3E8FCC] font-bold">
-                                        Explore skills to start swapping!
-                                    </Link>
+                                    <p className="text-gray-500 mb-2">No sessions found.</p>
+                                    <Link to="/explore" className="text-[#3E8FCC] font-bold">Explore skills to start swapping!</Link>
                                 </div>
                             ) : (
                                 <SessionHistoryList

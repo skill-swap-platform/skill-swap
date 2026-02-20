@@ -93,14 +93,14 @@ const OnboardingProfile: React.FC = () => {
 
             if (response.success) {
                 updateStoreProfile(formData);
-                navigate('/onboarding/loading');
+                navigate('/');
             }
         } catch (error: any) {
             console.error('Saving profile failed:', error);
             if (error.response?.status === 401) {
                 console.warn('Unauthorized: Simulating success for preview.');
                 updateStoreProfile(formData);
-                navigate('/onboarding/loading');
+                navigate('/');
             } else {
                 alert('Failed to save profile. Please check your connection.');
             }

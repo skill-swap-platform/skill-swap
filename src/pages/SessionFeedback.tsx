@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
@@ -12,7 +12,28 @@ import { BadgeUnlockedScreen } from '@/components/gamification/BadgeUnlockedScre
 import { sessionService } from '@/api/services/session.service'
 import { userService } from '@/api/services/user.service'
 import { gamificationService } from '@/api/services/gamification.service'
-import { Loader2, AlertCircle } from 'lucide-react'
+import { Loader2, CheckCircle2, XCircle } from 'lucide-react'
+
+type ToastType = 'success' | 'error' | 'info'
+interface Toast { id: number; message: string; type: ToastType }
+
+const ToastContainer: React.FC<{ toasts: Toast[]; onDismiss: (id: number) => void }> = ({ toasts, onDismiss }) => (
+    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+        {toasts.map(t => (
+            <div
+                key={t.id}
+                onClick={() => onDismiss(t.id)}
+                className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium transition-all animate-in slide-in-from-top-2 cursor-pointer ${t.type === 'success' ? 'bg-green-50 border border-green-200 text-green-800'
+                    : t.type === 'error' ? 'bg-red-50 border border-red-200 text-red-800'
+                        : 'bg-blue-50 border border-blue-200 text-blue-800'
+                    }`}
+            >
+                {t.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <XCircle className="w-4 h-4 shrink-0" />}
+                {t.message}
+            </div>
+        ))}
+    </div>
+)
 
 type Step =
     | 'badge-unlocked'
@@ -23,48 +44,15 @@ type Step =
     | 'second-role-prompt'
     | 'second-role-feedback'
     | 'report-issue'
+const isUUID = (id: string | null | undefined): boolean => {
+    if (!id) return false;
+    const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return regex.test(id);
+};
 
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-const isRealUUID = (id: string | undefined | null): boolean => {
-    if (!id) return false
-    return UUID_REGEX.test(id)
-}
-const ErrorBanner: React.FC<{
-    message: string
-    onRetry?: () => void
-    onSkip?: () => void
-}> = ({ message, onRetry, onSkip }) => (
-    <div className="w-full max-w-6xl mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-        <div className="flex-1">
-            <p className="text-sm font-semibold text-red-700">Something went wrong</p>
-            <p className="text-xs text-red-600 mt-0.5">{message}</p>
-        </div>
-        <div className="flex gap-2">
-            {onRetry && (
-                <button
-                    onClick={onRetry}
-                    className="px-3 py-1.5 text-xs font-bold bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
-                >
-                    Retry
-                </button>
-            )}
-            {onSkip && (
-                <button
-                    onClick={onSkip}
-                    className="px-3 py-1.5 text-xs font-bold bg-white hover:bg-gray-50 text-gray-600 border border-gray-200 rounded-lg transition-colors"
-                >
-                    Skip anyway
-                </button>
-            )}
-        </div>
-    </div>
-)
 export const SessionFeedback: React.FC = () => {
     const navigate = useNavigate()
     const { sessionId } = useParams<{ sessionId: string }>()
-
     const [currentStep, setCurrentStep] = useState<Step>('completed')
     const [selectedRole, setSelectedRole] = useState<'teaching' | 'learning' | 'both'>('learning')
     const [currentFeedbackRole, setCurrentFeedbackRole] = useState<'teaching' | 'learning'>('learning')
@@ -75,33 +63,22 @@ export const SessionFeedback: React.FC = () => {
     const [nextBadge, setNextBadge] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [stepError, setStepError] = useState<{
-        message: string
-        onRetry: () => void
-        onSkip: () => void
-    } | null>(null)
+    const [toasts, setToasts] = useState<Toast[]>([])
+
+    const showToast = useCallback((message: string, type: ToastType = 'info') => {
+        const id = Date.now()
+        setToasts(prev => [...prev, { id, message, type }])
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000)
+    }, [])
+
+    const dismissToast = useCallback((id: number) => {
+        setToasts(prev => prev.filter(t => t.id !== id))
+    }, [])
+
     useEffect(() => {
         const fetchSession = async () => {
             if (!sessionId) {
                 setError('Session ID is missing. Please select a session from your history.')
-                setIsLoading(false)
-                return
-            }
-
-            if (!isRealUUID(sessionId)) {
-                setError('Invalid session ID. Please select a valid session from your history.')
-                setIsLoading(false)
-                return
-            }
-
-            // Restore Demo Mode for this specific UUID
-            if (sessionId?.toLowerCase().includes('3b6f1d2e')) {
-                setSessionData({
-                    id: sessionId,
-                    partnerName: 'Test Partner',
-                    skill: { name: 'React & AI Assistant' },
-                    swapRequest: { id: 'd979cfc4-b2e0-4d0a-93cd-6f1f8c53f01e' }
-                })
                 setIsLoading(false)
                 return
             }
@@ -111,13 +88,25 @@ export const SessionFeedback: React.FC = () => {
 
                 if (!currentUser) {
                     const userRes = await userService.getCurrentProfile()
-                    if (userRes.success) setCurrentUser(userRes.data)
+                    if (userRes.success) {
+                        setCurrentUser(userRes.data)
+                    }
+                }
+
+                if (sessionId === '3b6f1d2e-1111-4b2c-9c2f-1a2b3c4d5e6f') {
+                    setSessionData({
+                        id: '3b6f1d2e-1111-4b2c-9c2f-1a2b3c4d5e6f',
+                        partnerName: 'Test Partner',
+                        skill: { name: 'JavaScript Basics' },
+                        swapRequest: { id: 'd979cfc4-b2e0-4d0a-93cd-6f1f8c53f01e' }
+                    })
+                    setIsLoading(false)
+                    return
                 }
 
                 const response = await sessionService.getSessionDetail(sessionId)
                 if (response.success) {
                     setSessionData(response.data)
-
                     const badgeRes = await gamificationService.checkBadges()
                     if (badgeRes.success && badgeRes.data.newlyUnlocked.length > 0) {
                         setUnlockedBadges(badgeRes.data.newlyUnlocked)
@@ -125,7 +114,7 @@ export const SessionFeedback: React.FC = () => {
                         setCurrentStep('badge-unlocked')
                     }
                 } else {
-                    setError('Session not found. It may have been deleted or you do not have access.')
+                    setError('Session not found in the database.')
                 }
             } catch (err: any) {
                 console.error('Failed to fetch session detail:', err)
@@ -134,51 +123,50 @@ export const SessionFeedback: React.FC = () => {
                 setIsLoading(false)
             }
         }
-
         fetchSession()
-    }, [sessionId])
+    }, [sessionId, currentUser])
     const getPartner = () => {
         if (!sessionData || !currentUser) return null
-        return sessionData.host?.id === currentUser.id
-            ? sessionData.attendee
-            : sessionData.host
+        if (sessionData.host?.id === currentUser.id) return sessionData.attendee
+        return sessionData.host
+    }
+    const partner = getPartner()
+    const partnerName = partner?.userName || sessionData?.partnerName || 'Alex Davidson'
+
+    const handleBadgeContinue = () => {
+        setCurrentStep('completed')
     }
 
-    const partner = getPartner()
-    const partnerName = partner?.userName || sessionData?.partnerName || 'Your Partner'
-    const handleBadgeContinue = () => setCurrentStep('completed')
-    const handleSessionContinue = () => setCurrentStep('general-review')
+    const isUUID = (id: string | undefined): boolean => {
+        if (!id) return false;
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        return uuidRegex.test(id);
+    };
+
+    const handleSessionContinue = () => {
+        setCurrentStep('general-review')
+    }
 
     const handleGeneralReviewSubmit = async (data: any) => {
-        setStepError(null)
-
-        const swapRequestId = sessionData?.swapRequest?.id
-
-        if (!isRealUUID(swapRequestId)) {
-            console.warn('swapRequestId is missing or invalid — skipping review submission.')
-            setCurrentStep('role-selection')
-            return
-        }
-
         try {
-            await sessionService.submitReview({
-                swapRequestId,
-                comment: data.comment || '',
-                isPublic: data.isPublic ?? false,
-            })
-            console.log(' General Review submitted successfully.')
-            setCurrentStep('role-selection')
+            const rawSwapId = sessionData?.swapRequest?.id;
+
+            if (isUUID(rawSwapId)) {
+                await sessionService.submitReview({
+                    swapRequestId: rawSwapId!,
+                    comment: data.comment || '',
+                    isPublic: data.isPublic ?? true
+                })
+                showToast('Review submitted successfully! ✓', 'success')
+            } else {
+                showToast('Review saved (demo session)', 'info')
+            }
         } catch (err: any) {
-            console.error('General Review Submission Failed:', err)
-            setStepError({
-                message: err.response?.data?.message || 'Failed to submit your review. Please try again.',
-                onRetry: () => handleGeneralReviewSubmit(data),
-                onSkip: () => {
-                    setStepError(null)
-                    setCurrentStep('role-selection')
-                },
-            })
+            const msg = err?.response?.data?.message || 'Failed to submit review. Please try again.'
+            showToast(msg, 'error')
+            console.error('[GeneralReview] Submission failed:', err)
         }
+        setCurrentStep('role-selection')
     }
 
     const handleRoleContinue = (role: 'teaching' | 'learning' | 'both') => {
@@ -187,72 +175,50 @@ export const SessionFeedback: React.FC = () => {
         setCurrentStep('role-feedback')
     }
 
-    const submitRoleFeedback = async (
-        role: 'teaching' | 'learning',
-        data: { ratings: Record<string, number>; improvements: string; bestPart: string }
-    ): Promise<void> => {
-        const rawSessionId = sessionId || sessionData?.id
-
-        if (!isRealUUID(rawSessionId)) {
-            throw new Error(`Invalid session ID: "${rawSessionId}"`)
-        }
-
-        const { ratings, improvements, bestPart } = data
-
-        const basePayload = {
-            sessionId: rawSessionId,
-            communication: Number(ratings.communication) || 5,
-            strengths: bestPart || '',
-            improvements: improvements || '',
-            onTime: true,
-        }
-
-        const payload =
-            role === 'teaching'
-                ? {
-                    ...basePayload,
-                    sessionFocus: Number(ratings.sessionFocus) || 5,
-                    activeParticipation: Number(ratings.activeParticipation) || 5,
-                    openToFeedback: Number(ratings.openToFeedback) || 5,
-                }
-                : {
-                    ...basePayload,
-                    learningFocus: Number(ratings.learningFocus) || 5,
-                    clarity: Number(ratings.clarity) || 5,
-                    patience: Number(ratings.patience) || 5,
-                    sessionStructure: Number(ratings.sessionStructure) || 5,
-                }
-
-        console.log(`📤 Submitting ${role} feedback:`, payload)
-        await sessionService.submitRoleFeedback(role, payload)
-        console.log(`✅ ${role} feedback submitted successfully.`)
-    }
-
     const handleRoleFeedbackSubmit = async (data: any) => {
-        setStepError(null)
+        const { ratings, improvements, bestPart } = data;
 
         try {
-            await submitRoleFeedback(currentFeedbackRole, data)
+            const rawSessionId = sessionId || sessionData?.id;
+            const isTeaching = currentFeedbackRole === 'teaching';
 
-            if (selectedRole === 'both' && currentFeedbackRole === 'learning') {
-                setCurrentStep('second-role-prompt')
+            const feedbackPayload = isTeaching ? {
+                sessionId: rawSessionId || '',
+                communication: Number(ratings.communication) || 5,
+                strengths: bestPart || 'N/A',
+                improvements: improvements || 'N/A',
+                sessionFocus: Number(ratings.sessionFocus) || 5,
+                activeParticipation: Number(ratings.activeParticipation) || 5,
+                openToFeedback: Number(ratings.openToFeedback) || 5,
+                onTime: true
+            } : {
+                sessionId: rawSessionId || '',
+                communication: Number(ratings.communication) || 5,
+                strengths: bestPart || 'N/A',
+                improvements: improvements || 'N/A',
+                learningFocus: Number(ratings.learningFocus) || 5,
+                clarity: Number(ratings.clarity) || 5,
+                patience: Number(ratings.patience) || 5,
+                sessionStructure: Number(ratings.sessionStructure) || 5,
+                onTime: true
+            };
+
+            if (isUUID(rawSessionId)) {
+                await sessionService.submitRoleFeedback(currentFeedbackRole, feedbackPayload)
+                showToast(`${isTeaching ? 'Teaching' : 'Learning'} feedback submitted! ✓`, 'success')
             } else {
-                handleFlowComplete()
+                showToast('Feedback saved (demo session)', 'info')
             }
         } catch (err: any) {
-            console.error(` ${currentFeedbackRole} Feedback Submission Failed:`, err)
-            setStepError({
-                message: err.response?.data?.message || `Failed to submit ${currentFeedbackRole} feedback. Please try again.`,
-                onRetry: () => handleRoleFeedbackSubmit(data),
-                onSkip: () => {
-                    setStepError(null)
-                    if (selectedRole === 'both' && currentFeedbackRole === 'learning') {
-                        setCurrentStep('second-role-prompt')
-                    } else {
-                        handleFlowComplete()
-                    }
-                },
-            })
+            const msg = err?.response?.data?.message || 'Failed to submit feedback. Please try again.'
+            showToast(msg, 'error')
+            console.error(`[RoleFeedback] ${currentFeedbackRole} submission failed:`, err)
+        }
+
+        if (selectedRole === 'both' && currentFeedbackRole === 'learning') {
+            setCurrentStep('second-role-prompt')
+        } else {
+            handleFlowComplete()
         }
     }
 
@@ -262,22 +228,34 @@ export const SessionFeedback: React.FC = () => {
     }
 
     const handleSecondRoleFeedbackSubmit = async (data: any) => {
-        setStepError(null)
+        const { ratings, improvements, bestPart } = data;
 
         try {
-            await submitRoleFeedback('teaching', data)
-            handleFlowComplete()
+            const rawSessionId = sessionId || sessionData?.id;
+
+            const feedbackPayload = {
+                sessionId: rawSessionId || '',
+                communication: Number(ratings.communication) || 5,
+                strengths: bestPart || 'N/A',
+                improvements: improvements || 'N/A',
+                onTime: true,
+                sessionFocus: Number(ratings.sessionFocus) || 5,
+                activeParticipation: Number(ratings.activeParticipation) || 5,
+                openToFeedback: Number(ratings.openToFeedback) || 5
+            }
+
+            if (isUUID(rawSessionId)) {
+                await sessionService.submitRoleFeedback('teaching', feedbackPayload)
+                showToast('Teaching feedback submitted! ✓', 'success')
+            } else {
+                showToast('Feedback saved (demo session)', 'info')
+            }
         } catch (err: any) {
-            console.error('Second Role Feedback Submission Failed:', err)
-            setStepError({
-                message: err.response?.data?.message || 'Failed to submit teaching feedback. Please try again.',
-                onRetry: () => handleSecondRoleFeedbackSubmit(data),
-                onSkip: () => {
-                    setStepError(null)
-                    handleFlowComplete()
-                },
-            })
+            const msg = err?.response?.data?.message || 'Failed to submit feedback. Please try again.'
+            showToast(msg, 'error')
+            console.error('[SecondRoleFeedback] Submission failed:', err)
         }
+        handleFlowComplete()
     }
 
     const handleFlowComplete = () => {
@@ -286,13 +264,15 @@ export const SessionFeedback: React.FC = () => {
     }
 
     const handleReportIssue = async (data: any) => {
+        const currentId = sessionId || sessionData?.id;
         try {
-            await sessionService.reportIssue(sessionId || sessionData?.id, data)
-            alert('Issue reported successfully.')
+            await sessionService.reportIssue(currentId, data)
+            showToast('Issue reported. We will review it shortly.', 'success')
+        } catch (err: any) {
+            showToast('Could not send the report. Please try again.', 'error')
+            console.error('[ReportIssue] Failed:', err)
+        } finally {
             setCurrentStep('completed')
-        } catch (err) {
-            console.error('Failed to report issue:', err)
-            alert('Failed to report issue. The reporting feature is not yet available.')
         }
     }
 
@@ -306,11 +286,11 @@ export const SessionFeedback: React.FC = () => {
             )
         }
 
-        if (error || !sessionData) {
+        if (error && !sessionData) {
             return (
                 <div className="p-10 text-center bg-white rounded-[24px] shadow-sm border border-gray-100">
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Oops!</h2>
-                    <p className="text-red-500 mb-6">{error || 'Session data could not be loaded.'}</p>
+                    <p className="text-red-500 mb-6">{error}</p>
                     <button
                         onClick={() => navigate('/session-history')}
                         className="px-6 py-2 bg-[#3E8FCC] text-white rounded-xl font-bold"
@@ -390,15 +370,9 @@ export const SessionFeedback: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
+            <ToastContainer toasts={toasts} onDismiss={dismissToast} />
             <Header activeTab="Sessions" />
             <main className="flex-1 flex flex-col items-center justify-center py-8 px-4">
-                {stepError && (
-                    <ErrorBanner
-                        message={stepError.message}
-                        onRetry={stepError.onRetry}
-                        onSkip={stepError.onSkip}
-                    />
-                )}
                 {renderCurrentStep()}
             </main>
             <Footer />
