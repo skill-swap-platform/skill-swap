@@ -1,30 +1,54 @@
-
 import NotFound from "@/pages/NotFound";
-import { RequestSkill } from "@/pages/RequestSkill";
-import UpcomingSession from "@/pages/session/UpcomingSession";
 import LandingPage from "@/pages/LandingPage";
-import { Dashboard } from "@/pages/Dashboard";
+
+// import { Dashboard } from "@/pages/Dashboard";
+import { AdminDashboard } from "@/pages/admin/AdminDashboard";
 import { PointsAndBadges } from "@/pages/PointsAndBadges";
 import { SessionHistory } from "@/pages/SessionHistory";
 import { SessionFeedback } from "@/pages/SessionFeedback";
+
+import { AddSkill, RequestSkill } from "@/pages/RequestSkill";
+import RequestsSent from "@/pages/RequestsSent/RequestsSent";
+import UpcomingSession from "@/pages/session/UpcomingSession";
 import Explore from "@/pages/explore/Explore";
 import AllReviews from "@/components/explore/AllReviews";
+
+import {
+  OnboardingInterests,
+  OnboardingTeaching,
+  OnboardingProfile,
+  OnboardingLoading,
+  Login,
+  Register,
+  PreviewSessionCompleted,
+  PreviewBadgeUnlocked,
+  PreviewFeedbackForm,
+  PreviewManageBadges,
+  PreviewPointsManage,
+} from "@/pages";
+
 export const routesConfig = [
   {
     path: "/",
     element: <LandingPage />,
   },
+
   {
-    path: "/dashboard",
-    element: <Dashboard />,
+    path: "/auth/login",
+    element: <Login />,
   },
   {
-    path: "/request-skill",
-    element: <RequestSkill />,
+    path: "/auth/register",
+    element: <Register />,
   },
+
+  // {
+  //   path: "/dashboard",
+  //   element: <Dashboard />,
+  // },
   {
-    path: "/sessions",
-    element: <UpcomingSession />,
+    path: "/admin/dashboard",
+    element: <AdminDashboard />,
   },
   {
     path: "/points-badges",
@@ -38,6 +62,25 @@ export const routesConfig = [
     path: "/session-feedback/:sessionId",
     element: <SessionFeedback />,
   },
+
+  {
+    path: "/request-skill",
+    element: <RequestSkill />,
+  },
+  {
+    path: "/request-skill/add-skill",
+    element: <AddSkill />,
+  },
+  // to be edited
+  {
+    path: "/requests-sent",
+    element: <RequestsSent />,
+  },
+  {
+    path: "/sessions",
+    element: <UpcomingSession />,
+  },
+
   {
     path: "/explore",
     element: <Explore />,
@@ -45,6 +88,45 @@ export const routesConfig = [
   {
     path: "/all-reviews",
     element: <AllReviews />,
+  },
+
+  {
+    path: "/onboarding/interests",
+    element: <OnboardingInterests />,
+  },
+  {
+    path: "/onboarding/teaching",
+    element: <OnboardingTeaching />,
+  },
+  {
+    path: "/onboarding/profile",
+    element: <OnboardingProfile />,
+  },
+  {
+    path: "/onboarding/loading",
+    element: <OnboardingLoading />,
+  },
+  // to be checked
+  {
+    path: "/preview/session-completed",
+    element: <PreviewSessionCompleted />,
+  },
+  {
+    path: "/preview/badge-unlocked",
+    element: <PreviewBadgeUnlocked />,
+  },
+  {
+    path: "/preview/feedback-form",
+    element: <PreviewFeedbackForm />,
+  },
+  {
+    path: "/preview/manage-badges",
+    element: <PreviewManageBadges />,
+  },
+  // to be checked
+  {
+    path: "/preview/points-manage",
+    element: <PreviewPointsManage />,
   },
   {
     path: "*",

@@ -5,14 +5,11 @@ import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
 import { SessionHistoryList } from '@/components/feedback/index'
 import { ViewFeedbackModal } from '@/components/feedback/index'
-import { PostSessionFooter, PostSessionTopNav } from '@/components/layout/index'
 import { SessionHistorySidebar } from '@/components/feedback/SessionHistorySidebar'
 import type { SessionFeedback } from '@/types/index'
 import { sessionService } from '@/api/services/session.service'
 import { userService } from '@/api/services/user.service'
 
-
-// ---------------- MOCK FEEDBACK ----------------
 const mockSessionFeedback: SessionFeedback = {
     sessionId: 's1',
     providerFeedback: {
@@ -154,7 +151,7 @@ export const SessionHistory: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-[#F9FAFB] flex flex-col font-sans">
-            <PostSessionTopNav />
+            <Header activeTab="Sessions" />
 
             <div className="flex-1 pb-20">
                 <div className="max-w-7xl mx-auto px-4 py-8">
@@ -174,7 +171,6 @@ export const SessionHistory: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
-                        {/* Main Content */}
                         <div className="space-y-6">
 
                             <div className="flex items-center justify-between">
@@ -223,7 +219,6 @@ export const SessionHistory: React.FC = () => {
                             )}
                         </div>
 
-                        {/* Sidebar */}
                         <SessionHistorySidebar />
                     </div>
                 </div>
@@ -240,7 +235,7 @@ export const SessionHistory: React.FC = () => {
                 seekerName="Alex Smith"
             />
 
-            <PostSessionFooter />
+            <Footer />
         </div>
     )
 }

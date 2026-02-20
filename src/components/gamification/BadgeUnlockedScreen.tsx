@@ -1,73 +1,60 @@
 import React from 'react'
-import { ArrowRight } from 'lucide-react'
-
-interface Badge {
-    id: string;
-    name: string;
-    description: string;
-    icon: string;
-    requirement: string;
-    points: number;
-}
+import { Award, ArrowRight } from 'lucide-react'
 
 interface BadgeUnlockedScreenProps {
-    onContinue: () => void;
-    unlockedBadges?: Badge[];
-    nextBadge?: Badge;
+    onContinue: () => void
 }
 
 export const BadgeUnlockedScreen: React.FC<BadgeUnlockedScreenProps> = ({
     onContinue,
-    unlockedBadges = [],
-    nextBadge
 }) => {
-    const badge = unlockedBadges[0] || {
-        name: 'Active Member',
-        description: "You've completed your latest session successfully!",
-        icon: '🎯'
-    };
-
     return (
         <div className="flex items-center justify-center px-4 py-12 w-full">
             <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 max-w-[640px] w-full p-12">
-                <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center text-[#16A34A]">
+                <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
                     New Badge Unlocked!
                 </h2>
 
                 <div className="flex justify-center mb-6">
-                    <div className="w-24 h-24 bg-[#F0FDF4] rounded-full flex items-center justify-center border-4 border-[#DCFCE7] shadow-inner">
-                        <span className="text-5xl">{badge.icon || '🏆'}</span>
+                    <div className="w-24 h-24 bg-[#E8F5E9] rounded-full flex items-center justify-center">
+                        <Award className="w-12 h-12 text-[#4CAF50]" />
                     </div>
                 </div>
 
-                <div className="text-center mb-8">
-                    <h3 className="text-2xl font-black text-gray-900 mb-2">{badge.name}</h3>
-                    <p className="text-sm text-gray-600 px-8">
-                        {badge.description}
+                <div className="text-center mb-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Active Member</h3>
+                    <p className="text-sm text-gray-600">
+                        You've completed 10 sessions in a row!
                     </p>
                 </div>
 
-                {nextBadge && (
-                    <div className="mb-8">
-                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Next Challenge</h4>
-                        <div className="flex items-center gap-4 p-4 bg-[#F9FAFB] rounded-2xl border border-gray-100">
-                            <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center flex-shrink-0 text-2xl">
-                                {nextBadge.icon || '🎯'}
-                            </div>
-                            <div className="flex-1">
-                                <div className="text-sm font-bold text-gray-900">{nextBadge.name}</div>
-                                <div className="text-xs text-gray-500 mt-1">{nextBadge.description}</div>
-                            </div>
+                <div className="w-full bg-white rounded-xl p-4 mb-6 border border-gray-200">
+                    <div className="w-full h-2 bg-[#E5E7EB] rounded-full overflow-hidden mb-2">
+                        <div className="h-full bg-[#4CAF50] w-full transition-all" />
+                    </div>
+                    <div className="text-xs text-gray-500 text-center font-medium">
+                        10/10 Sessions Completed
+                    </div>
+                </div>
+
+                <div className="mb-8">
+                    <h4 className="text-sm font-bold text-gray-900 mb-3">Next Badge</h4>
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div className="w-10 h-10 bg-[#E0F2FE] rounded-full flex items-center justify-center flex-shrink-0">
                             <ArrowRight className="w-5 h-5 text-[#3E8FCC]" />
                         </div>
+                        <div>
+                            <div className="text-sm font-semibold text-gray-900">Skill Exchanger</div>
+                            <div className="text-xs text-gray-500">Complete 25 Sessions</div>
+                        </div>
                     </div>
-                )}
+                </div>
 
                 <button
                     onClick={onContinue}
-                    className="w-full h-14 rounded-xl bg-[#3E8FCC] text-white font-bold text-lg hover:bg-[#2F71A3] transition-all shadow-lg shadow-blue-100 active:scale-[0.98]"
+                    className="w-full h-12 rounded-xl bg-[#3E8FCC] text-white font-semibold hover:bg-[#2F71A3] transition-colors"
                 >
-                    Great! Continue
+                    Continue
                 </button>
             </div>
         </div>

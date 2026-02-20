@@ -22,12 +22,10 @@ export const GeneralReview: React.FC<GeneralReviewProps> = ({
 
     const toggleTag = (tag: string) => {
         if (selectedTags.includes(tag)) {
-            // Remove tag from comment
             const tagPattern = new RegExp(`#${tag}\\s*`, 'gi')
             setComment(prev => prev.replace(tagPattern, '').trim())
             setSelectedTags(prev => prev.filter(t => t !== tag))
         } else {
-            // Add tag to comment
             setComment(prev => prev ? `${prev} #${tag}` : `#${tag}`)
             setSelectedTags(prev => [...prev, tag])
         }
@@ -35,9 +33,8 @@ export const GeneralReview: React.FC<GeneralReviewProps> = ({
 
     return (
         <div className="flex flex-col lg:flex-row gap-8 max-w-6xl w-full">
-            {/* Left Column: Session Details */}
             <div className="lg:w-[320px] shrink-0">
-                <div className="bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
+                <div className="bg-white rounded-lg p-8 border border-gray-100 shadow-sm">
                     <h3 className="text-lg font-bold text-gray-900 mb-6">Session Details</h3>
 
                     <div className="flex flex-col items-center mb-8 py-4">
@@ -52,7 +49,7 @@ export const GeneralReview: React.FC<GeneralReviewProps> = ({
                         <DetailRow label="Meeting Type" value="Video Call" />
                     </div>
 
-                    <div className="mt-8 p-4 bg-[#F3F9FF] rounded-2xl flex gap-3 border border-[#E5F1FF]">
+                    <div className="mt-8 p-4 bg-[#F3F9FF] rounded-lg flex gap-3 border border-[#E5F1FF]">
                         <Info className="w-5 h-5 text-[#3E8FCC] shrink-0" />
                         <p className="text-[10px] text-[#3E8FCC] leading-relaxed">
                             Your feedback helps improve the platform. Reviews are visible to other users after both parties complete feedback.
@@ -60,10 +57,8 @@ export const GeneralReview: React.FC<GeneralReviewProps> = ({
                     </div>
                 </div>
             </div>
-
-            {/* Right Column: Review Form */}
             <div className="flex-1">
-                <div className="bg-white rounded-xl p-8 border border-gray-100 shadow-sm min-h-full flex flex-col">
+                <div className="bg-white rounded-lg p-8 border border-gray-100 shadow-sm min-h-full flex flex-col">
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Leave a Review</h2>
                     <p className="text-sm text-gray-500 mb-8">How was your teaching session?</p>
 
@@ -75,7 +70,7 @@ export const GeneralReview: React.FC<GeneralReviewProps> = ({
                                     value={comment}
                                     onChange={(e) => setComment(e.target.value)}
                                     placeholder="What did you like about this session?"
-                                    className="w-full h-32 p-4 pt-6 rounded-2xl border border-gray-100 bg-gray-50 outline-none focus:ring-1 focus:ring-gray-200 resize-none text-sm"
+                                    className="w-full h-32 p-4 pt-6 rounded-lg border border-gray-100 bg-gray-50 outline-none focus:ring-1 focus:ring-gray-200 resize-none text-sm"
                                     maxLength={200}
                                 />
                                 <span className="absolute bottom-4 right-4 text-[10px] text-gray-400">
@@ -88,7 +83,7 @@ export const GeneralReview: React.FC<GeneralReviewProps> = ({
                                     <button
                                         key={tag}
                                         onClick={() => toggleTag(tag)}
-                                        className={`px-3 py-1.5 rounded-full text-[10px] border transition-all ${selectedTags.includes(tag)
+                                        className={`px-3 py-1.5 rounded-md text-[10px] border transition-all ${selectedTags.includes(tag)
                                             ? 'bg-[#3E8FCC] text-white border-[#3E8FCC]'
                                             : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'
                                             }`}
@@ -107,7 +102,7 @@ export const GeneralReview: React.FC<GeneralReviewProps> = ({
                                     checked={isPublic}
                                     onChange={() => setIsPublic(!isPublic)}
                                 />
-                                <div className={`w-5 h-5 rounded border-2 transition-all ${isPublic ? 'bg-[#3E8FCC] border-[#3E8FCC]' : 'border-gray-300 group-hover:border-gray-400'
+                                <div className={`w-5 h-5 rounded-md border-2 transition-all ${isPublic ? 'bg-[#3E8FCC] border-[#3E8FCC]' : 'border-gray-300 group-hover:border-gray-400'
                                     }`}>
                                     {isPublic && (
                                         <svg className="w-full h-full text-white p-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
@@ -123,7 +118,7 @@ export const GeneralReview: React.FC<GeneralReviewProps> = ({
                     <div className="flex gap-4 mt-12">
                         <button
                             onClick={onSkip}
-                            className="flex-1 h-12 rounded-xl border-2 border-[#3E8FCC] text-[#3E8FCC] font-bold hover:bg-gray-50 transition-all"
+                            className="flex-1 h-12 rounded-lg border-2 border-[#3E8FCC] text-[#3E8FCC] font-bold hover:bg-gray-50 transition-all"
                         >
                             Skip
                         </button>

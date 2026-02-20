@@ -21,7 +21,6 @@ export const RoleSpecificFeedback: React.FC<RoleSpecificFeedbackProps> = ({
     const [bestPart, setBestPart] = useState('')
     const [hoveredStar, setHoveredStar] = useState<{ questionId: string; star: number } | null>(null)
 
-    // Questions based on role
     const getQuestions = () => {
         if (role === 'learning') {
             return [
@@ -54,9 +53,8 @@ export const RoleSpecificFeedback: React.FC<RoleSpecificFeedbackProps> = ({
 
     return (
         <div className="flex flex-col lg:flex-row gap-8 max-w-6xl w-full">
-            {/* Left Column: Session Details */}
             <div className="lg:w-[320px] shrink-0">
-                <div className="bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
+                <div className="bg-white rounded-lg p-8 border border-gray-100 shadow-sm">
                     <h3 className="text-lg font-bold text-gray-900 mb-6">Session Details</h3>
 
                     <div className="flex flex-col items-center mb-8 py-4">
@@ -76,9 +74,8 @@ export const RoleSpecificFeedback: React.FC<RoleSpecificFeedbackProps> = ({
                 </div>
             </div>
 
-            {/* Right Column: Role-Specific Questions */}
             <div className="flex-1">
-                <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+                <div className="bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">How was your experience?</h2>
                     <p className="text-sm text-gray-500 mb-8">
                         {role === 'learning'
@@ -89,24 +86,26 @@ export const RoleSpecificFeedback: React.FC<RoleSpecificFeedbackProps> = ({
                     </p>
 
                     <div className="space-y-8">
-                        {/* Rating Questions */}
-                        {questions.map((question) => (
+                        {questions.map((question: any) => (
                             <div key={question.id} className="space-y-3">
                                 <label className="text-sm font-semibold text-gray-700">{question.label}</label>
                                 <div className="flex gap-2">
                                     {[1, 2, 3, 4, 5].map((star) => {
-                                        const isHovered = hoveredStar?.questionId === question.id && hoveredStar.star >= star
-                                        const isSelected = ratings[question.id] >= star
+                                        const isHovered = hoveredStar !== null && hoveredStar.questionId === question.id && hoveredStar.star >= star
+                                        const isSelected = (ratings[question.id] || 0) >= star
                                         const shouldHighlight = isSelected || isHovered
 
                                         return (
                                             <button
                                                 key={star}
+
                                                 onClick={() => setRating(question.id, star)}
+
                                                 onMouseEnter={() => setHoveredStar({ questionId: question.id, star })}
                                                 onMouseLeave={() => setHoveredStar(null)}
                                                 className="transition-all hover:scale-110"
                                             >
+
                                                 <Star
                                                     className={`w-8 h-8 transition-colors ${shouldHighlight
                                                         ? 'fill-yellow-400 text-yellow-400'
@@ -120,7 +119,6 @@ export const RoleSpecificFeedback: React.FC<RoleSpecificFeedbackProps> = ({
                             </div>
                         ))}
 
-                        {/* Improvement Section */}
                         <div className="space-y-3 pt-4">
                             <label className="text-sm font-semibold text-gray-700">
                                 Things they did well? (Optional)
@@ -129,7 +127,7 @@ export const RoleSpecificFeedback: React.FC<RoleSpecificFeedbackProps> = ({
                                 value={bestPart}
                                 onChange={(e) => setBestPart(e.target.value)}
                                 placeholder="What stood out positively?"
-                                className="w-full h-24 p-4 rounded-2xl border border-gray-100 bg-gray-50 outline-none focus:ring-1 focus:ring-gray-200 resize-none text-sm"
+                                className="w-full h-24 p-4 rounded-lg border border-gray-100 bg-gray-50 outline-none focus:ring-1 focus:ring-gray-200 resize-none text-sm"
                             />
                         </div>
 
@@ -141,14 +139,14 @@ export const RoleSpecificFeedback: React.FC<RoleSpecificFeedbackProps> = ({
                                 value={improvements}
                                 onChange={(e) => setImprovements(e.target.value)}
                                 placeholder="Any suggestions for improvement?"
-                                className="w-full h-24 p-4 rounded-2xl border border-gray-100 bg-gray-50 outline-none focus:ring-1 focus:ring-gray-200 resize-none text-sm"
+                                className="w-full h-24 p-4 rounded-lg border border-gray-100 bg-gray-50 outline-none focus:ring-1 focus:ring-gray-200 resize-none text-sm"
                             />
                         </div>
 
                         <div className="flex gap-4 mt-8">
                             <button
                                 onClick={onSkip}
-                                className="flex-1 h-12 rounded-xl border-2 border-[#3E8FCC] text-[#3E8FCC] font-bold hover:bg-gray-50 transition-all"
+                                className="flex-1 h-12 rounded-lg border-2 border-[#3E8FCC] text-[#3E8FCC] font-bold hover:bg-gray-50 transition-all"
                             >
                                 Later
                             </button>

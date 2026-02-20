@@ -1,6 +1,4 @@
 import React from 'react'
-import { Button } from '@/components/common'
-import { CheckCircle2 } from 'lucide-react'
 
 interface SessionCompletedScreenProps {
     partnerName: string
@@ -14,13 +12,13 @@ export const SessionCompletedScreen: React.FC<SessionCompletedScreenProps> = ({
     onReport,
 }) => {
     return (
-        <div className="flex items-center justify-center px-4 py-20 min-h-[calc(100vh-140px)]">
-            <div className="bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.08)] max-w-[540px] w-full p-10 relative overflow-hidden animate-fade-in">
-                <div className="flex justify-center gap-12 absolute top-8 left-0 right-0">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#A3D9A5]" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#A5C3E8]" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#E8A5A5]" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#E8D9A5]" />
+        <div className="flex items-center justify-center px-4 py-12 w-full">
+            <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 max-w-[640px] w-full p-12 relative">
+                <div className="flex justify-center gap-6 mb-10">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#4ADE80]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#60A5FA]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#F87171]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#FBBF24]" />
                 </div>
 
                 <div className="flex justify-center mb-10">

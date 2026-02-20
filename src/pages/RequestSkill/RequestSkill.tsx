@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import SwapMethodOption from '../../components/SwapMethodOption/SwapMethodOption';
@@ -8,10 +9,12 @@ import SuccessModal from '../../components/SuccessModal';
 import { Dayjs } from 'dayjs';
 
 const RequestSkill: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [selectedSwapMethod, setSelectedSwapMethod] = useState<'skill' | 'free' | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<string>('React Basics');
   const [showSkillDropdown, setShowSkillDropdown] = useState(false);
-  const [userSkills] = useState<string[]>(['React Basics', 'JavaScript Fundamentals', 'CSS Design', 'Node.js Basics']);
+  const [userSkills, setUserSkills] = useState<string[]>(['React Basics', 'JavaScript Fundamentals', 'CSS Design', 'Node.js Basics']);
   const [message, setMessage] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
   const [startTime, setStartTime] = useState<string>('12:00 AM');
@@ -36,8 +39,11 @@ const RequestSkill: React.FC = () => {
   ];
 
   const handleBackClick = () => {
-    // Navigate back logic here
-    window.history.back();
+    navigate(-1);
+  };
+
+  const handleAddNewSkill = () => {
+    navigate('/request-skill/add-skill');
   };
 
   const handleSendRequest = () => {
@@ -68,20 +74,32 @@ const RequestSkill: React.FC = () => {
   const isSection3Complete = !!selectedDate && !!startTime && !!endTime;
   const isFormComplete = isSection1Complete && isSection2Complete && isSection3Complete;
 
+  useEffect(() => {
+    const state = location.state as { newSkill?: string } | null;
+    const incomingSkill = state?.newSkill?.trim();
+
+    if (!incomingSkill) return;
+
+    setUserSkills((prev) => (prev.includes(incomingSkill) ? prev : [incomingSkill, ...prev]));
+    setSelectedSkill(incomingSkill);
+    setShowSkillDropdown(false);
+    navigate(location.pathname, { replace: true });
+  }, [location.pathname, location.state, navigate]);
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-light">
       <Header activeTab="Default" />
 
-      <div className="flex-1 flex flex-col items-center px-5 py-10">
-        <div className="bg-white rounded-lg p-6 w-full max-w-[846px] shadow-sm">
-          <div className="flex items-center gap-4 mb-6">
+      <div className="flex-1 flex flex-col items-center px-4 py-6 sm:px-5 sm:py-10">
+        <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-[846px] shadow-sm">
+          <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-6">
             <button className="bg-transparent border-none w-8 h-8 flex items-center justify-center cursor-pointer rounded-sm p-0 transition-colors hover:bg-gray-100" onClick={handleBackClick}>
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
                 <path d="M13.3327 26.6667L4.66602 18L13.3327 9.33334" stroke="#0C0D0F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M27.3327 18H4.66602" stroke="#0C0D0F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
-            <h1 className="font-bold text-3xl text-dark m-0">Request Skill</h1>
+            <h1 className="font-bold text-2xl sm:text-3xl text-dark m-0">Request Skill</h1>
           </div>
 
           <div className="flex flex-col gap-6 w-full">
@@ -109,13 +127,13 @@ const RequestSkill: React.FC = () => {
                 />
 
                 {selectedSwapMethod === 'skill' && (
-                  <div className="px-4 w-full">
-                    <div className="border border-primary rounded-lg p-4 flex flex-col gap-4 bg-white">
+                  <div className="px-0 sm:px-4 w-full">
+                    <div className="border border-primary rounded-lg p-3 sm:p-4 flex flex-col gap-4 bg-white">
                       <div className="flex flex-col gap-1">
                         <h3 className="font-semibold text-lg text-dark m-0">Your offered skill</h3>
                         <p className="font-normal text-sm text-dark-light m-0">Select one of your skills to exchange with the provider.</p>
                       </div>
-                      <div className="flex flex-col gap-2.5 px-4">
+                      <div className="flex flex-col gap-2.5 px-0 sm:px-4">
                         <div className="relative w-full">
                           <button
                             className="bg-white border border-gray-border rounded-md h-12 w-full flex items-center justify-between px-4 cursor-pointer transition-colors hover:border-primary"
@@ -143,7 +161,11 @@ const RequestSkill: React.FC = () => {
                             </div>
                           )}
                         </div>
-                        <button className="border border-primary rounded-md h-8 w-[163px] flex items-center justify-center gap-1 bg-transparent cursor-pointer transition-colors hover:bg-primary-dark/5">
+                        <button
+                          type="button"
+                          onClick={handleAddNewSkill}
+                          className="border border-primary rounded-md h-8 w-full sm:w-[163px] flex items-center justify-center gap-1 bg-transparent cursor-pointer transition-colors hover:bg-primary-dark/5"
+                        >
                           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M12 6V18M6 12H18" stroke="#3272A3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
@@ -193,11 +215,11 @@ const RequestSkill: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex gap-2 w-full flex-wrap">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full">
                 {messageSuggestions.map((suggestion, index) => (
                   <button
                     key={index}
-                    className="flex-1 min-w-0 bg-background-gray border border-gray-border rounded-2xl px-2 py-2 h-12 font-normal text-xs text-black cursor-pointer transition-colors text-center flex items-center justify-center hover:bg-gray-border"
+                    className="w-full min-w-0 bg-background-gray border border-gray-border rounded-2xl px-2 py-2 min-h-12 font-normal text-xs text-black cursor-pointer transition-colors text-center flex items-center justify-center hover:bg-gray-border"
                     onClick={() => setMessage(suggestion)}
                   >
                     "{suggestion}"
@@ -223,7 +245,7 @@ const RequestSkill: React.FC = () => {
                   />
                 </div>
 
-                <div className="flex gap-4 items-end w-full">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-end w-full">
                   <div className="flex-1 flex flex-col gap-1">
                     <label className="font-medium text-xs leading-4 tracking-wide text-[#5c5c5c]">Start</label>
                     <CustomTimePicker
@@ -233,7 +255,7 @@ const RequestSkill: React.FC = () => {
                     />
                   </div>
 
-                  <div className="font-medium text-sm text-[#353535] text-center w-[13px] pb-3">to</div>
+                  <div className="font-medium text-sm text-[#353535] text-center w-auto sm:w-[13px] pb-0 sm:pb-3">to</div>
 
                   <div className="flex-1 flex flex-col gap-1">
                     <label className="font-medium text-xs leading-4 tracking-wide text-[#5c5c5c]">End</label>
@@ -255,9 +277,9 @@ const RequestSkill: React.FC = () => {
               </div>
             </CollapsibleSection>
 
-            <div className="flex justify-end pt-8 w-full">
+            <div className="flex justify-end pt-6 sm:pt-8 w-full">
               <button
-                className="border-none rounded-md w-[218px] h-12 font-medium text-base text-white transition-all disabled:cursor-not-allowed disabled:bg-gradient-to-r disabled:from-gray-400 disabled:to-gray-400 enabled:bg-gradient-to-r enabled:from-primary-light enabled:to-primary-light enabled:cursor-pointer enabled:hover:opacity-90"
+                className="border-none rounded-md w-full sm:w-[218px] h-12 font-medium text-base text-white transition-all disabled:cursor-not-allowed disabled:bg-gradient-to-r disabled:from-gray-400 disabled:to-gray-400 enabled:bg-gradient-to-r enabled:from-primary-light enabled:to-primary-light enabled:cursor-pointer enabled:hover:opacity-90"
                 onClick={handleSendRequest}
                 disabled={!isFormComplete}
               >
