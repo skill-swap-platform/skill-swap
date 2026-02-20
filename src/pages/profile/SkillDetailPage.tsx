@@ -129,7 +129,7 @@ const SkillDetailPage: React.FC = () => {
         <div className="min-h-screen bg-[#F5F6FA] flex flex-col font-sans">
             <Header />
             <main className="flex-1 py-10 px-4">
-                <div className="max-w-[800px] mx-auto bg-white rounded-[24px] shadow-sm p-8">
+                <div className="max-w-[800px] mx-auto bg-white rounded-[24px] shadow-sm p-5 sm:p-8">
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-4">
                             <button

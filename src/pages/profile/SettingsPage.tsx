@@ -51,7 +51,7 @@ const SettingsPage: React.FC = () => {
         <div className="min-h-screen bg-[#F5F6FA] flex flex-col font-sans text-[#0C0D0F]">
             <Header />
             <main className="flex-1 py-10 px-4">
-                <div className="max-w-[800px] mx-auto bg-white rounded-[24px] shadow-sm p-8">
+                <div className="max-w-[800px] mx-auto bg-white rounded-[24px] shadow-sm p-5 sm:p-8">
                     <div className="flex items-center gap-4 mb-10">
                         <button
                             onClick={() => navigate(-1)}

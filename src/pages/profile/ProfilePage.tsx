@@ -185,7 +185,7 @@ const ProfilePage: React.FC = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-2 xs:grid-cols-3 gap-3">
                                     {skills.slice(0, 3).map((us) => (
                                         <SkillCard
                                             key={us.id}

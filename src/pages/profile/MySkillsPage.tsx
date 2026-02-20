@@ -94,7 +94,7 @@ const MySkillsPage: React.FC = () => {
                                 </button>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {skills.map((us) => {
                                     const initial = us.skill?.name?.[0]?.toUpperCase() || 'S';
                                     return (

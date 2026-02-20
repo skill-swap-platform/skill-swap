@@ -104,7 +104,7 @@ const EditProfilePage: React.FC = () => {
             <main className="flex-1 py-8 px-4">
                 <div className="max-w-[600px] mx-auto">
 
-                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden p-6">
+                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden p-4 sm:p-6">
                         <div className="flex items-center justify-between mb-6">
                             <button
                                 onClick={() => navigate('/profile')}
@@ -197,7 +197,7 @@ const EditProfilePage: React.FC = () => {
                                     <p className="text-gray-400 text-[13px]">No skills added yet</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                     {skills.slice(0, 6).map((us) => {
                                         const initial = us.skill?.name?.[0]?.toUpperCase() || 'S';
                                         return (
