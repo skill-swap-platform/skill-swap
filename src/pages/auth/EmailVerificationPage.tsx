@@ -23,12 +23,12 @@ export default function EmailVerificationPage({
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
   const otpValue = useMemo(() => otp.join(""), [otp]);
-  const isComplete = otpValue.length === OTP_LENGTH && !otpValue.includes("");
-
+  const isComplete = otpValue.length === OTP_LENGTH
   useEffect(() => {
     if (timeLeft <= 0) return;
 
@@ -54,6 +54,7 @@ export default function EmailVerificationPage({
 
   function handleChange(index: number, raw: string) {
     setError(null);
+    setSuccessMessage(null);
 
     // Accept only digits
     const digit = raw.replace(/\D/g, "").slice(-1);
@@ -67,6 +68,7 @@ export default function EmailVerificationPage({
     e: React.KeyboardEvent<HTMLInputElement>,
   ) {
     setError(null);
+    setSuccessMessage(null);
 
     if (e.key === "Backspace") {
       e.preventDefault();
@@ -141,13 +143,18 @@ export default function EmailVerificationPage({
 
   async function onResendClick() {
     if (!onResend || timeLeft > 0) return;
+    setError(null);
+    setSuccessMessage(null);
 
     try {
       setIsResending(true);
       await onResend();
       setOtp(Array(OTP_LENGTH).fill(""));
       setTimeLeft(initialSeconds);
+      setSuccessMessage("Verification code sent successfully!");
       focusIndex(0);
+    } catch {
+      setError("Failed to resend code. Please try again.");
     } finally {
       setIsResending(false);
     }
@@ -201,6 +208,8 @@ export default function EmailVerificationPage({
 
             {error ? (
               <p className="mt-3 text-xs text-red-600">{error}</p>
+            ) : successMessage ? (
+              <p className="mt-3 text-xs text-green-600">{successMessage}</p>
             ) : (
               <div className="mt-3" />
             )}
@@ -222,7 +231,7 @@ export default function EmailVerificationPage({
                 disabled={!onResend || timeLeft > 0 || isResending}
                 className="font-semibold text-sky-700 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isResending ? "Resending..." : "Resend Code"}
+                {isResending ? "Resending..." : timeLeft > 0 ? `Resend Code (${timeLeft}s)` : "Resend Code"}
               </button>
             </div>
 

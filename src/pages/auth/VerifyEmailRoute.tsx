@@ -1,6 +1,6 @@
 // src/pages/auth/VerifyEmailRoute.tsx
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import EmailVerificationPage from "@/pages/auth/EmailVerificationPage";
 import { authService } from "@/api/services/auth.service";
 
@@ -8,12 +8,24 @@ const PENDING_KEY = "pending_signup_v1";
 const TTL_MS = 15 * 60 * 1000; // 15 minutes
 
 type PendingSignup = { email: string; password: string; createdAt: number };
+type LocationState = { email?: string } | null;
 
 export default function VerifyEmailRoute() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [pending, setPending] = useState<PendingSignup | null>(null);
+  // For users coming from login (unverified email) - only have email, no password
+  const [loginEmail, setLoginEmail] = useState<string | null>(null);
 
   useEffect(() => {
+    // First check if user came from login with an unverified email
+    const state = location.state as LocationState;
+    if (state?.email) {
+      setLoginEmail(state.email);
+      return;
+    }
+
+    // Otherwise check for pending signup from registration
     const raw = sessionStorage.getItem(PENDING_KEY);
     if (!raw) {
       navigate("/auth/register", { replace: true });
@@ -35,9 +47,48 @@ export default function VerifyEmailRoute() {
       sessionStorage.removeItem(PENDING_KEY);
       navigate("/auth/register", { replace: true });
     }
-  }, [navigate]);
+  }, [navigate, location.state]);
 
-  const email = useMemo(() => pending?.email ?? "", [pending]);
+  const email = useMemo(() => loginEmail ?? pending?.email ?? "", [loginEmail, pending]);
+
+  // Handle case when user came from login (unverified email)
+  if (loginEmail) {
+    const onVerifyFromLogin = async (code: string) => {
+      const verifyRes = await authService.verifyOtp({
+        email: loginEmail,
+        otpCode: code,
+        type: "VERIFY_EMAIL",
+      });
+
+      if (!verifyRes.success) {
+        throw new Error(verifyRes.message || "Invalid code");
+      }
+
+      // Redirect to login after successful verification
+      navigate("/auth/login", { replace: true });
+    };
+
+    const onResendFromLogin = async () => {
+      const res = await authService.resendOtp({
+        email: loginEmail,
+        type: "VERIFY_EMAIL",
+      });
+
+      if (!res.success) {
+        throw new Error(res.message || "Failed to resend code");
+      }
+    };
+
+    return (
+      <EmailVerificationPage
+        email={email}
+        onVerify={onVerifyFromLogin}
+        onResend={onResendFromLogin}
+        initialSeconds={60}
+        supportEmail="support@swap.xyz"
+      />
+    );
+  }
 
   if (!pending) return null;
 
@@ -88,7 +139,7 @@ export default function VerifyEmailRoute() {
       email={email}
       onVerify={onVerify}
       onResend={onResend}
-      initialSeconds={10 * 60}
+      initialSeconds={60}
       supportEmail="support@swap.xyz"
     />
   );

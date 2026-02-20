@@ -82,7 +82,8 @@ export default function LoginPage() {
         !response.success &&
         response.message == "Please verify your email before logging in"
       ) {
-        navigate("/auth/verify-email",);
+        navigate("/auth/verify-email", { state: { email } });
+        return;
       }
       if (!response.success || !response.data) {
         setFieldErrors(mapAuthErrorToFields(response.message));
