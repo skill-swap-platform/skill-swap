@@ -6,9 +6,15 @@ export interface RequestCardProps {
   userRating: number;
   requestedSkill: string;
   offeredSkill?: string;
-  status: 'pending' | 'accepted' | 'declined';
+  requestedSkillLevel?: string | null;
+  offeredSkillLevel?: string | null;
+  status: 'pending' | 'accepted' | 'completed' | 'declined' | 'expired' | 'cancelled';
   sessionType: 'skill-swap' | 'free-session';
   sentTime: string;
+  message?: string | null;
+  startAt?: string;
+  endAt?: string;
+  timezone?: string;
   onClick?: () => void;
 }
 
@@ -34,10 +40,25 @@ export const RequestCard: React.FC<RequestCardProps> = ({
       bgColor: '#16A34A',
       label: 'Accepted',
     },
+    completed: {
+      color: '#16A34A',
+      bgColor: '#16A34A',
+      label: 'Completed',
+    },
     declined: {
       color: '#9CA3AF',
       bgColor: '#9CA3AF',
       label: 'Declined',
+    },
+    expired: {
+      color: '#D97706',
+      bgColor: '#D97706',
+      label: 'Expired',
+    },
+    cancelled: {
+      color: '#6B7280',
+      bgColor: '#6B7280',
+      label: 'Cancelled',
     },
   };
 

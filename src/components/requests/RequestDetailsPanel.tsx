@@ -8,7 +8,70 @@ interface RequestDetailsPanelProps {
   onClose: () => void;
   onCancelRequest?: (request: RequestCardProps) => void;
   onViewProfile?: (userName: string) => void;
+  isCanceling?: boolean;
 }
+
+const formatSkillLevel = (level?: string | null): string => {
+  if (!level) return 'Not specified';
+  return level
+    .toLowerCase()
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+const formatSessionDuration = (startAt?: string, endAt?: string): string => {
+  if (!startAt || !endAt) return 'Not specified';
+  const startDate = new Date(startAt);
+  const endDate = new Date(endAt);
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return 'Not specified';
+  }
+
+  const totalMinutes = Math.round((endDate.getTime() - startDate.getTime()) / 60000);
+  if (totalMinutes <= 0) return 'Not specified';
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours > 0 && minutes > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  if (hours > 0) {
+    return `${hours}h`;
+  }
+  return `${minutes} minutes`;
+};
+
+const formatPreferredTime = (startAt?: string, endAt?: string, timezone?: string): string => {
+  if (!startAt || !endAt) return 'Not specified';
+  const startDate = new Date(startAt);
+  const endDate = new Date(endAt);
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return 'Not specified';
+  }
+
+  const dateText = startDate.toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+  });
+  const startTimeText = startDate.toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+  const endTimeText = endDate.toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+  const timezoneText = timezone ? ` (${timezone})` : '';
+
+  return `${dateText}, ${startTimeText} - ${endTimeText}${timezoneText}`;
+};
+
+const formatProfileSubtitle = (skill?: string, level?: string | null): string => {
+  if (!skill) return 'Skill Provider';
+  if (!level) return skill;
+  return `${skill} - ${formatSkillLevel(level)}`;
+};
 
 export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
   request,
@@ -16,10 +79,19 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
   onClose,
   onCancelRequest,
   onViewProfile,
+  isCanceling = false,
 }) => {
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   if (!request || !isOpen) return null;
+  const sessionDurationText = formatSessionDuration(request.startAt, request.endAt);
+  const skillLevelText = formatSkillLevel(request.requestedSkillLevel ?? request.offeredSkillLevel);
+  const messageText = request.message?.trim() || 'No message provided.';
+  const preferredTimeText = formatPreferredTime(request.startAt, request.endAt, request.timezone);
+  const providerSubtitle = formatProfileSubtitle(
+    request.requestedSkill,
+    request.requestedSkillLevel
+  );
 
   const handleCancelClick = () => {
     setShowCancelModal(true);
@@ -30,6 +102,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
   };
 
   const handleConfirmCancel = () => {
+    if (isCanceling) return;
     setShowCancelModal(false);
     onCancelRequest?.(request);
   };
@@ -37,13 +110,26 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
   const statusConfig = {
     pending: { color: '#FFA412', bgColor: '#FFA412', label: 'Pending' },
     accepted: { color: '#16A34A', bgColor: '#16A34A', label: 'Accepted' },
+    completed: { color: '#16A34A', bgColor: '#16A34A', label: 'Completed' },
     declined: { color: '#DC2626', bgColor: '#DC2626', label: 'Declined' },
+    expired: { color: '#D97706', bgColor: '#D97706', label: 'Expired' },
+    cancelled: { color: '#6B7280', bgColor: '#6B7280', label: 'Cancelled' },
   };
 
   const currentStatus = statusConfig[request.status];
+  const isClosedState =
+    request.status === 'declined' ||
+    request.status === 'expired' ||
+    request.status === 'cancelled';
+  const closedStateMessage =
+    request.status === 'declined'
+      ? 'This request was declined.'
+      : request.status === 'expired'
+      ? 'This request has expired.'
+      : 'This request was cancelled.';
 
   // Render different layouts based on status
-  if (request.status === 'accepted') {
+  if (request.status === 'accepted' || request.status === 'completed') {
     return (
       <div className="requests-details-panel bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
         {/* Header with Status */}
@@ -171,7 +257,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
               </div>
               <div className="flex flex-1 h-full items-center min-w-0">
                 <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] text-center">
-                  60 minutes
+                  {sessionDurationText}
                 </p>
               </div>
             </div>
@@ -184,7 +270,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
               </div>
               <div className="flex flex-1 h-full items-center min-w-0">
                 <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] text-center">
-                  Beginner
+                  {skillLevelText}
                 </p>
               </div>
             </div>
@@ -199,9 +285,9 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
             </p>
           </div>
           <div className="flex flex-col items-start px-[16px] py-[8px] w-full">
-            <div className="bg-[#fafafa] border border-[#e6e6e6] flex flex-col h-[70px] items-center justify-center p-[8px] rounded-[10px] w-full">
-              <p className="font-normal h-[40px] leading-[normal] text-[12px] text-[#666] text-center w-full">
-                "Hi! I'd love to learn this skill and start building my portfolio. I'm a beginner and looking for guidance on the core concepts of performance optimization."
+            <div className="bg-[#fafafa] border border-[#e6e6e6] flex flex-col min-h-[70px] items-center justify-center p-[8px] rounded-[10px] w-full">
+              <p className="font-normal leading-[normal] text-[12px] text-[#666] text-center w-full">
+                {messageText}
               </p>
             </div>
           </div>
@@ -216,7 +302,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
           </div>
           <div className="flex flex-col items-start px-[16px] py-[8px] w-full">
             <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] text-center">
-              Saturday, Feb 2, 4:00 PM - 5:00 PM
+              {preferredTimeText}
             </p>
           </div>
         </div>
@@ -236,7 +322,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
     );
   }
 
-  if (request.status === 'declined') {
+  if (isClosedState) {
     return (
       <div className="requests-details-panel bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
         {/* Header with Status */}
@@ -280,7 +366,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
                     {request.userName}
                   </p>
                   <p className="font-medium text-[14px] leading-[normal] text-[#5e5e5f] truncate">
-                    Photographer & Filmmaker
+                    {providerSubtitle}
                   </p>
                 </div>
               </div>
@@ -291,18 +377,18 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
           </div>
         </div>
 
-        {/* Decline Container */}
+        {/* Closed State Container */}
         <div className="bg-white flex flex-col h-[86px] items-center justify-center rounded-[10px] w-full">
           <div className="flex flex-col gap-[8px] items-center p-[16px] w-full">
             <div className="flex items-center justify-center rounded-full shrink-0 w-[24px] h-[24px]">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M9.17 14.83L14.83 9.17" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M14.83 14.83L9.17 9.17" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z" stroke={currentStatus.bgColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M9.17 14.83L14.83 9.17" stroke={currentStatus.bgColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M14.83 14.83L9.17 9.17" stroke={currentStatus.bgColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
             <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] text-center">
-              This request was declined.
+              {closedStateMessage}
             </p>
           </div>
         </div>
@@ -354,7 +440,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
                   {request.userName}
                 </p>
                 <p className="font-medium text-[14px] leading-[normal] text-[#5e5e5f] truncate">
-                  Photographer & Filmmaker
+                  {providerSubtitle}
                 </p>
               </div>
               <div className="flex gap-[2px] items-end">
@@ -441,7 +527,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
             </div>
             <div className="flex flex-1 h-full items-center min-w-0">
               <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] text-center">
-                60 minutes
+                {sessionDurationText}
               </p>
             </div>
           </div>
@@ -454,7 +540,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
             </div>
             <div className="flex flex-1 h-full items-center min-w-0">
               <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] text-center">
-                Beginner
+                {skillLevelText}
               </p>
             </div>
           </div>
@@ -469,9 +555,9 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
           </p>
         </div>
         <div className="flex flex-col items-start px-[16px] py-[8px] w-full">
-          <div className="bg-[#fafafa] border border-[#e6e6e6] flex flex-col h-[70px] items-center justify-center p-[8px] rounded-[10px] w-full">
-            <p className="font-normal h-[40px] leading-[normal] text-[12px] text-[#666] text-center w-full">
-              "Hi! I'd love to learn this skill and start building my portfolio. I'm a beginner and looking for guidance on the core concepts of performance optimization."
+          <div className="bg-[#fafafa] border border-[#e6e6e6] flex flex-col min-h-[70px] items-center justify-center p-[8px] rounded-[10px] w-full">
+            <p className="font-normal leading-[normal] text-[12px] text-[#666] text-center w-full">
+              {messageText}
             </p>
           </div>
         </div>
@@ -486,7 +572,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
         </div>
         <div className="flex flex-col items-start px-[16px] py-[8px] w-full">
           <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] text-center">
-            Saturday, Feb 2, 4:00 PM - 5:00 PM
+            {preferredTimeText}
           </p>
         </div>
       </div>
@@ -495,6 +581,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
       <div className="flex flex-col items-center justify-center w-full">
         <button
           onClick={handleCancelClick}
+          disabled={isCanceling}
           className="bg-white border border-[#dc2626] flex gap-[10px] h-[48px] items-center justify-center rounded-[10px] w-full hover:bg-[#dc2626] hover:text-white transition-colors group"
         >
           <p className="font-medium text-[16px] leading-[normal] text-[#dc2626] group-hover:text-white">
@@ -545,6 +632,7 @@ export const RequestDetailsPanel: React.FC<RequestDetailsPanelProps> = ({
                   </button>
                   <button
                     onClick={handleConfirmCancel}
+                    disabled={isCanceling}
                     className="bg-[#dc2626] flex-1 flex gap-[10px] h-[40px] items-center justify-center min-h-px min-w-px rounded-[10px] hover:bg-[#b91c1c] transition-colors"
                   >
                     <p className="font-normal text-[14px] leading-[normal] text-white shrink-0">

@@ -27,13 +27,8 @@ axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
         if (error.response?.status === 401) {
-            const path = window.location.pathname;
-            // Only redirect if NOT on an auth page AND if we don't have sensitive onboarding state
-            if (!path.includes('/auth/') && !path.includes('/onboarding/')) {
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('refreshToken');
-                window.location.href = '/auth/login?expired=true';
-            }
+            localStorage.removeItem('accessToken');
+            window.location.href = '/login';
         }
 
         if (error.response?.status === 400) {
