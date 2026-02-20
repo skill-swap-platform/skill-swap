@@ -59,9 +59,11 @@ export interface UpdateUserDto {
 
 export interface UserSkill {
     id: string;
-    level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
+    level: 'BEGINNER' | 'INTERMEDIATE' | 'EXPERT';
     yearsOfExperience: number;
     isOffering: boolean;
+    sessionLanguage?: string;
+    skillDescription?: string;
     createdAt: string;
     skill: SkillDto;
 }
@@ -76,9 +78,11 @@ export interface SkillDto {
 
 
 export interface AddUserSkillDto {
-    skillId: string
-    level: string
-    yearsOfExperience: number
+    skillId: string;
+    level: string;
+    yearsOfExperience: number;
+    sessionLanguage?: string;
+    skillDescription?: string;
 }
 
 export interface CategoryResponseDto {

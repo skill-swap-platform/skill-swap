@@ -115,9 +115,8 @@ const AddSkill: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowLanguagePanel((prev) => !prev)}
-                  className={`h-12 w-full rounded-[10px] border bg-white px-4 text-left text-[14px] focus:outline-none ${
-                    showLanguagePanel ? 'border-[#3272a3]' : 'border-[#e5e7eb]'
-                  } ${language ? 'text-[#0c0d0f]' : 'text-[#9ca3af]'}`}
+                  className={`h-12 w-full rounded-[10px] border bg-white px-4 text-left text-[14px] focus:outline-none ${showLanguagePanel ? 'border-[#3272a3]' : 'border-[#e5e7eb]'
+                    } ${language ? 'text-[#0c0d0f]' : 'text-[#9ca3af]'}`}
                 >
                   {language || 'Select Language'}
                 </button>
@@ -142,9 +141,8 @@ const AddSkill: React.FC = () => {
                         <button
                           key={lang}
                           type="button"
-                          className={`flex w-full px-4 py-2 text-left text-[14px] text-[#0c0d0f] hover:bg-white ${
-                            lang === language ? 'font-semibold text-[#3272a3]' : ''
-                          }`}
+                          className={`flex w-full px-4 py-2 text-left text-[14px] text-[#0c0d0f] hover:bg-white ${lang === language ? 'font-semibold text-[#3272a3]' : ''
+                            }`}
                           onClick={() => {
                             setLanguage(lang);
                             setShowLanguagePanel(false);
@@ -178,9 +176,8 @@ const AddSkill: React.FC = () => {
                       key={level}
                       type="button"
                       onClick={() => setSkillLevel(level)}
-                      className={`h-12 rounded-[12px] border text-[14px] font-medium transition-colors ${
-                        isActive ? 'border-[#3272a3] bg-[rgba(50,114,163,0.08)] text-[#0c0d0f]' : 'border-[#e5e7eb] bg-white text-[#666]'
-                      }`}
+                      className={`h-12 rounded-[12px] border text-[14px] font-medium transition-colors ${isActive ? 'border-[#3272a3] bg-[rgba(50,114,163,0.08)] text-[#0c0d0f]' : 'border-[#e5e7eb] bg-white text-[#666]'
+                        }`}
                     >
                       {level}
                     </button>
@@ -199,9 +196,8 @@ const AddSkill: React.FC = () => {
                       key={duration.value}
                       type="button"
                       onClick={() => setSessionDuration(duration.value)}
-                      className={`h-12 rounded-[12px] border text-[14px] font-medium transition-colors ${
-                        isSelected ? 'border-[#3272a3] bg-[rgba(50,114,163,0.08)] text-[#0c0d0f]' : 'border-[#e5e7eb] bg-white text-[#666]'
-                      }`}
+                      className={`h-12 rounded-[12px] border text-[14px] font-medium transition-colors ${isSelected ? 'border-[#3272a3] bg-[rgba(50,114,163,0.08)] text-[#0c0d0f]' : 'border-[#e5e7eb] bg-white text-[#666]'
+                        }`}
                     >
                       {duration.label}
                     </button>
@@ -215,9 +211,8 @@ const AddSkill: React.FC = () => {
                 type="button"
                 onClick={handlePublish}
                 disabled={isPublishDisabled}
-                className={`h-12 w-[160px] rounded-[10px] text-[16px] font-medium text-white transition-opacity ${
-                  isPublishDisabled ? 'bg-[#9ca3af] opacity-70' : 'bg-[#3272a3] hover:opacity-90'
-                }`}
+                className={`h-12 w-[160px] rounded-[10px] text-[16px] font-medium text-white transition-opacity ${isPublishDisabled ? 'bg-[#9ca3af] opacity-70' : 'bg-[#3272a3] hover:opacity-90'
+                  }`}
               >
                 Publish
               </button>

@@ -24,8 +24,9 @@ export const userService = {
             skillId: skillData.skillId,
             level: skillData.level,
             yearsOfExperience: skillData.yearsOfExperience,
+            sessionLanguage: skillData.sessionLanguage || 'English',
+            skillDescription: skillData.skillDescription || '',
         };
-        console.log('--- DEBUG: Sending addSkill payload ---', payload);
         const response = await axiosInstance.post('/api/v1/user/me/skills', payload);
         return response.data;
     },
@@ -35,10 +36,18 @@ export const userService = {
         return response.data;
     },
 
-    removeSkill: async (skillId: string, isOffering: boolean): Promise<ApiResponse<any>> => {
-        const response = await axiosInstance.delete(`/api/v1/user/me/skills/${skillId}`, {
-            params: { isOffering: isOffering.toString() }
-        });
+    updateUserSkill: async (skillId: string, data: Partial<AddUserSkillDto>): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.patch(`/api/v1/user/${skillId}`, data);
+        return response.data;
+    },
+
+    removeSkill: async (skillId: string): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.delete(`/api/v1/user/me/skills/${skillId}`);
+        return response.data;
+    },
+
+    getProfileRating: async (userId: string): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.get(`/api/v1/feedback/rating/${userId}`);
         return response.data;
     },
 
@@ -70,7 +79,6 @@ export const userService = {
 };
 
 export const skillService = {
-    // ✅ جيب كل الـ skills دفعة وحدة للـ local filtering
     getAllSkills: async (): Promise<ApiResponse<any>> => {
         const response = await axiosInstance.get('/api/v1/skills');
         return response.data;
