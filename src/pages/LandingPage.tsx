@@ -29,9 +29,11 @@ const HeroSection = () => {
     <Box
       sx={{
         flexGrow: 1,
-        padding: 2,
+        padding: {
+          xs: "20px",
+          md: "40px",
+        },
         bgcolor: "#F5F7FA",
-        height: 900,
       }}
     >
       <Grid
@@ -40,7 +42,7 @@ const HeroSection = () => {
         columnSpacing={{ xs: 1, sm: 2, md: 3 }}
         sx={{
           "@media (max-width:600px)": {
-            flexDirection: "column",
+            flexDirection: "column-reverse",
             alignItems: "center",
           },
         }}
@@ -79,7 +81,7 @@ const HeroSection = () => {
         <Grid size={6}>
           <Box
             sx={{
-              height: 900,
+              // height: 900,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
