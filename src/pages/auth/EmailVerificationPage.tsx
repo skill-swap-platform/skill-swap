@@ -215,7 +215,7 @@ export default function EmailVerificationPage({
             </button>
 
             <div className="mt-3 text-xs text-neutral-700">
-              Didn&apos;t receive the code?{" "}
+              Didn't receive the code?{" "}
               <button
                 type="button"
                 onClick={onResendClick}

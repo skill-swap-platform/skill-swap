@@ -42,7 +42,10 @@ const mapAuthErrorToFields = (message?: string): LoginFieldErrors => {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<LoginDto>({ email: "", password: "" });
+  const [formData, setFormData] = useState<LoginDto>({
+    email: "",
+    password: "",
+  });
   const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const canSubmit = !!formData.email.trim() && !!formData.password.trim();
 
@@ -74,6 +77,13 @@ export default function LoginPage() {
         password: formData.password,
       });
 
+      //!!!! Handle edge case
+      if (
+        !response.success &&
+        response.message == "Please verify your email before logging in"
+      ) {
+        navigate("/auth/verify-email",);
+      }
       if (!response.success || !response.data) {
         setFieldErrors(mapAuthErrorToFields(response.message));
         return;
@@ -83,9 +93,8 @@ export default function LoginPage() {
         response.data.user.role === "ADMIN" ? "/admin/dashboard" : "/explore";
       navigate(nextPath, { replace: true });
     } catch (error) {
-      const apiMessage = (
-        error as AxiosError<{ message?: string | string[] }>
-      )?.response?.data?.message;
+      const apiMessage = (error as AxiosError<{ message?: string | string[] }>)
+        ?.response?.data?.message;
       const normalizedMessage = Array.isArray(apiMessage)
         ? apiMessage.join(", ")
         : apiMessage;
@@ -141,7 +150,10 @@ export default function LoginPage() {
                       const emailError = emailRegex.test(formData.email.trim())
                         ? undefined
                         : EMAIL_ERROR;
-                      setFieldErrors((prev) => ({ ...prev, email: emailError }));
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        email: emailError,
+                      }));
                     }}
                     className="
                       h-14 w-full rounded-xl border border-gray-300 px-5
@@ -150,7 +162,9 @@ export default function LoginPage() {
                     "
                   />
                   {fieldErrors.email && (
-                    <p className="mt-2 text-sm text-[#D14343]">{fieldErrors.email}</p>
+                    <p className="mt-2 text-sm text-[#D14343]">
+                      {fieldErrors.email}
+                    </p>
                   )}
                 </div>
 
@@ -171,13 +185,19 @@ export default function LoginPage() {
                     onChange={(e) => {
                       const value = e.target.value;
                       setFormData((prev) => ({ ...prev, password: value }));
-                      setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        password: undefined,
+                      }));
                     }}
                     onBlur={() => {
                       const passwordError = formData.password.trim()
                         ? undefined
                         : PASSWORD_ERROR;
-                      setFieldErrors((prev) => ({ ...prev, password: passwordError }));
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        password: passwordError,
+                      }));
                     }}
                     placeholder="••••••••"
                     className="
@@ -207,7 +227,9 @@ export default function LoginPage() {
                     </a>
                   </div>
                   {fieldErrors.password && (
-                    <p className="text-sm text-[#D14343]">{fieldErrors.password}</p>
+                    <p className="text-sm text-[#D14343]">
+                      {fieldErrors.password}
+                    </p>
                   )}
                 </div>
 

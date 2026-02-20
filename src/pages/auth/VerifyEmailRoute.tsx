@@ -1,5 +1,5 @@
 // src/pages/auth/VerifyEmailRoute.tsx
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EmailVerificationPage from "@/pages/auth/EmailVerificationPage";
 import { authService } from "@/api/services/auth.service";

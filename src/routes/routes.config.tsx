@@ -26,7 +26,8 @@ import {
   PreviewManageBadges,
   PreviewPointsManage,
 } from "@/pages";
-import VerifyEmailRoute from "@/components/Auth/VerifyEmailRoute";
+import VerifyEmailRoute from "@/pages/auth/VerifyEmailRoute";
+// import EmailVerificationPage from "@/pages/auth/EmailVerificationPage";
 
 export const routesConfig = [
   {
