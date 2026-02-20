@@ -19,7 +19,7 @@ const SwapMethodOption: React.FC<SwapMethodOptionProps> = ({
   onClick,
   variant = 'default'
 }) => {
-  const baseClasses = "bg-white border rounded-md px-4 py-2 pl-2 flex items-center gap-4 cursor-pointer transition-colors duration-200";
+  const baseClasses = "bg-white border rounded-md px-4 py-2 pl-2 flex items-start sm:items-center gap-3 sm:gap-4 cursor-pointer transition-colors duration-200";
   const hoverClasses = variant === 'warning' ? 'hover:border-warning' : 'hover:border-primary';
   const selectedClasses = isSelected 
     ? variant === 'warning' 
@@ -39,8 +39,8 @@ const SwapMethodOption: React.FC<SwapMethodOptionProps> = ({
         {icon}
       </div>
       <div className="flex flex-1 flex-col gap-2 items-start justify-center min-h-0 min-w-0">
-        <p className="font-medium text-base text-dark h-4 m-0 w-full flex-shrink-0">{title}</p>
-        <p className="font-normal text-xs text-dark-light h-4 m-0 w-full flex-shrink-0">{description}</p>
+        <p className="font-medium text-sm sm:text-base text-dark m-0 w-full">{title}</p>
+        <p className="font-normal text-xs text-dark-light m-0 w-full">{description}</p>
       </div>
       <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
         {isSelected ? (

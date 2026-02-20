@@ -20,7 +20,7 @@ export const StatusFilterTabs: React.FC<StatusFilterTabsProps> = ({
   ];
 
   return (
-    <div className="bg-white border-[#e5e7eb] border-l border-r border-t flex gap-2 items-center p-4 rounded-tl-[10px] rounded-tr-[10px] w-[846px]">
+    <div className="bg-white border-[#e5e7eb] border-l border-r border-t flex flex-wrap gap-2 items-center p-4 rounded-tl-[10px] rounded-tr-[10px] w-full max-w-[846px]">
       {filters.map((filter) => (
         <button
           key={filter.value}
@@ -31,7 +31,7 @@ export const StatusFilterTabs: React.FC<StatusFilterTabsProps> = ({
               : 'border border-[#e5e7eb] text-[#666]'
           }`}
         >
-          <p className="font-normal text-base text-center whitespace-nowrap">
+          <p className="font-normal text-sm sm:text-base text-center whitespace-nowrap">
             {filter.label}
           </p>
         </button>
