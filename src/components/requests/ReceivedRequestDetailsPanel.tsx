@@ -70,7 +70,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
   if (request.status === 'pending') {
     return (
       <>
-      <div className="bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
+      <div className="requests-details-panel bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
         {/* Header with Status */}
         <div className="bg-white border-b border-[#f3f4f6] flex items-center justify-between pl-[16px] pr-[8px] rounded-tl-[10px] rounded-tr-[10px]">
           <div className="flex flex-1 gap-[4px] items-center min-w-0">
@@ -363,7 +363,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
   // For declined status - simplified view
   if (request.status === 'declined') {
     return (
-      <div className="bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
+      <div className="requests-details-panel bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
         {/* Header with Status */}
         <div className="bg-white border-b border-[#f3f4f6] flex items-center justify-between pl-[16px] pr-[8px] rounded-tl-[10px] rounded-tr-[10px]">
           <div className="flex flex-1 gap-[4px] items-center min-w-0">
@@ -434,7 +434,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
 
   // For accepted status - full details with "Go to Chat" button
   return (
-    <div className="bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
+    <div className="requests-details-panel bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
       {/* Header with Status */}
       <div className="bg-white border-b border-[#f3f4f6] flex items-center justify-between pl-[16px] pr-[8px] rounded-tl-[10px] rounded-tr-[10px]">
         <div className="flex flex-1 gap-[4px] items-center min-w-0">
