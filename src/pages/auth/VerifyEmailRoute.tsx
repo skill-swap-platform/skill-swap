@@ -118,7 +118,7 @@ export default function VerifyEmailRoute() {
     sessionStorage.removeItem(PENDING_KEY);
 
     const nextPath =
-      loginRes.data.user?.role === "ADMIN" ? "/admin/dashboard" : "/explore";
+      loginRes.data.user?.role === "ADMIN" ? "/admin/dashboard" : "/onboarding/interests";
 
     navigate(nextPath, { replace: true });
   };
