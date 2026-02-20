@@ -1,4 +1,11 @@
 import NotFound from "@/pages/NotFound";
+import ProfilePage from "@/pages/profile/ProfilePage";
+import EditProfilePage from "@/pages/profile/EditProfilePage";
+import MySkillsPage from "@/pages/profile/MySkillsPage";
+import SkillDetailPage from "@/pages/profile/SkillDetailPage";
+import EditSkillPage from "@/pages/profile/EditSkillPage";
+import AddSkillProfile from "@/pages/profile/AddSkillProfile";
+import SettingsPage from "@/pages/profile/SettingsPage";
 import LandingPage from "@/pages/LandingPage";
 
 // import { Dashboard } from "@/pages/Dashboard";
@@ -65,7 +72,7 @@ export const routesConfig = [
     element: <SessionHistory />,
   },
   {
-    path: "/session-feedback",
+    path: "/session-feedback/:sessionId",
     element: <SessionFeedback />,
   },
 
@@ -94,6 +101,34 @@ export const routesConfig = [
   {
     path: "/all-reviews",
     element: <AllReviews />,
+  },
+  {
+    path: "/profile",
+    element: <ProfilePage />,
+  },
+  {
+    path: "/profile/edit",
+    element: <EditProfilePage />,
+  },
+  {
+    path: "/profile/skills",
+    element: <MySkillsPage />,
+  },
+  {
+    path: "/profile/add-skill",
+    element: <AddSkillProfile />,
+  },
+  {
+    path: "/profile/settings",
+    element: <SettingsPage />,
+  },
+  {
+    path: "/profile/skills/:skillId",
+    element: <SkillDetailPage />,
+  },
+  {
+    path: "/profile/skills/:skillId/edit",
+    element: <EditSkillPage />,
   },
 
   {

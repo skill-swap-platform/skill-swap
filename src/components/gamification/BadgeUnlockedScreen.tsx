@@ -2,10 +2,14 @@ import React from 'react'
 import { Award, ArrowRight } from 'lucide-react'
 
 interface BadgeUnlockedScreenProps {
+    unlockedBadges?: any[]
+    nextBadge?: any
     onContinue: () => void
 }
 
 export const BadgeUnlockedScreen: React.FC<BadgeUnlockedScreenProps> = ({
+    unlockedBadges,
+    nextBadge,
     onContinue,
 }) => {
     return (

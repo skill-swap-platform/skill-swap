@@ -13,6 +13,7 @@ interface SessionHistoryListProps {
         skillName: string
         role: 'provider' | 'seeker'
         feedback?: Feedback
+        status?: string
     }>
     onViewFeedback?: (sessionId: string) => void
     emptyMessage?: string
@@ -47,9 +48,19 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
         )
     }
 
+    const getDisplayStatus = (backendStatus?: string): 'Upcoming' | 'Completed' | 'Canceled' | 'In Progress' => {
+        switch (backendStatus) {
+            case 'COMPLETED': return 'Completed'
+            case 'CANCELLED': return 'Canceled'
+            case 'RESCHEDULED': return 'Upcoming'
+            case 'SCHEDULED': return 'Upcoming'
+            default: return 'Upcoming'
+        }
+    }
+
     return (
         <div className="space-y-6">
-            <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden shadow-sm">
+            <div className="hidden md:block bg-white rounded-xl border border-[#E5E7EB] overflow-hidden shadow-sm">
                 <div className="grid grid-cols-[50px_2fr_1.5fr_1.2fr_1.2fr_120px_40px] gap-4 px-6 py-5 text-[11px] font-bold text-[#666666] border-b border-[#F3F4F6] bg-white">
                     <div className="flex items-center">
                         <input type="checkbox" className="w-4 h-4 rounded border-[#E5E7EB] text-[#3E8FCC] focus:ring-[#3E8FCC]" />
@@ -63,9 +74,7 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                 </div>
                 <div className="divide-y divide-[#F3F4F6]">
                     {filteredSessions.map((session) => {
-                        const status: 'Upcoming' | 'Completed' | 'Canceled' | 'In Progress' =
-                            session.id === '5' ? 'In Progress' : (session.feedback || session.id === '2' || session.id === '4' ? 'Completed' : (session.id === '14' || session.id === '3' ? 'Canceled' : 'Upcoming'))
-
+                        const status = getDisplayStatus(session.status)
                         return (
                             <div
                                 key={session.id}
@@ -74,48 +83,34 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                                 <div className="flex items-center">
                                     <input type="checkbox" className="w-4 h-4 rounded border-[#E5E7EB] text-[#3E8FCC] focus:ring-[#3E8FCC]" />
                                 </div>
-
                                 <div className="flex items-center gap-4 min-w-0">
                                     <Avatar src={session.partnerAvatar} name={session.partnerName} size="md" />
                                     <div className="min-w-0">
-                                        <div className="text-sm font-bold text-[#0C0D0F] truncate">
-                                            {session.skillName}
-                                        </div>
-                                        <div className="text-[10px] text-[#666666] truncate mt-0.5">
-                                            with {session.partnerName}
-                                        </div>
+                                        <div className="text-sm font-bold text-[#0C0D0F] truncate">{session.skillName}</div>
+                                        <div className="text-[10px] text-[#666666] truncate mt-0.5">with {session.partnerName}</div>
                                     </div>
                                 </div>
-
                                 <div className="text-[11px] text-[#0C0D0F]">
                                     <div className="font-bold">{formatDate(session.date, 'MMM dd, yyyy')}</div>
                                     <div className="text-[#9CA3AF] mt-0.5">1 hour</div>
                                 </div>
-
                                 <div className="flex justify-center">
                                     {(status === 'Completed' || status === 'In Progress') ? (
                                         <div className="flex gap-0.5 text-[#F59E0B]">
-                                            <Star className="w-3.5 h-3.5 fill-current" />
-                                            <Star className="w-3.5 h-3.5 fill-current" />
-                                            <Star className="w-3.5 h-3.5 fill-current" />
-                                            <Star className="w-3.5 h-3.5 fill-current" />
+                                            {[1, 2, 3, 4].map(s => <Star key={s} className="w-3.5 h-3.5 fill-current" />)}
                                             <Star className="w-3.5 h-3.5 text-[#E5E7EB]" />
                                         </div>
                                     ) : (
                                         <div className="flex gap-1">
-                                            {[1, 2, 3, 4, 5].map((s) => (
-                                                <div key={s} className="w-3.5 h-3.5 border border-[#E5E7EB] rounded-full" />
-                                            ))}
+                                            {[1, 2, 3, 4, 5].map((s) => <div key={s} className="w-3.5 h-3.5 border border-[#E5E7EB] rounded-full" />)}
                                         </div>
                                     )}
                                 </div>
-
                                 <div className="flex justify-center">
                                     <span className={`px-2.5 py-0.5 text-[9px] font-bold rounded-full border ${statusColors[status]}`}>
                                         {status}
                                     </span>
                                 </div>
-
                                 <div className="flex justify-center">
                                     {status === 'Completed' || status === 'In Progress' || status === 'Canceled' ? (
                                         <button
@@ -125,12 +120,14 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                                             View
                                         </button>
                                     ) : (
-                                        <button className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-[#F5F9FC] text-[10px] font-bold text-[#3E8FCC] hover:bg-[#EBF5FF] transition-colors">
-                                            Enroll
+                                        <button
+                                            onClick={() => (onViewFeedback as any)?.(session.id, 'complete')}
+                                            className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-[#3E8FCC] text-[10px] font-bold text-white hover:bg-[#357db3] transition-colors"
+                                        >
+                                            Complete
                                         </button>
                                     )}
                                 </div>
-
                                 <div className="flex justify-end">
                                     <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
                                         <ChevronRight className="w-4 h-4 text-[#9CA3AF] group-hover:text-[#0C0D0F]" />
@@ -141,14 +138,64 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                     })}
                 </div>
             </div>
+            <div className="md:hidden space-y-3">
+                {filteredSessions.map((session) => {
+                    const status = getDisplayStatus(session.status)
+                    return (
+                        <div key={session.id} className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-sm">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <Avatar src={session.partnerAvatar} name={session.partnerName} size="md" />
+                                    <div className="min-w-0">
+                                        <div className="text-sm font-bold text-[#0C0D0F] truncate">{session.skillName}</div>
+                                        <div className="text-[10px] text-[#666666] truncate">with {session.partnerName}</div>
+                                    </div>
+                                </div>
+                                <span className={`px-2.5 py-0.5 text-[9px] font-bold rounded-full border shrink-0 ml-2 ${statusColors[status]}`}>
+                                    {status}
+                                </span>
+                            </div>
 
-            {/* Pagination */}
+                            <div className="flex items-center justify-between">
+                                <div className="text-[11px] text-[#666666]">
+                                    {formatDate(session.date, 'MMM dd, yyyy')} · 1 hour
+                                </div>
+                                <div className="flex gap-0.5 text-[#F59E0B]">
+                                    {(status === 'Completed' || status === 'In Progress') ? (
+                                        [1, 2, 3, 4].map(s => <Star key={s} className="w-3 h-3 fill-current" />)
+                                    ) : (
+                                        [1, 2, 3, 4, 5].map(s => <div key={s} className="w-3 h-3 border border-[#E5E7EB] rounded-full" />)
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="mt-3 flex justify-end">
+                                {status === 'Completed' || status === 'In Progress' || status === 'Canceled' ? (
+                                    <button
+                                        onClick={() => onViewFeedback?.(session.id)}
+                                        className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-white text-[10px] font-bold text-[#3E8FCC] hover:bg-gray-50 transition-colors"
+                                    >
+                                        View
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => (onViewFeedback as any)?.(session.id, 'complete')}
+                                        className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-[#3E8FCC] text-[10px] font-bold text-white hover:bg-[#357db3] transition-colors"
+                                    >
+                                        Complete
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )
+                })}
+            </div>
+
             <div className="flex items-center justify-between px-2 pt-4">
                 <button className="flex items-center gap-2 text-[10px] font-bold text-[#666666] hover:text-[#0C0D0F] transition-colors px-3 py-1.5 rounded-lg border border-[#E5E7EB] bg-white">
                     <ChevronLeft className="w-4 h-4" />
                     Prev
                 </button>
-
                 <div className="flex items-center gap-1.5">
                     {[1, 2, 3, '...', 8, 9, 10].map((page, i) => (
                         <button
@@ -164,7 +211,6 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                         </button>
                     ))}
                 </div>
-
                 <button className="flex items-center gap-2 text-[10px] font-bold text-[#666666] hover:text-[#0C0D0F] transition-colors px-3 py-1.5 rounded-lg border border-[#E5E7EB] bg-white">
                     Next
                     <ChevronRight className="w-4 h-4" />

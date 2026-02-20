@@ -39,6 +39,8 @@ export const PreviewBadgeUnlocked: React.FC = () => {
     return (
         <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
             <BadgeUnlockedScreen
+                unlockedBadges={[]}
+                nextBadge={null}
                 onContinue={() => navigate('/dashboard')}
             />
         </div>
