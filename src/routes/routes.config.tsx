@@ -49,7 +49,11 @@ export const routesConfig: RouteConfig[] = [
   // ── Public routes (no auth required) ───────────────────────────────────────
   {
     path: "/",
-    element: <LandingPage />,
+    element: (
+    <GuestRoute>
+      <LandingPage />
+    </GuestRoute>
+    )
   },
 
   // ── Guest-only routes (redirect to /home if already logged in) ─────────────
@@ -98,7 +102,7 @@ export const routesConfig: RouteConfig[] = [
   {
     path: "/points-badges",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
         <PointsAndBadges />
       </ProtectedRoute>
     ),
@@ -106,7 +110,7 @@ export const routesConfig: RouteConfig[] = [
   {
     path: "/session-history",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
         <SessionHistory />
       </ProtectedRoute>
     ),
@@ -114,7 +118,7 @@ export const routesConfig: RouteConfig[] = [
   {
     path: "/session-feedback/:sessionId",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
         <SessionFeedback />
       </ProtectedRoute>
     ),

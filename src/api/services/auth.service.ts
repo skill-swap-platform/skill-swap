@@ -97,8 +97,12 @@ export const authService = {
         }
     },
 
-    logout: () => {
+    logout: async (): Promise<void> => {
+        try {
+            await axiosInstance.post("/api/v1/auth/logout");
+        } catch {
+            // Continue with local logout even if API call fails
+        }
         clearTokens();
-        window.location.href = "/auth/login";
     },
 };
