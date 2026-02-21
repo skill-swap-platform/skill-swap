@@ -1,221 +1,173 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState, useEffect } from "react";
 import { Footer, Header } from "@/components";
 import ProviderCard from "@/components/explore/ProviderCard";
 import Reviews from "@/components/explore/Reviews";
 import SessionDetails from "@/components/explore/SessionDetails";
 import SimilarSkills from "@/components/explore/SimilarSkills";
 import SkillInformationCard from "@/components/explore/SkillInformationCard";
-import axiosInstance from "@/api/axiosInstance";
-import { useLocation, useNavigate } from "react-router-dom";
-
-interface RequestSkillContext {
-  receiverId: string;
-  requestedSkillId: string;
-  requestedSkillName?: string;
-}
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null;
-
-const getRecord = (obj: Record<string, unknown>, key: string): Record<string, unknown> | null => {
-  const value = obj[key];
-  return isRecord(value) ? value : null;
-};
-
-const getString = (obj: Record<string, unknown> | null, key: string): string => {
-  if (!obj) return "";
-  const value = obj[key];
-  if (typeof value !== "string") return "";
-  return value.trim();
-};
-
-const extractCandidateFromItem = (item: unknown): RequestSkillContext | null => {
-  if (!isRecord(item)) return null;
-
-  const user = getRecord(item, "user")
-    || getRecord(item, "provider")
-    || getRecord(item, "owner");
-  const userSkill = getRecord(item, "userSkill")
-    || getRecord(item, "requestedUserSkill")
-    || getRecord(item, "requestedSkill");
-  const nestedSkill = getRecord(userSkill ?? {}, "skill")
-    || getRecord(item, "skill");
-
-  const receiverId = getString(item, "receiverId")
-    || getString(item, "providerId")
-    || getString(item, "userId")
-    || getString(user, "id");
-
-  let requestedSkillId = getString(item, "requestedSkillId")
-    || getString(item, "userSkillId")
-    || getString(userSkill, "id");
-
-  if (!requestedSkillId) {
-    const directId = getString(item, "id");
-    const hasSkillSignals = Boolean(
-      nestedSkill
-      || getString(item, "level")
-      || getString(item, "sessionLanguage")
-    );
-    if (directId && hasSkillSignals && receiverId) {
-      requestedSkillId = directId;
-    }
-  }
-
-  const requestedSkillName = getString(item, "requestedSkillName")
-    || getString(item, "skillName")
-    || getString(userSkill, "name")
-    || getString(nestedSkill, "name");
-
-  if (!receiverId || !requestedSkillId) return null;
-
-  return {
-    receiverId,
-    requestedSkillId,
-    requestedSkillName: requestedSkillName || undefined,
-  };
-};
-
-const extractCandidates = (payload: unknown): RequestSkillContext[] => {
-  const queue: unknown[] = [payload];
-  const candidates: RequestSkillContext[] = [];
-
-  while (queue.length > 0) {
-    const current = queue.shift();
-    if (!current) continue;
-
-    if (Array.isArray(current)) {
-      for (const item of current) {
-        const candidate = extractCandidateFromItem(item);
-        if (candidate) {
-          candidates.push(candidate);
-        }
-        if (isRecord(item) || Array.isArray(item)) {
-          queue.push(item);
-        }
-      }
-      continue;
-    }
-
-    if (!isRecord(current)) continue;
-    for (const value of Object.values(current)) {
-      if (Array.isArray(value) || isRecord(value)) {
-        queue.push(value);
-      }
-    }
-  }
-
-  const unique = new Map<string, RequestSkillContext>();
-  for (const candidate of candidates) {
-    unique.set(`${candidate.receiverId}:${candidate.requestedSkillId}`, candidate);
-  }
-
-  return [...unique.values()];
-};
+import { useNavigate, useParams } from "react-router";
+import { getSkillDetails, getSimilarSkillUsers, getReviews, getRecommendedUserSkill } from "@/services";
 
 const Explore = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { skillId, userId } = useParams<{ skillId: string; userId: string }>();
+  
+  // Use mock IDs if not provided (for development)
+  const finalSkillId = skillId || 'mock-skill-1';
+  const finalUserId = userId || 'mock-user-1';
+  
+  const [skillData, setSkillData] = useState<any>(null);
+  const [similarUsers, setSimilarUsers] = useState<any>(null);
+  const [reviews, setReviews] = useState<any>(null);
+  const [recommendedSkill, setRecommendedSkill] = useState<any>(null);
+  
+  const [loadingSkill, setLoadingSkill] = useState(false);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [loadingRecommended, setLoadingRecommended] = useState(false);
+  
+  const [errorSkill, setErrorSkill] = useState<string | null>(null);
+  const [errorSimilar, setErrorSimilar] = useState<string | null>(null);
+  const [errorReviews, setErrorReviews] = useState<string | null>(null);
+  const [errorRecommended, setErrorRecommended] = useState<string | null>(null);
 
-  const queryContext = useMemo(() => {
-    const params = new URLSearchParams(location.search);
-    const receiverId = params.get("receiverId")?.trim() || "";
-    const requestedSkillId = params.get("requestedSkillId")?.trim() || "";
-    const requestedSkillName = params.get("requestedSkillName")?.trim() || "";
-
-    if (!receiverId || !requestedSkillId) return null;
-    return {
-      receiverId,
-      requestedSkillId,
-      requestedSkillName: requestedSkillName || undefined,
-    } satisfies RequestSkillContext;
-  }, [location.search]);
-
-  const [requestContext, setRequestContext] = useState<RequestSkillContext | null>(null);
-  const [isLoadingRequestContext, setIsLoadingRequestContext] = useState<boolean>(!queryContext);
-  const [requestContextError, setRequestContextError] = useState<string | null>(null);
-  const resolvedRequestContext = queryContext ?? requestContext;
-  const isPreparingRequestContext = queryContext ? false : isLoadingRequestContext;
-  const visibleRequestContextError = queryContext ? null : requestContextError;
-
+  // Fetch skill details
   useEffect(() => {
-    if (queryContext) return;
-
-    let isMounted = true;
-
-    const resolveRequestContext = async () => {
-      setIsLoadingRequestContext(true);
-      setRequestContextError(null);
-
-      const endpoints = [
-        "/api/v1/skills/recommended-user",
-        "/api/v1/skills/discover",
-      ];
-
-      for (const endpoint of endpoints) {
-        try {
-          const response = await axiosInstance.get(endpoint);
-          const candidates = extractCandidates(response.data);
-          if (candidates.length > 0) {
-            if (!isMounted) return;
-            setRequestContext(candidates[0]);
-            setIsLoadingRequestContext(false);
-            return;
-          }
-        } catch (error) {
-          console.error(`[Explore] Failed to resolve context from ${endpoint}:`, error);
-        }
+    const fetchSkillDetails = async () => {
+      try {
+        setLoadingSkill(true);
+        setErrorSkill(null);
+        const data = await getSkillDetails(finalSkillId, finalUserId);
+        setSkillData(data);
+      } catch (error: any) {
+        setErrorSkill(error?.response?.data?.message || 'Failed to load skill details');
+        console.error('Error loading skill details:', error);
+      } finally {
+        setLoadingSkill(false);
       }
-
-      if (!isMounted) return;
-      setRequestContext(null);
-      setRequestContextError("No available skill provider found right now.");
-      setIsLoadingRequestContext(false);
     };
 
-    resolveRequestContext();
+    fetchSkillDetails();
+  }, [finalSkillId, finalUserId]);
 
-    return () => {
-      isMounted = false;
+  // Fetch similar users
+  useEffect(() => {
+    const fetchSimilarUsers = async () => {
+      try {
+        setLoadingSimilar(true);
+        setErrorSimilar(null);
+        const data = await getSimilarSkillUsers(finalSkillId);
+        setSimilarUsers(data);
+      } catch (error: any) {
+        setErrorSimilar(error?.response?.data?.message || 'Failed to load similar users');
+        console.error('Error loading similar users:', error);
+      } finally {
+        setLoadingSimilar(false);
+      }
     };
-  }, [queryContext]);
 
-  const handleNavigateToRequest = () => {
-    if (!resolvedRequestContext) {
-      setRequestContextError("No available skill provider found right now.");
-      return;
-    }
+    fetchSimilarUsers();
+  }, [finalSkillId]);
 
-    navigate("/request-skill", {
-      state: resolvedRequestContext,
-    });
-  };
+  // Fetch reviews
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        setLoadingReviews(true);
+        setErrorReviews(null);
+        const data = await getReviews(finalUserId, finalSkillId, 1, 10);
+        setReviews(data);
+      } catch (error: any) {
+        setErrorReviews(error?.response?.data?.message || 'Failed to load reviews');
+        console.error('Error loading reviews:', error);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+
+    fetchReviews();
+  }, [finalUserId, finalSkillId]);
+
+  // Fetch recommended skill
+  useEffect(() => {
+    const fetchRecommendedSkill = async () => {
+      try {
+        setLoadingRecommended(true);
+        setErrorRecommended(null);
+        const data = await getRecommendedUserSkill();
+        setRecommendedSkill(data);
+      } catch (error: any) {
+        // Recommended skill is optional, so don't show critical error
+        console.warn('Could not load recommended skill:', error);
+        setErrorRecommended(null);
+      } finally {
+        setLoadingRecommended(false);
+      }
+    };
+
+    fetchRecommendedSkill();
+  }, []);
 
   return (
     <div className="bg-white flex flex-col items-center">
+      {/* Header */}
       <Header />
-      <div className="w-full max-w-6xl px-20 py-8 flex flex-col gap-8">
-        <SkillInformationCard />
-        <SessionDetails />
-        <ProviderCard />
-        <Reviews />
+      
+      {/* Main Content */}
+      <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-8 xl:px-20 py-6 sm:py-8 flex flex-col gap-6 sm:gap-8">
+        {/* Skill Information Card */}
+        <SkillInformationCard 
+          data={skillData} 
+          loading={loadingSkill} 
+          error={errorSkill} 
+        />
 
-        <div className="flex flex-col items-end gap-2 mb-4">
+        {/* Session Details */}
+        <SessionDetails 
+          data={skillData} 
+          loading={loadingSkill} 
+          error={errorSkill} 
+        />
+
+        {/* Provider Card */}
+        <ProviderCard 
+          data={skillData?.provider} 
+          loading={loadingSkill} 
+          error={errorSkill} 
+        />
+
+        {/* Reviews Section */}
+        <Reviews 
+          data={reviews} 
+          loading={loadingReviews} 
+          error={errorReviews}
+          userId={finalUserId}
+          skillId={finalSkillId}
+        />
+
+        {/* Request Button */}
+        <div className="flex flex-col sm:flex-row justify-end gap-3">
           <button
-            type="button"
-            onClick={handleNavigateToRequest}
-            disabled={isPreparingRequestContext}
-            className="bg-primary text-white rounded-[10px] px-8 py-3 font-medium hover:opacity-90 transition disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={() => navigate(`/request-skill?skillId=${skillId}&userId=${userId}`)}
+            className="bg-primary text-white rounded-[10px] px-6 sm:px-8 py-2 sm:py-3 font-medium hover:opacity-90 transition w-full sm:w-auto"
+            disabled={loadingSkill}
           >
-            {isPreparingRequestContext ? "Preparing..." : "Request Skill Swap"}
+            {loadingSkill ? 'Loading...' : 'Request Skill Swap'}
           </button>
-          {visibleRequestContextError ? (
-            <p className="text-xs text-[#dc2626]">{visibleRequestContextError}</p>
-          ) : null}
         </div>
 
-        <SimilarSkills />
+        {/* Similar Skills Section */}
+        <SimilarSkills 
+          data={similarUsers} 
+          loading={loadingSimilar} 
+          error={errorSimilar}
+          recommendedData={recommendedSkill}
+          recommendedLoading={loadingRecommended}
+          recommendedError={errorRecommended}
+        />
       </div>
+      
+      {/* Footer */}
       <Footer />
     </div>
   );
