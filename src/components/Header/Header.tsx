@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Avatar from "../Avatar/Avatar";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 type HeaderProps = {
   activeTab?:
@@ -20,21 +20,50 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { label: "Home", to: "/", tab: "Home" },
+  { label: "Home", to: "/home", tab: "Home" },
   { label: "Requests", to: "/requests-sent", tab: "Requests" },
   { label: "Sessions", to: "/sessions", tab: "Sessions" },
   { label: "Explore", to: "/explore", tab: "Explore" },
 ];
 
-const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
+const Header: React.FC<HeaderProps> = ({ activeTab = "Default" }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { pathname } = useLocation();
+
+  const getAutoActiveTab = (): HeaderProps["activeTab"] => {
+    if (pathname === "/home") return "Home";
+
+    if (
+      pathname.startsWith("/requests-sent") ||
+      pathname.startsWith("/request-skill")
+    ) {
+      return "Requests";
+    }
+
+    if (
+      pathname.startsWith("/sessions") ||
+      pathname.startsWith("/session-history") ||
+      pathname.startsWith("/session-feedback")
+    ) {
+      return "Sessions";
+    }
+
+    if (pathname.startsWith("/explore") || pathname.startsWith("/all-reviews")) {
+      return "Explore";
+    }
+
+    return undefined;
+  };
+
+  const resolvedActiveTab =
+    activeTab && activeTab !== "Default" ? activeTab : getAutoActiveTab();
 
   const getNavClass = (tab: HeaderProps["activeTab"], mobile = false) => {
     const base = mobile
       ? "font-poppins text-base no-underline py-2 text-center"
       : "font-poppins text-base no-underline";
 
-    return activeTab === tab
+    return resolvedActiveTab === tab
       ? `${base} font-medium text-primary`
       : `${base} font-normal text-dark hover:text-primary`;
   };
