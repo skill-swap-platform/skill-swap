@@ -21,13 +21,13 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { label: "Home", to: "/", tab: "Home" },
+  { label: "Home", to: "/home", tab: "Home" },
   { label: "Requests", to: "/requests-sent", tab: "Requests" },
   { label: "Sessions", to: "/sessions", tab: "Sessions" },
   { label: "Explore", to: "/explore", tab: "Explore" },
 ];
 
-const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
+const Header: React.FC<HeaderProps> = ({ activeTab = "Default" }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -61,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Home" }) => {
       ? "font-poppins text-base no-underline py-2 text-center"
       : "font-poppins text-base no-underline";
 
-    return activeTab === tab
+    return resolvedActiveTab === tab
       ? `${base} font-medium text-primary`
       : `${base} font-normal text-dark hover:text-primary`;
   };

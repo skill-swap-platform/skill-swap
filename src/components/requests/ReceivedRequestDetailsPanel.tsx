@@ -16,7 +16,71 @@ interface ReceivedRequestDetailsPanelProps {
   onAcceptRequest?: (request: RequestCardProps) => void;
   onDeclineRequest?: (request: RequestCardProps, metadata: DeclineRequestMetadata) => void;
   onViewProfile?: (userName: string) => void;
+  isAccepting?: boolean;
+  isDeclining?: boolean;
 }
+
+const formatSkillLevel = (level?: string | null): string => {
+  if (!level) return 'Not specified';
+  return level
+    .toLowerCase()
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+const formatSessionDuration = (startAt?: string, endAt?: string): string => {
+  if (!startAt || !endAt) return 'Not specified';
+  const startDate = new Date(startAt);
+  const endDate = new Date(endAt);
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return 'Not specified';
+  }
+
+  const totalMinutes = Math.round((endDate.getTime() - startDate.getTime()) / 60000);
+  if (totalMinutes <= 0) return 'Not specified';
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours > 0 && minutes > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  if (hours > 0) {
+    return `${hours}h`;
+  }
+  return `${minutes} minutes`;
+};
+
+const formatPreferredTime = (startAt?: string, endAt?: string, timezone?: string): string => {
+  if (!startAt || !endAt) return 'Not specified';
+  const startDate = new Date(startAt);
+  const endDate = new Date(endAt);
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return 'Not specified';
+  }
+
+  const dateText = startDate.toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+  });
+  const startTimeText = startDate.toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+  const endTimeText = endDate.toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+  const timezoneText = timezone ? ` (${timezone})` : '';
+
+  return `${dateText}, ${startTimeText} - ${endTimeText}${timezoneText}`;
+};
+
+const formatProfileSubtitle = (skill?: string, level?: string | null): string => {
+  if (!skill) return 'Skill Seeker';
+  if (!level) return skill;
+  return `${skill} - ${formatSkillLevel(level)}`;
+};
 
 export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelProps> = ({
   request,
@@ -25,12 +89,21 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
   onAcceptRequest,
   onDeclineRequest,
   onViewProfile,
+  isAccepting = false,
+  isDeclining = false,
 }) => {
   const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
   const [selectedDeclineReason, setSelectedDeclineReason] = useState<DeclineReasonOption | null>(null);
   const [additionalContext, setAdditionalContext] = useState('');
 
   if (!request || !isOpen) return null;
+  const sessionDurationText = formatSessionDuration(request.startAt, request.endAt);
+  const skillLevelText = formatSkillLevel(request.requestedSkillLevel ?? request.offeredSkillLevel);
+  const messageText = request.message?.trim() || 'No message provided.';
+  const preferredTimeText = formatPreferredTime(request.startAt, request.endAt, request.timezone);
+  const seekerSkill = request.offeredSkill ?? request.requestedSkill;
+  const seekerLevel = request.offeredSkill ? request.offeredSkillLevel : request.requestedSkillLevel;
+  const seekerSubtitle = formatProfileSubtitle(seekerSkill, seekerLevel);
 
   const declineReasons: { value: DeclineReasonOption; label: string }[] = [
     { value: 'not-available', label: 'Not available at this time' },
@@ -39,6 +112,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
   ];
 
   const handleOpenDeclineModal = () => {
+    if (isDeclining || isAccepting) return;
     setIsDeclineModalOpen(true);
   };
 
@@ -49,6 +123,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
   };
 
   const handleConfirmDecline = () => {
+    if (isDeclining) return;
     const trimmedContext = additionalContext.trim();
     const payload: DeclineRequestMetadata = {
       reason: selectedDeclineReason ?? 'no-reason',
@@ -61,10 +136,23 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
   const statusConfig = {
     pending: { color: '#FFA412', bgColor: '#FFA412', label: 'Pending' },
     accepted: { color: '#16A34A', bgColor: '#16A34A', label: 'Accepted' },
+    completed: { color: '#16A34A', bgColor: '#16A34A', label: 'Completed' },
     declined: { color: '#DC2626', bgColor: '#DC2626', label: 'Declined' },
+    expired: { color: '#D97706', bgColor: '#D97706', label: 'Expired' },
+    cancelled: { color: '#6B7280', bgColor: '#6B7280', label: 'Cancelled' },
   };
 
   const currentStatus = statusConfig[request.status];
+  const isClosedState =
+    request.status === 'declined' ||
+    request.status === 'expired' ||
+    request.status === 'cancelled';
+  const closedStateMessage =
+    request.status === 'declined'
+      ? 'This request was declined.'
+      : request.status === 'expired'
+      ? 'This request has expired.'
+      : 'This request was cancelled.';
 
   // Render different layouts based on status
   if (request.status === 'pending') {
@@ -111,7 +199,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
                   {request.userName}
                 </p>
                 <p className="font-medium text-[14px] leading-[normal] text-[#5e5e5f] truncate">
-                  Photographer & Filmmaker
+                  {seekerSubtitle}
                 </p>
               </div>
               <button
@@ -183,7 +271,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
               </div>
               <div className="flex flex-1 h-full items-center min-w-0">
                 <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] text-center">
-                  60 minutes
+                  {sessionDurationText}
                 </p>
               </div>
             </div>
@@ -196,7 +284,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
               </div>
               <div className="flex flex-1 h-full items-center min-w-0">
                 <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] text-center">
-                  Beginner
+                  {skillLevelText}
                 </p>
               </div>
             </div>
@@ -213,7 +301,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
           <div className="flex flex-col items-start px-[16px] py-[8px] w-full">
             <div className="bg-[#fafafa] border border-[#e6e6e6] flex flex-col min-h-[70px] items-center justify-center p-[8px] rounded-[10px] w-full">
               <p className="font-normal leading-[normal] text-[12px] text-[#666] text-center w-full">
-                "Hi! I'd love to learn this skill and start building my portfolio. I'm a beginner and looking for guidance on the core concepts of performance optimization."
+                {messageText}
               </p>
             </div>
           </div>
@@ -228,7 +316,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
           </div>
           <div className="flex flex-col items-start px-[16px] py-[8px] w-full">
             <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] text-center">
-              Saturday, Feb 2, 4:00 PM - 5:00 PM
+              {preferredTimeText}
             </p>
           </div>
         </div>
@@ -237,6 +325,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
         <div className="flex gap-[10px] h-[48px] items-center justify-center w-full px-[8px]">
           <button
             onClick={handleOpenDeclineModal}
+            disabled={isDeclining || isAccepting}
             className="bg-[#f5f5f5] border border-[#e5e7eb] flex flex-1 h-full items-center justify-center rounded-[10px] transition-colors hover:bg-[#e5e5e5]"
           >
             <p className="font-medium leading-[normal] text-[16px] text-[#666]">
@@ -245,6 +334,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
           </button>
           <button
             onClick={() => onAcceptRequest?.(request)}
+            disabled={isAccepting || isDeclining}
             className="flex flex-1 h-full items-center justify-center rounded-[10px] transition-opacity hover:opacity-90"
             style={{
               background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%), linear-gradient(90deg, rgb(62, 143, 204) 0%, rgb(62, 143, 204) 100%)',
@@ -340,6 +430,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
                     </button>
                     <button
                       onClick={handleConfirmDecline}
+                      disabled={isDeclining}
                       className="flex-1 h-[40px] rounded-[10px] text-[14px] text-white transition-opacity"
                       style={{
                         background:
@@ -360,8 +451,8 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
     );
   }
 
-  // For declined status - simplified view
-  if (request.status === 'declined') {
+  // For closed statuses - simplified view
+  if (isClosedState) {
     return (
       <div className="requests-details-panel bg-white border border-[#e5e7eb] flex flex-col gap-[24px] pb-[16px] pt-[8px] px-[8px] rounded-[10px] w-full h-fit sticky top-6">
         {/* Header with Status */}
@@ -385,7 +476,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
           </button>
         </div>
 
-        {/* Seeker Section - Simplified for Declined */}
+        {/* Seeker Section - Simplified for Closed Status */}
         <div className="bg-white border-b border-[#f3f4f6] flex flex-col items-start w-full">
           <div className="flex h-[24px] items-center justify-center px-[16px] w-full">
             <p className="flex-1 font-semibold leading-[normal] text-[16px] text-[#0c0d0f] min-w-0">
@@ -404,7 +495,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
                   {request.userName}
                 </p>
                 <p className="font-medium text-[14px] leading-[normal] text-[#5e5e5f] truncate">
-                  Designer
+                  {seekerSubtitle}
                 </p>
               </div>
             </div>
@@ -414,17 +505,17 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
           </div>
         </div>
 
-        {/* Declined Message */}
+        {/* Closed Status Message */}
         <div className="bg-white flex flex-col h-[86px] items-center justify-center rounded-[10px] w-full">
           <div className="flex flex-col gap-[8px] items-center p-[16px] w-full">
             <div className="flex items-center justify-center rounded-full shrink-0 w-[24px] h-[24px]">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="#DC2626" strokeWidth="1.5"/>
-                <path d="M15 9L9 15M9 9L15 15" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round"/>
+                <circle cx="12" cy="12" r="9" stroke={currentStatus.bgColor} strokeWidth="1.5"/>
+                <path d="M15 9L9 15M9 9L15 15" stroke={currentStatus.bgColor} strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             </div>
             <p className="font-normal leading-[normal] text-[14px] text-[#0c0d0f] text-center">
-              This request was declined.
+              {closedStateMessage}
             </p>
           </div>
         </div>
@@ -558,7 +649,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
             </div>
             <div className="flex flex-1 h-full items-center min-w-0">
               <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] text-center">
-                60 minutes
+                {sessionDurationText}
               </p>
             </div>
           </div>
@@ -571,7 +662,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
             </div>
             <div className="flex flex-1 h-full items-center min-w-0">
               <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] text-center">
-                Beginner
+                {skillLevelText}
               </p>
             </div>
           </div>
@@ -588,7 +679,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
         <div className="flex flex-col items-start px-[16px] py-[8px] w-full">
           <div className="bg-[#fafafa] border border-[#e6e6e6] flex flex-col min-h-[70px] items-center justify-center p-[8px] rounded-[10px] w-full">
             <p className="font-normal leading-[normal] text-[12px] text-[#666] text-center w-full">
-              "Hi! I'd love to learn this skill and start building my portfolio. I'm a beginner and looking for guidance on the core concepts of performance optimization."
+              {messageText}
             </p>
           </div>
         </div>
@@ -603,7 +694,7 @@ export const ReceivedRequestDetailsPanel: React.FC<ReceivedRequestDetailsPanelPr
         </div>
         <div className="flex flex-col items-start px-[16px] py-[8px] w-full">
           <p className="font-normal text-[14px] leading-[normal] text-[#0c0d0f] text-center">
-            Saturday, Feb 2, 4:00 PM - 5:00 PM
+            {preferredTimeText}
           </p>
         </div>
       </div>

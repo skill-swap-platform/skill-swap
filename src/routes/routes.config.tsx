@@ -66,6 +66,10 @@ export const routesConfig: RouteConfig[] = [
     ),
   },
   {
+    path: "/login",
+    element: <Login />,
+  },
+  {
     path: "/auth/register",
     element: (
       <GuestRoute>
