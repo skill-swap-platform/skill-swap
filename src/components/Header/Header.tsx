@@ -61,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Default" }) => {
       ? "font-poppins text-base no-underline py-2 text-center"
       : "font-poppins text-base no-underline";
 
-    return resolvedActiveTab === tab
+    return activeTab === tab
       ? `${base} font-medium text-primary`
       : `${base} font-normal text-dark hover:text-primary`;
   };
