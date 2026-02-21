@@ -94,7 +94,7 @@ export const routesConfig: RouteConfig[] = [
   {
     path: "/points-badges",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
         <PointsAndBadges />
       </ProtectedRoute>
     ),
@@ -102,7 +102,7 @@ export const routesConfig: RouteConfig[] = [
   {
     path: "/session-history",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
         <SessionHistory />
       </ProtectedRoute>
     ),
@@ -110,7 +110,7 @@ export const routesConfig: RouteConfig[] = [
   {
     path: "/session-feedback/:sessionId",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
         <SessionFeedback />
       </ProtectedRoute>
     ),
