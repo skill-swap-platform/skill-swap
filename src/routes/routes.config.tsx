@@ -34,12 +34,17 @@ import {
   PreviewPointsManage,
 } from "@/pages";
 import VerifyEmailRoute from "@/pages/auth/VerifyEmailRoute";
+import HomePage from "@/pages/HomePage";
 // import EmailVerificationPage from "@/pages/auth/EmailVerificationPage";
 
 export const routesConfig = [
   {
     path: "/",
     element: <LandingPage />,
+  },
+  {
+    path: "/home",
+    element: <HomePage />,
   },
 
   {
