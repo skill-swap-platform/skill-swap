@@ -1,6 +1,13 @@
 import React from 'react';
 
-export type RequestStatus = 'all' | 'pending' | 'accepted' | 'completed' | 'declined';
+export type RequestStatus =
+  | 'all'
+  | 'pending'
+  | 'accepted'
+  | 'declined'
+  | 'expired'
+  | 'completed'
+  | 'cancelled';
 
 interface StatusFilterTabsProps {
   activeFilter: RequestStatus;
@@ -15,8 +22,10 @@ export const StatusFilterTabs: React.FC<StatusFilterTabsProps> = ({
     { label: 'All', value: 'all' },
     { label: 'Pending', value: 'pending' },
     { label: 'Accepted', value: 'accepted' },
-    { label: 'Completed', value: 'completed' },
     { label: 'Declined', value: 'declined' },
+    { label: 'Expired', value: 'expired' },
+    { label: 'Completed', value: 'completed' },
+    { label: 'Cancelled', value: 'cancelled' },
   ];
 
   return (

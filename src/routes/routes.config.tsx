@@ -52,6 +52,10 @@ export const routesConfig = [
     element: <Login />,
   },
   {
+    path: "/login",
+    element: <Login />,
+  },
+  {
     path: "/auth/register",
     element: <Register />,
   },
