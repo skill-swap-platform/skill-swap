@@ -160,7 +160,7 @@ export const routesConfig: RouteConfig[] = [
   },
 
   {
-    path: "/explore/:skillId/:userId",
+    path: "/explore",
     element: (
       <ProtectedRoute>
         <Explore />
