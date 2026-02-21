@@ -49,7 +49,11 @@ export const routesConfig: RouteConfig[] = [
   // ── Public routes (no auth required) ───────────────────────────────────────
   {
     path: "/",
-    element: <LandingPage />,
+    element: (
+    <GuestRoute>
+      <LandingPage />
+    </GuestRoute>
+    )
   },
 
   // ── Guest-only routes (redirect to /home if already logged in) ─────────────
