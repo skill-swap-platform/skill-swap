@@ -1,14 +1,17 @@
 import React from 'react'
+import { Button } from '@/components/common/Button'
 
 interface SessionCompletedScreenProps {
     partnerName: string
     onContinue: () => void
+    onSkip?: () => void
     onReport: () => void
 }
 
 export const SessionCompletedScreen: React.FC<SessionCompletedScreenProps> = ({
     partnerName,
     onContinue,
+    onSkip,
     onReport,
 }) => {
     return (
@@ -24,35 +27,37 @@ export const SessionCompletedScreen: React.FC<SessionCompletedScreenProps> = ({
                 <div className="flex justify-center mb-10">
                     <div className="relative w-64 h-64">
                         <img
-                            src="https://img.freepik.com/free-vector/completed-concept-illustration_114360-3891.jpg"
+                            src="/session-completed.png"
                             alt="Session Completed"
-                            className="w-full h-full object-contain mix-blend-multiply"
+                            className="w-full h-full object-contain"
                         />
                     </div>
                 </div>
 
                 <div className="text-center mb-10">
-                    <h2 className="text-[32px] font-bold text-[#0C0D0F] mb-3">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
                         Session Completed!
                     </h2>
-                    <p className="text-[#666666] text-lg">
+                    <p className="text-gray-500 text-sm">
                         Great job! You've completed your swap with {partnerName}.
                     </p>
                 </div>
 
-                <div className="flex gap-4">
-                    <button
+                <div className="flex gap-4 mt-10">
+                    <Button
+                        variant="ghost"
                         onClick={onReport}
-                        className="flex-1 h-14 rounded-xl border-2 border-[#3E8FCC] text-[#3E8FCC] font-bold hover:bg-[#F0F7FF] transition-colors"
+                        className="flex-1 h-12 rounded-xl border border-primary text-primary hover:bg-blue-50 font-semibold transition-all"
                     >
                         Report Issue
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                        variant="primary"
                         onClick={onContinue}
-                        className="flex-1 h-14 rounded-xl bg-[#2F71A3] text-white font-bold hover:bg-[#25608E] transition-colors"
+                        className="flex-1 h-12 rounded-xl bg-primary hover:bg-primary-dark text-white font-semibold transition-all shadow-sm active:scale-[0.98]"
                     >
                         Continue
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

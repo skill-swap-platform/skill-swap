@@ -1,5 +1,4 @@
 import { Box, Grid } from "@mui/material";
-import React from "react";
 import rafiki from "../../assets/landingPage/rafiki.png";
 
 const AboutSkillSwap = () => {
@@ -13,17 +12,16 @@ const AboutSkillSwap = () => {
     >
       <Grid
         container
-        rowSpacing={1}
-        columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+        rowSpacing={2}
         sx={{
-          "@media (max-width:600px)": {
-            flexDirection: "column",
-            alignItems: "center",
+          flexDirection: {
+            xs: "column-reverse",
+            md: "row",
           },
         }}
       >
         {/* Text Section */}
-        <Grid size={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Box
             sx={{
               display: "flex",
@@ -36,13 +34,19 @@ const AboutSkillSwap = () => {
         </Grid>
 
         {/* Image Section */}
-        <Grid size={6}>
-          <Box sx={{
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center"
-          }}>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Box
+            sx={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              textAlign: {
+                xs: "center",
+                md: "left",
+              },
+            }}
+          >
             <h2 className="text-2xl font-semibold tracking-tight text-slate-800 sm:text-3xl">
               About SkillSwap
             </h2>

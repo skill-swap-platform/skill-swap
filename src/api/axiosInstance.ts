@@ -9,7 +9,6 @@ const axiosInstance = axios.create({
     },
 });
 
-// Request interceptor
 axiosInstance.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('accessToken');
@@ -27,8 +26,12 @@ axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
         if (error.response?.status === 401) {
-            localStorage.removeItem('accessToken');
-            window.location.href = '/login';
+            const path = window.location.pathname;
+            if (!path.includes('/auth/') && !path.includes('/onboarding/')) {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                window.location.href = '/auth/login?expired=true';
+            }
         }
 
         if (error.response?.status === 400) {

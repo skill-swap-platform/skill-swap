@@ -4,13 +4,13 @@ import { Link } from "react-router-dom";
 
 type HeaderProps = {
   activeTab?:
-    | "Chat"
-    | "Explore"
-    | "Home"
-    | "Notifications"
-    | "Requests"
-    | "Sessions"
-    | "Default";
+  | "Chat"
+  | "Explore"
+  | "Home"
+  | "Notifications"
+  | "Requests"
+  | "Sessions"
+  | "Default";
 };
 
 type NavItem = {

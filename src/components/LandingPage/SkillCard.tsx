@@ -23,14 +23,13 @@ export function SkillCard({ title, imageSrc, imageAlt = "" }: SkillCardProps) {
 
         {/* Floating label */}
         <div className="absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2 w-8/12 text-center">
-          <div className="rounded-xl px-3 bg-white py-3 shadow-md">
-            <span className=" text-base font-semibold text-[#3E8FCC]">{title}</span>
+          <div className="rounded-xl px-3 py-3 bg-white shadow-md">
+            <span className=" text-base font-semibold text-[#3E8FCC]">
+              {title}
+            </span>
           </div>
         </div>
       </div>
-
-      {/* Spacer to make room for the floating label */}
-      {/* <div className="h-12" /> */}
     </Wrapper>
   );
 }
