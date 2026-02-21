@@ -32,6 +32,7 @@ const SettingsPage: React.FC = () => {
     const handleLogout = () => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
         navigate('/auth/login');
     };
 

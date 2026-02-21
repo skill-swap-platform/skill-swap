@@ -196,7 +196,7 @@ const ActionCard = ({ icon, title, desc, color }: { icon: React.ReactNode, title
 const StatsCard = ({ bg, icon, label, sub }: { bg: string, icon: React.ReactNode, label: string, sub: string }) => (
     <div className="p-5 rounded-xl text-white shadow-sm relative overflow-hidden group" style={{ backgroundColor: bg }}>
         <div className="relative z-10">
-            <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center mb-4">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-4">
                 {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'w-4 h-4' })}
             </div>
             <div className="text-xl font-bold mb-1">{label}</div>

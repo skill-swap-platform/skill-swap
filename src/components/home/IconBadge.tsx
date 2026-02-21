@@ -20,7 +20,7 @@ import clsx from "clsx";
 
 type Props = {
   icon: IconName;
-  tone?: "gray" | "blue" | "orange" | "green";
+  tone?: "gray" | "blue" | "orange" | "green" | "transparent";
   className?: string;
 };
 
@@ -47,9 +47,14 @@ const toneClasses = {
   blue: "bg-blue-50 text-blue-500",
   orange: "bg-orange-50 text-orange-500",
   green: "bg-green-50 text-green-500",
+  transparent: "bg-transparent text-white",
 };
 
-export default function IconBadge({ icon, tone = "gray", className }: Props) {
+export default function IconBadge({
+  icon,
+  tone = "transparent",
+  className,
+}: Props) {
   const Icon = iconMap[icon];
 
   return (
@@ -57,7 +62,7 @@ export default function IconBadge({ icon, tone = "gray", className }: Props) {
       className={clsx(
         "inline-flex h-7 w-7 items-center justify-center rounded-md",
         toneClasses[tone],
-        className
+        className,
       )}
     >
       <Icon className="h-4 w-4" />
