@@ -6,9 +6,9 @@ import { userService, skillService } from '../../api/services/user.service';
 import { Loader2, Search } from 'lucide-react';
 
 const popularSkills = [
-    'JavaScript', 'Python', 'React',
-    'UI/UX Design', 'Data Science', 'English',
-    'Marketing', 'Photography', 'Cooking'
+    'React', 'Photography', 'JavaScript',
+    'English', 'Python',
+    'Node.js', 'Axios', 'Database Integration'
 ];
 
 const OnboardingTeaching: React.FC = () => {
