@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import Avatar from "../Avatar/Avatar";
 import { Link, useNavigate } from "react-router-dom";
 import { authService } from "../../api/services/auth.service";
+import { userService } from "../../api/services/user.service";
+import type { UserAuthDto } from "../../types/api.types";
 
 type HeaderProps = {
   activeTab?:
@@ -27,9 +29,22 @@ const navItems: NavItem[] = [
   { label: "Explore", to: "/explore", tab: "Explore" },
 ];
 
+const DEFAULT_AVATAR_URL = "https://api.dicebear.com/7.x/notionists/svg?seed=currentuser";
+
+function getStoredUser(): UserAuthDto | null {
+  try {
+    const rawUser = localStorage.getItem("user");
+    if (!rawUser) return null;
+    return JSON.parse(rawUser) as UserAuthDto;
+  } catch {
+    return null;
+  }
+}
+
 const Header: React.FC<HeaderProps> = ({ activeTab = "Default" }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<UserAuthDto | null>(() => getStoredUser());
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -55,6 +70,50 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Default" }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [profileMenuOpen]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCurrentUser = async () => {
+      const storedUser = getStoredUser();
+      if (storedUser && isMounted) {
+        setCurrentUser(storedUser);
+      }
+
+      try {
+        const response = await userService.getCurrentProfile();
+        if (!isMounted || !response.success) return;
+
+        const updatedUser: UserAuthDto = {
+          id: response.data.id,
+          userName: response.data.userName || storedUser?.userName || null,
+          email: response.data.email || storedUser?.email || "",
+          role: storedUser?.role || "USER",
+          image: response.data.image ?? null,
+          isActive: storedUser?.isActive ?? true,
+          isVerified: storedUser?.isVerified ?? true,
+        };
+
+        setCurrentUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      } catch {
+        // Keep showing cached user data if the refresh call fails.
+      }
+    };
+
+    loadCurrentUser();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const userDisplayName =
+    currentUser?.userName?.trim() ||
+    currentUser?.email?.split("@")[0] ||
+    "User Name";
+  const userDisplayEmail = currentUser?.email || "user@example.com";
+  const userAvatarSrc = currentUser?.image?.trim() || DEFAULT_AVATAR_URL;
 
   const getNavClass = (tab: HeaderProps["activeTab"], mobile = false) => {
     const base = mobile
@@ -152,12 +211,12 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Default" }) => {
           <div className="relative" ref={profileMenuRef}>
             <button
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-              className="flex h-12 w-12 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-none bg-transparent p-0 transition-all hover:ring-2 hover:ring-primary/30"
+              className="flex h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-none bg-background-light p-0 transition-colors hover:bg-[#e8e8ee]"
               aria-label="Profile menu"
             >
               <Avatar
-                src="https://api.dicebear.com/7.x/notionists/svg?seed=currentuser"
-                name="User Name"
+                src={userAvatarSrc}
+                name={userDisplayName}
                 size={40}
               />
             </button>
@@ -166,8 +225,8 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Default" }) => {
             {profileMenuOpen && (
               <div className="absolute right-0 top-full mt-2 w-56 origin-top-right rounded-xl border border-[#e8e8e8] bg-white py-2 shadow-lg ring-1 ring-black/5">
                 <div className="border-b border-[#e8e8e8] px-4 py-3">
-                  <p className="text-sm font-medium text-dark">User Name</p>
-                  <p className="text-xs text-gray-500">user@example.com</p>
+                  <p className="text-sm font-medium text-dark">{userDisplayName}</p>
+                  <p className="text-xs text-gray-500">{userDisplayEmail}</p>
                 </div>
 
                 <div className="py-1">
@@ -357,8 +416,8 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Default" }) => {
                 </button>
                 <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl">
                   <Avatar
-                    src="https://api.dicebear.com/7.x/notionists/svg?seed=currentuser"
-                    name="User Name"
+                    src={userAvatarSrc}
+                    name={userDisplayName}
                     size={40}
                   />
                 </div>
