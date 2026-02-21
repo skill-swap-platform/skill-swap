@@ -7,6 +7,9 @@ import EditSkillPage from "@/pages/profile/EditSkillPage";
 import AddSkillProfile from "@/pages/profile/AddSkillProfile";
 import SettingsPage from "@/pages/profile/SettingsPage";
 import LandingPage from "@/pages/LandingPage";
+import Search from "@/pages/search/Search";
+import SearchResults from "@/pages/search/SearchResults";
+import SearchWithFilters from "@/pages/search/SearchWithFilters";
 
 // import { Dashboard } from "@/pages/Dashboard";
 import { AdminDashboard } from "@/pages/admin/AdminDashboard";
@@ -50,10 +53,10 @@ export const routesConfig: RouteConfig[] = [
   {
     path: "/",
     element: (
-    <GuestRoute>
-      <LandingPage />
-    </GuestRoute>
-    )
+      <GuestRoute>
+        <LandingPage />
+      </GuestRoute>
+    ),
   },
 
   // ── Guest-only routes (redirect to /home if already logged in) ─────────────
@@ -155,14 +158,30 @@ export const routesConfig: RouteConfig[] = [
       </ProtectedRoute>
     ),
   },
+
   {
-    path: "/explore",
+    path: "/explore/:skillId/:userId",
     element: (
       <ProtectedRoute>
         <Explore />
       </ProtectedRoute>
     ),
   },
+  // Search and Discovery Routes
+  {
+    path: "/search",
+    element: <Search />,
+  },
+  {
+    path: "/search/results",
+    element: <SearchResults />,
+  },
+  {
+    path: "/search/filters",
+    element: <SearchWithFilters />,
+  },
+
+
   {
     path: "/all-reviews",
     element: (
