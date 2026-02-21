@@ -23,11 +23,15 @@ function setTokens(data?: AuthResponseDto) {
     if (!data) return;
     localStorage.setItem("accessToken", data.accessToken);
     localStorage.setItem("refreshToken", data.refreshToken);
+    if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+    }
 }
 
 function clearTokens() {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
 }
 
 function extractApiMessage(error: unknown): string {
@@ -72,6 +76,20 @@ export const authService = {
     login: async (credentials: { email: string; password: string }): Promise<ApiResponse<AuthResponseDto>> => {
         try {
             const response = await axiosInstance.post("/api/v1/auth/login", credentials);
+            if (response.data.success) setTokens(response.data.data);
+            return response.data;
+        } catch (e) {
+            return { success: false, message: extractApiMessage(e), data: null as any };
+        }
+    },
+
+    refreshToken: async (): Promise<ApiResponse<AuthResponseDto>> => {
+        try {
+            const refreshToken = localStorage.getItem("refreshToken");
+            if (!refreshToken) {
+                return { success: false, message: "No refresh token available", data: null as any };
+            }
+            const response = await axiosInstance.post("/api/v1/auth/refresh", { refreshToken });
             if (response.data.success) setTokens(response.data.data);
             return response.data;
         } catch (e) {

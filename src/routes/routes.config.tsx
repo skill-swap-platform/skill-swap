@@ -35,21 +35,31 @@ import {
 } from "@/pages";
 import VerifyEmailRoute from "@/pages/auth/VerifyEmailRoute";
 import HomePage from "@/pages/HomePage";
-// import EmailVerificationPage from "@/pages/auth/EmailVerificationPage";
 
-export const routesConfig = [
+import ProtectedRoute from "./ProtectedRoute";
+import GuestRoute from "./GuestRoute";
+
+// ─── Route type used by AppRouter ────────────────────────────────────────────
+export interface RouteConfig {
+  path: string;
+  element: React.ReactNode;
+}
+
+export const routesConfig: RouteConfig[] = [
+  // ── Public routes (no auth required) ───────────────────────────────────────
   {
     path: "/",
     element: <LandingPage />,
   },
-  {
-    path: "/home",
-    element: <HomePage />,
-  },
 
+  // ── Guest-only routes (redirect to /home if already logged in) ─────────────
   {
     path: "/auth/login",
-    element: <Login />,
+    element: (
+      <GuestRoute>
+        <Login />
+      </GuestRoute>
+    ),
   },
   {
     path: "/login",
@@ -57,106 +67,198 @@ export const routesConfig = [
   },
   {
     path: "/auth/register",
-    element: <Register />,
+    element: (
+      <GuestRoute>
+        <Register />
+      </GuestRoute>
+    ),
   },
   {
     path: "/auth/verify-email",
     element: <VerifyEmailRoute />,
   },
 
-  // {
-  //   path: "/dashboard",
-  //   element: <Dashboard />,
-  // },
+  // ── Protected routes (require authentication) ──────────────────────────────
+  {
+    path: "/home",
+    element: (
+      <ProtectedRoute>
+        <HomePage />
+      </ProtectedRoute>
+    ),
+  },
   {
     path: "/admin/dashboard",
-    element: <AdminDashboard />,
+    element: (
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
+        <AdminDashboard />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/points-badges",
-    element: <PointsAndBadges />,
+    element: (
+      <ProtectedRoute>
+        <PointsAndBadges />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/session-history",
-    element: <SessionHistory />,
+    element: (
+      <ProtectedRoute>
+        <SessionHistory />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/session-feedback/:sessionId",
-    element: <SessionFeedback />,
+    element: (
+      <ProtectedRoute>
+        <SessionFeedback />
+      </ProtectedRoute>
+    ),
   },
-
   {
     path: "/request-skill",
-    element: <RequestSkill />,
+    element: (
+      <ProtectedRoute>
+        <RequestSkill />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/request-skill/add-skill",
-    element: <AddSkill />,
+    element: (
+      <ProtectedRoute>
+        <AddSkill />
+      </ProtectedRoute>
+    ),
   },
-  // to be edited
   {
     path: "/requests-sent",
-    element: <RequestsSent />,
+    element: (
+      <ProtectedRoute>
+        <RequestsSent />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/sessions",
-    element: <UpcomingSession />,
+    element: (
+      <ProtectedRoute>
+        <UpcomingSession />
+      </ProtectedRoute>
+    ),
   },
-
   {
     path: "/explore",
-    element: <Explore />,
+    element: (
+      <ProtectedRoute>
+        <Explore />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/all-reviews",
-    element: <AllReviews />,
+    element: (
+      <ProtectedRoute>
+        <AllReviews />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/profile",
-    element: <ProfilePage />,
+    element: (
+      <ProtectedRoute>
+        <ProfilePage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/profile/edit",
-    element: <EditProfilePage />,
+    element: (
+      <ProtectedRoute>
+        <EditProfilePage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/profile/skills",
-    element: <MySkillsPage />,
+    element: (
+      <ProtectedRoute>
+        <MySkillsPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/profile/add-skill",
-    element: <AddSkillProfile />,
+    element: (
+      <ProtectedRoute>
+        <AddSkillProfile />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/profile/settings",
-    element: <SettingsPage />,
+    element: (
+      <ProtectedRoute>
+        <SettingsPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/profile/skills/:skillId",
-    element: <SkillDetailPage />,
+    element: (
+      <ProtectedRoute>
+        <SkillDetailPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/profile/skills/:skillId/edit",
-    element: <EditSkillPage />,
+    element: (
+      <ProtectedRoute>
+        <EditSkillPage />
+      </ProtectedRoute>
+    ),
   },
 
+  // ── Onboarding (protected — user must be logged in) ────────────────────────
   {
     path: "/onboarding/interests",
-    element: <OnboardingInterests />,
+    element: (
+      <ProtectedRoute>
+        <OnboardingInterests />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/onboarding/teaching",
-    element: <OnboardingTeaching />,
+    element: (
+      <ProtectedRoute>
+        <OnboardingTeaching />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/onboarding/profile",
-    element: <OnboardingProfile />,
+    element: (
+      <ProtectedRoute>
+        <OnboardingProfile />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/onboarding/loading",
-    element: <OnboardingLoading />,
+    element: (
+      <ProtectedRoute>
+        <OnboardingLoading />
+      </ProtectedRoute>
+    ),
   },
-  // to be checked
+
+  // ── Preview / dev routes ───────────────────────────────────────────────────
   {
     path: "/preview/session-completed",
     element: <PreviewSessionCompleted />,
@@ -173,12 +275,12 @@ export const routesConfig = [
     path: "/preview/manage-badges",
     element: <PreviewManageBadges />,
   },
-  // to be checked
   {
     path: "/preview/points-manage",
     element: <PreviewPointsManage />,
   },
 
+  // ── Catch-all ──────────────────────────────────────────────────────────────
   {
     path: "*",
     element: <NotFound />,
