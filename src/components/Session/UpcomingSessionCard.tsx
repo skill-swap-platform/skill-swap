@@ -1,4 +1,3 @@
-import React from "react";
 import docIcon from "../../assets/session/doc.svg";
 import calendarIcon from "../../assets/session/calendar.svg";
 import clockIcon from "../../assets/session/clock.svg";
