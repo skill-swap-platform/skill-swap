@@ -1,4 +1,3 @@
-import React from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import PhoneImageContainer from "../assets/landingPage/Phone-Image-Container.png";

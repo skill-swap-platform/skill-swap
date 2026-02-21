@@ -44,11 +44,11 @@ type Step =
     | 'second-role-prompt'
     | 'second-role-feedback'
     | 'report-issue'
-const isUUID = (id: string | null | undefined): boolean => {
-    if (!id) return false;
-    const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return regex.test(id);
-};
+// const isUUID = (id: string | null | undefined): boolean => {
+//     if (!id) return false;
+//     const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+//     return regex.test(id);
+// };
 
 export const SessionFeedback: React.FC = () => {
     const navigate = useNavigate()
