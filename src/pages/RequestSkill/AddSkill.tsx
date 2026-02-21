@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header/Header';
 import Footer from '@/components/Footer/Footer';
+import { Loader2 } from 'lucide-react';
+import { skillService, userService } from '@/api/services/user.service';
 
 const LANGUAGES = [
   'English',
@@ -21,8 +23,27 @@ const SESSION_DURATIONS = [
   { label: '60 min', value: 60 },
 ];
 
+interface SkillOption {
+  id: string;
+  name: string;
+}
+
+interface RequestSkillNavigationState {
+  receiverId?: string;
+  requestedSkillId?: string;
+  requestedSkillName?: string;
+  newSkill?: SkillOption;
+}
+
+const levelMap: Record<string, 'BEGINNER' | 'INTERMEDIATE' | 'EXPERT'> = {
+  Beginner: 'BEGINNER',
+  Intermediate: 'INTERMEDIATE',
+  Advanced: 'EXPERT',
+};
+
 const AddSkill: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [language, setLanguage] = useState('');
@@ -30,10 +51,64 @@ const AddSkill: React.FC = () => {
   const languageDropdownRef = useRef<HTMLDivElement | null>(null);
   const [skillLevel, setSkillLevel] = useState<string | null>(null);
   const [sessionDuration, setSessionDuration] = useState<number | null>(null);
+  const [allSkills, setAllSkills] = useState<SkillOption[]>([]);
+  const [searchResults, setSearchResults] = useState<SkillOption[]>([]);
+  const [selectedSkill, setSelectedSkill] = useState<SkillOption | null>(null);
+  const [isLoadingSkills, setIsLoadingSkills] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const requestContext = (location.state as RequestSkillNavigationState | null) ?? null;
 
   const isPublishDisabled = useMemo(() => {
     return !title.trim() || !description.trim() || !language || !skillLevel || !sessionDuration;
   }, [title, description, language, skillLevel, sessionDuration]);
+
+  useEffect(() => {
+    const fetchAllSkills = async () => {
+      try {
+        setIsLoadingSkills(true);
+        const response = await skillService.getAllSkills();
+        const raw = response?.data ?? response;
+        const finalSkills = Array.isArray(raw)
+          ? raw
+          : Array.isArray(raw?.data)
+            ? raw.data
+            : [];
+
+        const mappedSkills = finalSkills
+          .filter((skill: { id?: unknown; name?: unknown }) =>
+            typeof skill?.id === 'string' && typeof skill?.name === 'string'
+          )
+          .map((skill: { id: string; name: string }) => ({
+            id: skill.id,
+            name: skill.name,
+          }));
+
+        setAllSkills(mappedSkills);
+      } catch (error) {
+        console.error('[AddSkill] Failed to load skills:', error);
+      } finally {
+        setIsLoadingSkills(false);
+      }
+    };
+
+    fetchAllSkills();
+  }, []);
+
+  useEffect(() => {
+    if (title.trim().length < 2 || selectedSkill) {
+      setSearchResults([]);
+      return;
+    }
+
+    const normalized = title.trim().toLowerCase();
+    const filtered = allSkills
+      .filter((skill) => skill.name.toLowerCase().includes(normalized))
+      .slice(0, 8);
+
+    setSearchResults(filtered);
+  }, [title, selectedSkill, allSkills]);
 
   useEffect(() => {
     if (!showLanguagePanel) return;
@@ -48,22 +123,85 @@ const AddSkill: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showLanguagePanel]);
 
-  const handleBack = () => navigate('/request-skill');
-
-  const handlePublish = () => {
-    if (isPublishDisabled) return;
-
-    const payload = {
-      title: title.trim(),
-      description: description.trim(),
-      language,
-      skillLevel,
-      sessionDuration,
-    };
-
-    console.log('Publish skill payload:', payload);
-    navigate('/request-skill', { state: { newSkill: payload.title } });
+  const handleBack = () => {
+    navigate('/request-skill', { state: requestContext ?? undefined });
   };
+
+  const handlePublish = async () => {
+    if (isPublishDisabled || isPublishing) return;
+
+    try {
+      setIsPublishing(true);
+      setErrorMsg(null);
+
+      let finalSkill = selectedSkill;
+
+      if (!finalSkill) {
+        const exactMatch = allSkills.find(
+          (skill) => skill.name.toLowerCase() === title.trim().toLowerCase()
+        );
+
+        if (exactMatch) {
+          finalSkill = exactMatch;
+        } else {
+          const createRes = await skillService.createSkill(title.trim());
+          const created = createRes?.data?.data ?? createRes?.data ?? null;
+
+          if (created?.id && created?.name) {
+            finalSkill = {
+              id: created.id,
+              name: created.name,
+            };
+          } else {
+            throw new Error('Could not create skill. Please try again.');
+          }
+        }
+      }
+
+      if (!finalSkill?.id) {
+        throw new Error('Please select a valid skill first.');
+      }
+
+      const response = await userService.addSkill({
+        skillId: finalSkill.id,
+        level: levelMap[skillLevel ?? 'Beginner'],
+        yearsOfExperience: 0,
+        sessionLanguage: language,
+        skillDescription: description.trim(),
+      });
+
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to add skill.');
+      }
+
+      const createdUserSkill = response.data as { id?: string } | undefined;
+      const createdUserSkillId = createdUserSkill?.id;
+
+      if (!createdUserSkillId) {
+        throw new Error('Skill was added but no skill id was returned.');
+      }
+
+      navigate('/request-skill', {
+        state: {
+          ...(requestContext ?? {}),
+          newSkill: {
+            id: createdUserSkillId,
+            name: finalSkill.name,
+          },
+        } satisfies RequestSkillNavigationState,
+      });
+    } catch (error) {
+      console.error('[AddSkill] Publish failed:', error);
+      const message =
+        (error as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message
+        || (error as { message?: string })?.message
+        || 'Failed to add skill. Please try again.';
+      setErrorMsg(message);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-light">
@@ -86,17 +224,46 @@ const AddSkill: React.FC = () => {
           </div>
 
           <form className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
+            <div className="relative flex flex-col gap-2">
               <label className="text-sm font-semibold text-[#0c0d0f]">
                 Skill Title <span className="text-[#dc2626]">*</span>
               </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                placeholder="e.g. Mobile Photography Basics"
-                className="h-12 rounded-[10px] border border-[#e5e7eb] px-4 text-[14px] text-[#0c0d0f] placeholder:text-[#9ca3af] focus:border-[#3272a3] focus:outline-none"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(event) => {
+                    setTitle(event.target.value);
+                    setSelectedSkill(null);
+                    setErrorMsg(null);
+                  }}
+                  placeholder="e.g. Mobile Photography Basics"
+                  className="h-12 w-full rounded-[10px] border border-[#e5e7eb] px-4 text-[14px] text-[#0c0d0f] placeholder:text-[#9ca3af] focus:border-[#3272a3] focus:outline-none"
+                />
+                {isLoadingSkills && (
+                  <Loader2 className="absolute right-3 top-3 h-5 w-5 animate-spin text-[#9ca3af]" />
+                )}
+              </div>
+
+              {searchResults.length > 0 && (
+                <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-20 overflow-hidden rounded-[10px] border border-[#e5e7eb] bg-white shadow-lg">
+                  {searchResults.map((skill) => (
+                    <button
+                      key={skill.id}
+                      type="button"
+                      onClick={() => {
+                        setTitle(skill.name);
+                        setSelectedSkill(skill);
+                        setSearchResults([]);
+                        setErrorMsg(null);
+                      }}
+                      className="w-full px-4 py-3 text-left text-[14px] text-[#0c0d0f] hover:bg-[#f9fafb]"
+                    >
+                      {skill.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -210,14 +377,18 @@ const AddSkill: React.FC = () => {
               <button
                 type="button"
                 onClick={handlePublish}
-                disabled={isPublishDisabled}
+                disabled={isPublishDisabled || isPublishing}
                 className={`h-12 w-full sm:w-[160px] rounded-[10px] text-[16px] font-medium text-white transition-opacity ${
-                  isPublishDisabled ? 'bg-[#9ca3af] opacity-70' : 'bg-[#3272a3] hover:opacity-90'
+                  isPublishDisabled || isPublishing ? 'bg-[#9ca3af] opacity-70' : 'bg-[#3272a3] hover:opacity-90'
                 }`}
               >
-                Publish
+                <span className="flex items-center justify-center gap-2">
+                  {isPublishing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  Publish
+                </span>
               </button>
             </div>
+            {errorMsg ? <p className="text-sm text-[#dc2626]">{errorMsg}</p> : null}
           </form>
         </div>
       </div>
