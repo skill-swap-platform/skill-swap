@@ -8,8 +8,6 @@ interface BadgeUnlockedScreenProps {
 }
 
 export const BadgeUnlockedScreen: React.FC<BadgeUnlockedScreenProps> = ({
-    unlockedBadges,
-    nextBadge,
     onContinue,
 }) => {
     return (

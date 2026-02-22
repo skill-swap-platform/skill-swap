@@ -23,11 +23,15 @@ function setTokens(data?: AuthResponseDto) {
     if (!data) return;
     localStorage.setItem("accessToken", data.accessToken);
     localStorage.setItem("refreshToken", data.refreshToken);
+    if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+    }
 }
 
 function clearTokens() {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
 }
 
 function extractApiMessage(error: unknown): string {
@@ -79,8 +83,26 @@ export const authService = {
         }
     },
 
-    logout: () => {
+    refreshToken: async (): Promise<ApiResponse<AuthResponseDto>> => {
+        try {
+            const refreshToken = localStorage.getItem("refreshToken");
+            if (!refreshToken) {
+                return { success: false, message: "No refresh token available", data: null as any };
+            }
+            const response = await axiosInstance.post("/api/v1/auth/refresh", { refreshToken });
+            if (response.data.success) setTokens(response.data.data);
+            return response.data;
+        } catch (e) {
+            return { success: false, message: extractApiMessage(e), data: null as any };
+        }
+    },
+
+    logout: async (): Promise<void> => {
+        try {
+            await axiosInstance.post("/api/v1/auth/logout");
+        } catch {
+            // Continue with local logout even if API call fails
+        }
         clearTokens();
-        window.location.href = "/auth/login";
     },
 };

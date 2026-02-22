@@ -17,7 +17,12 @@ import { Footer, Header } from "@/components";
 // fetch from API and store in state.
 
 export default function DashboardPage() {
-  const data = HomeDashboardMockData;
+  // Get the logged-in user's name from localStorage
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : null;
+  const userName = user?.userName || HomeDashboardMockData.userName;
+
+  const data = { ...HomeDashboardMockData, userName };
 
   return (
     <main className="min-h-screen bg-slate-100">

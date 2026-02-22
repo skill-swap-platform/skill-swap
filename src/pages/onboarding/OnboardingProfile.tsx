@@ -165,9 +165,10 @@ const OnboardingProfile: React.FC = () => {
                     />
                     <FormInput
                         label="Short Bio"
-                        placeholder="Tell other's a bit about yourself"
+                        placeholder="Tell others a bit about yourself (min. 10 characters)"
                         value={formData.bio}
                         onChange={(val) => setFormData({ ...formData, bio: val })}
+                        helperText="Bio must be at least 10 characters long"
                     />
                     <FormSelect
                         label="Availability"
@@ -224,8 +225,8 @@ const OnboardingProfile: React.FC = () => {
                 <div className="w-full flex flex-col items-center gap-[8px] mt-auto">
                     <button
                         onClick={handleNext}
-                        disabled={!formData.full_name || !formData.bio || formData.location === 'Country' || isSaving}
-                        className={`w-full max-w-[415px] h-[48px] rounded-[10px] flex items-center justify-center transition-all ${(!formData.full_name || !formData.bio || formData.location === 'Country' || isSaving)
+                        disabled={!formData.full_name || formData.bio.length < 10 || formData.location === 'Country' || isSaving}
+                        className={`w-full max-w-[415px] h-[48px] rounded-[10px] flex items-center justify-center transition-all ${(!formData.full_name || formData.bio.length < 10 || formData.location === 'Country' || isSaving)
                             ? 'bg-[#9CA3AF] cursor-not-allowed opacity-70'
                             : 'bg-[#3E8FCC] hover:bg-[#357db3] shadow-md shadow-blue-100'
                             }`}
@@ -243,8 +244,8 @@ const OnboardingProfile: React.FC = () => {
     );
 };
 
-const FormInput = ({ label, placeholder, value, onChange }: { label: string, placeholder: string, value: string, onChange: (v: string) => void }) => (
-    <div className="w-full h-[75px] flex flex-col gap-[8px]">
+const FormInput = ({ label, placeholder, value, onChange, helperText }: { label: string, placeholder: string, value: string, onChange: (v: string) => void, helperText?: string }) => (
+    <div className="w-full flex flex-col gap-[8px]">
         <label className="text-[16px] font-medium leading-[19px] text-[#0C0D0F]">{label}</label>
         <div className="w-full h-[48px] border border-[#DADADA] rounded-[10px] px-[14px] flex items-center bg-white">
             <input
@@ -255,6 +256,11 @@ const FormInput = ({ label, placeholder, value, onChange }: { label: string, pla
                 className="w-full bg-transparent outline-none text-[15px] font-normal text-black placeholder:text-[#999999]"
             />
         </div>
+        {helperText && (
+            <span className={`text-[12px] ${value.length > 0 && value.length < 10 ? 'text-red-500' : 'text-gray-500'}`}>
+                {helperText} ({value.length}/10)
+            </span>
+        )}
     </div>
 );
 
