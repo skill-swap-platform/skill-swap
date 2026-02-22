@@ -31,7 +31,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Default" }) => {
   const { pathname } = useLocation();
 
   const getAutoActiveTab = (): HeaderProps["activeTab"] => {
-    if (pathname === "/home") return "Home";
+    if (pathname.startsWith("/home")) return "Home";
 
     if (
       pathname.startsWith("/requests-sent") ||
