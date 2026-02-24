@@ -12,9 +12,8 @@ const Explore = () => {
   const navigate = useNavigate();
   const { skillId, userId } = useParams<{ skillId: string; userId: string }>();
   
-  // Use mock IDs if not provided (for development)
-  const finalSkillId = skillId || 'mock-skill-1';
-  const finalUserId = userId || 'mock-user-1';
+  const finalSkillId = skillId;
+  const finalUserId = userId;
   
   const [skillData, setSkillData] = useState<any>(null);
   const [similarUsers, setSimilarUsers] = useState<any>(null);
@@ -33,6 +32,7 @@ const Explore = () => {
 
   // Fetch skill details
   useEffect(() => {
+    if (!finalSkillId || !finalUserId) return;
     const fetchSkillDetails = async () => {
       try {
         setLoadingSkill(true);
@@ -52,6 +52,7 @@ const Explore = () => {
 
   // Fetch similar users
   useEffect(() => {
+    if (!finalSkillId) return;
     const fetchSimilarUsers = async () => {
       try {
         setLoadingSimilar(true);
@@ -71,6 +72,7 @@ const Explore = () => {
 
   // Fetch reviews
   useEffect(() => {
+    if (!finalUserId || !finalSkillId) return;
     const fetchReviews = async () => {
       try {
         setLoadingReviews(true);
@@ -141,8 +143,8 @@ const Explore = () => {
           data={reviews} 
           loading={loadingReviews} 
           error={errorReviews}
-          userId={finalUserId}
-          skillId={finalSkillId}
+          userId={finalUserId ?? ''}
+          skillId={finalSkillId ?? ''}
         />
 
         {/* Request Button */}
