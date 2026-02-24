@@ -23,7 +23,6 @@ export const userService = {
         const payload = {
             skillId: skillData.skillId,
             level: skillData.level,
-            yearsOfExperience: skillData.yearsOfExperience,
             sessionLanguage: skillData.sessionLanguage || 'English',
             skillDescription: skillData.skillDescription || '',
         };
@@ -36,13 +35,13 @@ export const userService = {
         return response.data;
     },
 
-    updateUserSkill: async (skillId: string, data: Partial<AddUserSkillDto>): Promise<ApiResponse<any>> => {
-        const response = await axiosInstance.patch(`/api/v1/user/${skillId}`, data);
+    updateUserSkill: async (userSkillId: string, data: Partial<AddUserSkillDto>): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.patch(`/api/v1/user/${userSkillId}`, data);
         return response.data;
     },
 
-    removeSkill: async (skillId: string): Promise<ApiResponse<any>> => {
-        const response = await axiosInstance.delete(`/api/v1/user/me/skills/${skillId}`);
+    removeSkill: async (userSkillId: string): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.delete(`/api/v1/user/me/skills/${userSkillId}`);
         return response.data;
     },
 

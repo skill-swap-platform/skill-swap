@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ChevronRight, Search, Filter, Loader2 } from 'lucide-react'
+import { ChevronRight, Search, Filter } from 'lucide-react'
 import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
 import { SessionHistoryList } from '@/components/feedback/index'
@@ -167,9 +167,10 @@ export const SessionHistory: React.FC = () => {
                             </div>
 
                             {isLoading ? (
-                                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[24px] border border-gray-100">
-                                    <Loader2 className="w-10 h-10 text-[#3E8FCC] animate-spin mb-4" />
-                                    <p className="text-gray-500">Loading your session history...</p>
+                                <div className="space-y-4">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="h-32 bg-white rounded-[24px] border border-gray-100 animate-pulse" />
+                                    ))}
                                 </div>
                             ) : error ? (
                                 <div className="p-10 text-center bg-white rounded-[24px] border border-gray-100">

@@ -103,7 +103,7 @@ const AddSkillProfile: React.FC = () => {
             const levelMap: Record<string, any> = {
                 'Beginner': 'BEGINNER',
                 'Intermediate': 'INTERMEDIATE',
-                'Advanced': 'EXPERT'
+                'Advanced': 'ADVANCED'
             };
 
             const response = await userService.addSkill({

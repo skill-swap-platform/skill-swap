@@ -82,18 +82,6 @@ const EditProfilePage: React.FC = () => {
         }
     };
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
-                <Header />
-                <main className="flex-1 flex items-center justify-center">
-                    <div className="w-10 h-10 border-4 border-[#3E8FCC] border-t-transparent rounded-full animate-spin" />
-                </main>
-                <Footer />
-            </div>
-        );
-    }
-
     const avatarUrl =
         previewUrl ||
         `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.userName || 'user'}`;
@@ -103,8 +91,7 @@ const EditProfilePage: React.FC = () => {
             <Header />
             <main className="flex-1 py-8 px-4">
                 <div className="max-w-[600px] mx-auto">
-
-                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden p-4 sm:p-6">
+                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden p-4 sm:p-6 min-h-[500px]">
                         <div className="flex items-center justify-between mb-6">
                             <button
                                 onClick={() => navigate('/profile')}
@@ -116,26 +103,33 @@ const EditProfilePage: React.FC = () => {
                                 <Settings className="w-4 h-4 text-gray-400" />
                             </button>
                         </div>
+
                         <div className="flex flex-col items-center mb-8">
                             <div className="relative mb-2">
-                                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-100">
-                                    <img
-                                        src={avatarUrl}
-                                        alt="avatar"
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    disabled={isUploading}
-                                    className="absolute inset-0 rounded-full bg-black/30 flex items-center justify-center hover:bg-black/40 transition-colors"
-                                >
-                                    {isUploading ? (
-                                        <Loader2 className="w-5 h-5 text-white animate-spin" />
+                                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-100 bg-gray-50">
+                                    {isLoading ? (
+                                        <div className="w-full h-full animate-pulse" />
                                     ) : (
-                                        <Camera className="w-5 h-5 text-white" />
+                                        <img
+                                            src={avatarUrl}
+                                            alt="avatar"
+                                            className="w-full h-full object-cover"
+                                        />
                                     )}
-                                </button>
+                                </div>
+                                {!isLoading && (
+                                    <button
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={isUploading}
+                                        className="absolute inset-0 rounded-full bg-black/30 flex items-center justify-center hover:bg-black/40 transition-colors"
+                                    >
+                                        {isUploading ? (
+                                            <Loader2 className="w-5 h-5 text-white animate-spin" />
+                                        ) : (
+                                            <Camera className="w-5 h-5 text-white" />
+                                        )}
+                                    </button>
+                                )}
                                 <input
                                     type="file"
                                     ref={fileInputRef}
@@ -144,43 +138,57 @@ const EditProfilePage: React.FC = () => {
                                     onChange={handleFileChange}
                                 />
                             </div>
-                            <button
-                                onClick={() => fileInputRef.current?.click()}
-                                className="text-sm text-[#3E8FCC] font-medium hover:underline"
-                            >
-                                Change Photo
-                            </button>
+                            {isLoading ? (
+                                <div className="h-4 w-24 bg-gray-50 animate-pulse rounded mt-1" />
+                            ) : (
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="text-sm text-[#3E8FCC] font-medium hover:underline"
+                                >
+                                    Change Photo
+                                </button>
+                            )}
                         </div>
+
                         <div className="space-y-4 mb-8">
                             <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
                                     Full Name
                                 </label>
-                                <input
-                                    type="text"
-                                    value={formData.name}
-                                    onChange={(e) =>
-                                        setFormData((p) => ({ ...p, name: e.target.value }))
-                                    }
-                                    className="w-full h-11 px-4 border border-gray-100 rounded-xl bg-gray-50/50 text-sm text-gray-800 outline-none focus:border-[#3E8FCC] focus:bg-white transition-all shadow-sm"
-                                    placeholder="Your full name"
-                                />
+                                {isLoading ? (
+                                    <div className="w-full h-11 bg-gray-50 border border-gray-100 rounded-xl animate-pulse" />
+                                ) : (
+                                    <input
+                                        type="text"
+                                        value={formData.name}
+                                        onChange={(e) =>
+                                            setFormData((p) => ({ ...p, name: e.target.value }))
+                                        }
+                                        className="w-full h-11 px-4 border border-gray-100 rounded-xl bg-gray-50/50 text-sm text-gray-800 outline-none focus:border-[#3E8FCC] focus:bg-white transition-all shadow-sm"
+                                        placeholder="Your full name"
+                                    />
+                                )}
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
                                     Bio / Expertise
                                 </label>
-                                <textarea
-                                    value={formData.bio}
-                                    onChange={(e) =>
-                                        setFormData((p) => ({ ...p, bio: e.target.value }))
-                                    }
-                                    rows={3}
-                                    className="w-full px-4 py-3 border border-gray-100 rounded-xl bg-gray-50/50 text-sm text-gray-800 outline-none focus:border-[#3E8FCC] focus:bg-white resize-none transition-all shadow-sm"
-                                    placeholder="Tell others what you can teach..."
-                                />
+                                {isLoading ? (
+                                    <div className="w-full h-24 bg-gray-50 border border-gray-100 rounded-xl animate-pulse" />
+                                ) : (
+                                    <textarea
+                                        value={formData.bio}
+                                        onChange={(e) =>
+                                            setFormData((p) => ({ ...p, bio: e.target.value }))
+                                        }
+                                        rows={3}
+                                        className="w-full px-4 py-3 border border-gray-100 rounded-xl bg-gray-50/50 text-sm text-gray-800 outline-none focus:border-[#3E8FCC] focus:bg-white resize-none transition-all shadow-sm"
+                                        placeholder="Tell others what you can teach..."
+                                    />
+                                )}
                             </div>
                         </div>
+
                         <div className="mb-8">
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-sm font-bold text-gray-900">My Skills</h2>
@@ -192,7 +200,13 @@ const EditProfilePage: React.FC = () => {
                                     Add New
                                 </button>
                             </div>
-                            {skills.length === 0 ? (
+                            {isLoading ? (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="h-20 bg-gray-50 border border-gray-100 rounded-xl animate-pulse" />
+                                    ))}
+                                </div>
+                            ) : skills.length === 0 ? (
                                 <div className="border border-dashed border-gray-100 rounded-xl p-6 text-center bg-gray-50/50">
                                     <p className="text-gray-400 text-[13px]">No skills added yet</p>
                                 </div>
@@ -227,9 +241,10 @@ const EditProfilePage: React.FC = () => {
                                 </div>
                             )}
                         </div>
+
                         <button
                             onClick={handleSave}
-                            disabled={isSaving || !formData.name.trim()}
+                            disabled={isLoading || isSaving || !formData.name.trim()}
                             className="w-full h-12 bg-[#1F2937] hover:bg-[#111827] text-white rounded-xl font-bold transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]"
                         >
                             {isSaving ? (
@@ -241,7 +256,6 @@ const EditProfilePage: React.FC = () => {
                                 'Save Changes'
                             )}
                         </button>
-
                     </div>
                 </div>
             </main>

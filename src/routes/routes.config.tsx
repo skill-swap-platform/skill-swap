@@ -35,6 +35,7 @@ import {
   PreviewFeedbackForm,
   PreviewManageBadges,
   PreviewPointsManage,
+  MessagesPage,
 } from "@/pages";
 import VerifyEmailRoute from "@/pages/auth/VerifyEmailRoute";
 import HomePage from "@/pages/HomePage";
@@ -113,7 +114,7 @@ export const routesConfig: RouteConfig[] = [
   {
     path: "/session-history",
     element: (
-      <ProtectedRoute allowedRoles={["ADMIN"]}>
+      <ProtectedRoute>
         <SessionHistory />
       </ProtectedRoute>
     ),
@@ -121,7 +122,7 @@ export const routesConfig: RouteConfig[] = [
   {
     path: "/session-feedback/:sessionId",
     element: (
-      <ProtectedRoute allowedRoles={["ADMIN"]}>
+      <ProtectedRoute>
         <SessionFeedback />
       </ProtectedRoute>
     ),
@@ -159,6 +160,14 @@ export const routesConfig: RouteConfig[] = [
     ),
   },
 
+  {
+    path: "/messages",
+    element: (
+      <ProtectedRoute>
+        <MessagesPage />
+      </ProtectedRoute>
+    ),
+  },
   {
     path: "/explore",
     element: (
