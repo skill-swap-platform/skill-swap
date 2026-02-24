@@ -77,21 +77,6 @@ const ProfilePage: React.FC = () => {
         fetchData();
     }, []);
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-[#F5F6FA] flex flex-col">
-                <Header />
-                <main className="flex-1 flex items-center justify-center">
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="w-10 h-10 border-4 border-[#3E8FCC] border-t-transparent rounded-full animate-spin" />
-                        <p className="text-gray-400 text-sm">Loading profile...</p>
-                    </div>
-                </main>
-                <Footer />
-            </div>
-        );
-    }
-
     const avatarUrl =
         user?.image ||
         `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.userName || 'user'}`;
@@ -101,7 +86,7 @@ const ProfilePage: React.FC = () => {
             <Header />
             <main className="flex-1 py-8 px-4">
                 <div className="max-w-[600px] mx-auto">
-                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden min-h-[500px]">
                         <div className="flex items-center justify-between px-5 pt-5 pb-2">
                             <button
                                 onClick={() => navigate(-1)}
@@ -126,28 +111,42 @@ const ProfilePage: React.FC = () => {
                                 </button>
                             </div>
                         </div>
+
+                        {/* Profile Header Section */}
                         <div className="flex flex-col items-center pt-2 pb-5 px-5">
-                            <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-100 mb-3">
-                                <img
-                                    src={avatarUrl}
-                                    alt={user?.userName || 'User'}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                            <h1 className="text-[18px] font-bold text-[#0C0D0F]">
-                                {user?.userName || 'Your Name'}
-                            </h1>
-                            <p className="text-[13px] text-gray-400 mt-0.5">
-                                {user?.bio || 'No bio yet'}
-                            </p>
-                            <div className="flex items-center gap-1 mt-1.5">
-                                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                <span className="text-[13px] font-semibold text-gray-800">
-                                    {rating.average.toFixed(1)}
-                                </span>
-                                <span className="text-[12px] text-gray-400">({rating.total})</span>
-                            </div>
+                            {isLoading ? (
+                                <>
+                                    <div className="w-20 h-20 rounded-full bg-gray-100 animate-pulse mb-3" />
+                                    <div className="h-6 w-32 bg-gray-100 animate-pulse rounded-md mb-2" />
+                                    <div className="h-4 w-48 bg-gray-50 animate-pulse rounded-md" />
+                                </>
+                            ) : (
+                                <>
+                                    <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-100 mb-3">
+                                        <img
+                                            src={avatarUrl}
+                                            alt={user?.userName || 'User'}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                    <h1 className="text-[18px] font-bold text-[#0C0D0F]">
+                                        {user?.userName || 'Your Name'}
+                                    </h1>
+                                    <p className="text-[13px] text-gray-400 mt-0.5">
+                                        {user?.bio || 'No bio yet'}
+                                    </p>
+                                    <div className="flex items-center gap-1 mt-1.5">
+                                        <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                                        <span className="text-[13px] font-semibold text-gray-800">
+                                            {rating.average.toFixed(1)}
+                                        </span>
+                                        <span className="text-[12px] text-gray-400">({rating.total})</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
+
+                        {/* Stats Section */}
                         <div className="grid grid-cols-3 mx-5 mb-6 border border-gray-100 rounded-xl overflow-hidden">
                             {[
                                 { label: 'Sessions', value: stats.sessions },
@@ -158,11 +157,17 @@ const ProfilePage: React.FC = () => {
                                     key={label}
                                     className={`flex flex-col items-center py-4 ${idx < 2 ? 'border-r border-gray-100' : ''}`}
                                 >
-                                    <span className="text-[17px] font-bold text-gray-900">{value}</span>
+                                    {isLoading ? (
+                                        <div className="h-5 w-8 bg-gray-100 animate-pulse rounded-md mb-1" />
+                                    ) : (
+                                        <span className="text-[17px] font-bold text-gray-900">{value}</span>
+                                    )}
                                     <span className="text-[11px] text-gray-400 mt-0.5">{label}</span>
                                 </div>
                             ))}
                         </div>
+
+                        {/* Skills Section */}
                         <div className="px-5 mb-6">
                             <div className="flex items-center justify-between mb-3">
                                 <h2 className="text-[15px] font-bold text-gray-900">My Skills</h2>
@@ -174,7 +179,13 @@ const ProfilePage: React.FC = () => {
                                 </button>
                             </div>
 
-                            {skills.length === 0 ? (
+                            {isLoading ? (
+                                <div className="grid grid-cols-2 xs:grid-cols-3 gap-3">
+                                    {[1, 2, 3].map((i) => (
+                                        <div key={i} className="h-24 bg-gray-50 border border-gray-100 rounded-xl animate-pulse" />
+                                    ))}
+                                </div>
+                            ) : skills.length === 0 ? (
                                 <div className="border border-dashed border-gray-200 rounded-xl p-6 text-center">
                                     <p className="text-gray-400 text-sm">No skills added yet</p>
                                     <button
@@ -197,12 +208,23 @@ const ProfilePage: React.FC = () => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Badges Section */}
                         <div className="px-5 pb-7">
                             <h2 className="text-[15px] font-bold text-gray-900 mb-4">
                                 Recognition Badges
                             </h2>
 
-                            {badges.length === 0 ? (
+                            {isLoading ? (
+                                <div className="flex gap-4">
+                                    {[1, 2, 3, 4].map((i) => (
+                                        <div key={i} className="flex flex-col items-center gap-2">
+                                            <div className="w-14 h-14 rounded-full bg-gray-50 animate-pulse" />
+                                            <div className="h-3 w-10 bg-gray-50 animate-pulse rounded" />
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : badges.length === 0 ? (
                                 <div className="py-2">
                                     <p className="text-gray-400 text-[13px] italic">No badges earned yet. Complete sessions to unlock them!</p>
                                 </div>

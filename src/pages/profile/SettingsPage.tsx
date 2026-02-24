@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, LogOut, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronRight, LogOut } from 'lucide-react';
 import Header from '@/components/Header/Header';
 import Footer from '@/components/Footer/Footer';
 import { userService } from '@/api/services/user.service';
@@ -36,23 +36,11 @@ const SettingsPage: React.FC = () => {
         navigate('/auth/login');
     };
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-[#F5F6FA] flex flex-col">
-                <Header />
-                <main className="flex-1 flex items-center justify-center">
-                    <Loader2 className="w-10 h-10 animate-spin text-[#3E8FCC]" />
-                </main>
-                <Footer />
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen bg-[#F5F6FA] flex flex-col font-sans text-[#0C0D0F]">
             <Header />
             <main className="flex-1 py-10 px-4">
-                <div className="max-w-[800px] mx-auto bg-white rounded-[24px] shadow-sm p-5 sm:p-8">
+                <div className="max-w-[800px] mx-auto bg-white rounded-[24px] shadow-sm p-5 sm:p-8 min-h-[500px]">
                     <div className="flex items-center gap-4 mb-10">
                         <button
                             onClick={() => navigate(-1)}
@@ -69,21 +57,29 @@ const SettingsPage: React.FC = () => {
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-[13px] font-semibold text-gray-700 mb-2 px-1">Name</label>
-                                    <input
-                                        type="text"
-                                        readOnly
-                                        value={user?.userName || 'Dena Abdo'}
-                                        className="w-full h-12 bg-white border border-gray-100 rounded-xl px-4 text-[14px] text-gray-800 outline-none shadow-sm focus:border-[#3E8FCC] transition-colors"
-                                    />
+                                    {isLoading ? (
+                                        <div className="w-full h-12 bg-gray-50 border border-gray-100 rounded-xl animate-pulse" />
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            readOnly
+                                            value={user?.userName || 'User Name'}
+                                            className="w-full h-12 bg-white border border-gray-100 rounded-xl px-4 text-[14px] text-gray-800 outline-none shadow-sm focus:border-[#3E8FCC] transition-colors"
+                                        />
+                                    )}
                                 </div>
                                 <div>
                                     <label className="block text-[13px] font-semibold text-gray-700 mb-2 px-1">Email</label>
-                                    <input
-                                        type="email"
-                                        readOnly
-                                        value={user?.email || 'dena@gmail.com'}
-                                        className="w-full h-12 bg-white border border-gray-100 rounded-xl px-4 text-[14px] text-gray-800 outline-none shadow-sm focus:border-[#3E8FCC] transition-colors"
-                                    />
+                                    {isLoading ? (
+                                        <div className="w-full h-12 bg-gray-50 border border-gray-100 rounded-xl animate-pulse" />
+                                    ) : (
+                                        <input
+                                            type="email"
+                                            readOnly
+                                            value={user?.email || 'user@example.com'}
+                                            className="w-full h-12 bg-white border border-gray-100 rounded-xl px-4 text-[14px] text-gray-800 outline-none shadow-sm focus:border-[#3E8FCC] transition-colors"
+                                        />
+                                    )}
                                 </div>
                             </div>
                         </section>
@@ -118,7 +114,6 @@ const SettingsPage: React.FC = () => {
                             </div>
                             <span className="text-base font-bold">Log out</span>
                         </button>
-
                     </div>
                 </div>
             </main>

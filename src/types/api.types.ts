@@ -59,7 +59,7 @@ export interface UpdateUserDto {
 
 export interface UserSkill {
     id: string;
-    level: 'BEGINNER' | 'INTERMEDIATE' | 'EXPERT';
+    level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
     yearsOfExperience: number;
     isOffering: boolean;
     sessionLanguage?: string;
@@ -80,7 +80,7 @@ export interface SkillDto {
 export interface AddUserSkillDto {
     skillId: string;
     level: string;
-    yearsOfExperience: number;
+    yearsOfExperience?: number;
     sessionLanguage?: string;
     skillDescription?: string;
 }

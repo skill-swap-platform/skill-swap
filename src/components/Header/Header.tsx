@@ -24,6 +24,7 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { label: "Home", to: "/home", tab: "Home" },
+  { label: "Messages", to: "/messages", tab: "Chat" },
   { label: "Requests", to: "/requests-sent", tab: "Requests" },
   { label: "Sessions", to: "/sessions", tab: "Sessions" },
   { label: "Explore", to: "/explore", tab: "Explore" },
@@ -174,7 +175,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Default" }) => {
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-3xl border-none bg-background-light transition-colors hover:bg-[#e8e8ee]">
+            <Link to="/messages" className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-3xl border-none bg-background-light transition-colors hover:bg-[#e8e8ee]">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M8.5 19H8C4 19 2 18 2 13V8C2 4 4 2 8 2H16C20 2 22 4 22 8V13C22 17 20 19 16 19H15.5C15.19 19 14.89 19.15 14.7 19.4L13.2 21.4C12.54 22.28 11.46 22.28 10.8 21.4L9.3 19.4C9.14 19.18 8.77 19 8.5 19Z"
@@ -185,7 +186,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Default" }) => {
                   strokeLinejoin="round"
                 />
               </svg>
-            </button>
+            </Link>
             <button className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-3xl border-none bg-background-light transition-colors hover:bg-[#e8e8ee]">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <path
