@@ -1,148 +1,163 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header/Header";
 import FiltersSidebar from "@/components/Search/FiltersSidebar";
-import { searchSkills, discoverSkills } from "@/services/exploreService";
-import type { SearchResultItem, DiscoverResultItem } from "@/services/exploreService";
+import {
+  discoverSkills,
+  getSkillIdentifier,
+  getUserIdentifier,
+  searchSkills,
+  type ExploreResultItem,
+} from "@/services/exploreService";
 
-type ResultItem = SearchResultItem | DiscoverResultItem;
+type FilterState = {
+  skillType: string[];
+  availability: string[];
+  language: string;
+  difficultyLevel: string[];
+};
+
+const defaultFilters: FilterState = {
+  skillType: [],
+  availability: [],
+  language: "",
+  difficultyLevel: [],
+};
 
 const Search = () => {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialQuery = searchParams.get("q") || "";
+
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [recommendations, setRecommendations] = useState<ResultItem[]>([]);
+  const [recommendations, setRecommendations] = useState<ExploreResultItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
-    skillType: [] as string[],
-    availability: ["weekends"] as string[],
-    language: "",
-    difficultyLevel: [] as string[],
-  });
-  const [appliedFilters, setAppliedFilters] = useState(() => ({
-    skillType: [] as string[],
-    availability: ["weekends"] as string[],
-    language: "",
-    difficultyLevel: [] as string[],
-  }));
+  const [filters, setFilters] = useState<FilterState>(defaultFilters);
+  const [sortBy, setSortBy] = useState<"recent" | "popular" | "rating">("recent");
 
-  const handleToggleFilter = (category: string, value: string) => {
-    setFilters({
-      ...filters,
-      [category]: (filters[category as keyof typeof filters] as string[]).includes(value)
-        ? (filters[category as keyof typeof filters] as string[]).filter((item) => item !== value)
-        : [...(filters[category as keyof typeof filters] as string[]), value],
-    });
+  const hasActiveFilters =
+    filters.availability.length > 0 ||
+    filters.language.trim().length > 0 ||
+    filters.difficultyLevel.length > 0;
+
+  const loadDiscoverRecommendations = async () => {
+    const data = await discoverSkills({ page: 1, limit: 20 });
+    setRecommendations(data);
   };
 
-  const clearAllFilters = () => {
-    setFilters({
-      skillType: [],
-      availability: ["weekends"],
-      language: "",
-      difficultyLevel: [],
-    });
+  const loadSearchResults = async (query: string) => {
+    const data = await searchSkills(query, 1, 20);
+    setRecommendations(data);
   };
 
-  const handleApplyFilters = async () => {
-    setAppliedFilters({ ...filters });
-    setShowFilters(false);
+  const loadCurrentResults = async (query: string) => {
+    setLoading(true);
+    setError(null);
 
-    // If filters applied, use discover endpoint
-    const hasActiveFilters =
-      filters.availability.length > 0 ||
-      filters.language !== "" ||
-      filters.difficultyLevel.length > 0;
-
-    if (hasActiveFilters) {
-      try {
-        setLoading(true);
-        setError(null);
-        // Map availability filter to API value
+    try {
+      if (query.trim()) {
+        await loadSearchResults(query.trim());
+      } else if (hasActiveFilters) {
         const availabilityMap: Record<string, string> = {
           weekends: "WEEKENDS",
           morning: "MORNING",
           evening: "EVENING",
           flexible: "FLEXIBLE",
         };
-        const availability = filters.availability.length > 0
-          ? availabilityMap[filters.availability[0]] ?? undefined
-          : undefined;
-        const level = filters.difficultyLevel.length > 0
-          ? filters.difficultyLevel[0].toUpperCase()
-          : undefined;
+
+        const levelMap: Record<string, string> = {
+          beginner: "BEGINNER",
+          intermediate: "INTERMEDIATE",
+          advance: "ADVANCED",
+          advanced: "ADVANCED",
+          expert: "ADVANCED",
+        };
+
+        const availability =
+          filters.availability.length > 0
+            ? availabilityMap[filters.availability[0]] || undefined
+            : undefined;
+        const level =
+          filters.difficultyLevel.length > 0
+            ? levelMap[filters.difficultyLevel[0]] || undefined
+            : undefined;
+
         const data = await discoverSkills({
           availability,
           language: filters.language || undefined,
           level,
+          page: 1,
+          limit: 20,
         });
         setRecommendations(data);
-      } catch (err: any) {
-        setError(err?.response?.data?.message || "Failed to apply filters");
-        console.error("Error applying filters:", err);
-      } finally {
-        setLoading(false);
+      } else {
+        await loadDiscoverRecommendations();
       }
-    } else {
-      loadRecommendations();
-    }
-  };
-
-  // Load recent searches from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("recentSearches");
-    if (saved) {
-      setRecentSearches(JSON.parse(saved));
-    }
-    loadRecommendations();
-  }, []);
-
-  const loadRecommendations = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await searchSkills("", 1, 20);
-      setRecommendations(data);
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Failed to load recommendations");
-      console.error("Error loading recommendations:", err);
+      setError(err?.response?.data?.message || "Failed to load results");
+      setRecommendations([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Live search while typing
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      loadRecommendations();
+    const saved = localStorage.getItem("recentSearches");
+    if (saved) {
+      setRecentSearches(JSON.parse(saved));
+    }
+  }, []);
+
+  useEffect(() => {
+    const debounce = setTimeout(() => {
+      void loadCurrentResults(searchQuery);
+    }, 350);
+    return () => clearTimeout(debounce);
+  }, [filters, searchQuery]);
+
+  const handleToggleFilter = (category: string, value: string) => {
+    const key = category as keyof FilterState;
+    const current = filters[key];
+
+    if (!Array.isArray(current)) {
       return;
     }
-    const debounce = setTimeout(async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await searchSkills(searchQuery.trim(), 1, 20);
-        setRecommendations(data);
-      } catch (err: any) {
-        setError(err?.response?.data?.message || "Failed to search");
-        console.error("Search error:", err);
-      } finally {
-        setLoading(false);
-      }
-    }, 400);
-    return () => clearTimeout(debounce);
-  }, [searchQuery]);
+
+    setFilters((prev) => ({
+      ...prev,
+      [key]: current.includes(value)
+        ? current.filter((item) => item !== value)
+        : [...current, value],
+    }));
+  };
+
+  const clearAllFilters = () => {
+    setFilters(defaultFilters);
+  };
+
+  const handleApplyFilters = () => {
+    setShowFilters(false);
+    void loadCurrentResults(searchQuery);
+  };
 
   const handleSearch = (query?: string) => {
-    const q = query || searchQuery;
-    if (q.trim()) {
-      const updated = [q, ...recentSearches.filter((s) => s !== q)].slice(0, 4);
-      setRecentSearches(updated);
-      localStorage.setItem("recentSearches", JSON.stringify(updated));
-      setSearchQuery(q);
+    const q = (query || searchQuery).trim();
+    setSearchQuery(q);
+
+    if (q.length === 0) {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete("q");
+      setSearchParams(nextParams, { replace: true });
+      return;
     }
+
+    const updated = [q, ...recentSearches.filter((s) => s !== q)].slice(0, 4);
+    setRecentSearches(updated);
+    localStorage.setItem("recentSearches", JSON.stringify(updated));
+    setSearchParams({ q }, { replace: true });
   };
 
   const clearSearch = (index: number) => {
@@ -156,17 +171,98 @@ const Search = () => {
     localStorage.removeItem("recentSearches");
   };
 
-  const handleViewDetails = (skillId: string, userId: string) => {
-    navigate(`/explore/${skillId}/${userId}`);
+  const sortedRecommendations = useMemo(() => {
+    return [...recommendations].sort((a, b) => {
+      if (sortBy === "rating") {
+        const ar = a.user.rating ?? a.user.avgRate ?? a.user.avarage ?? 0;
+        const br = b.user.rating ?? b.user.avgRate ?? b.user.avarage ?? 0;
+        return br - ar;
+      }
+
+      if (sortBy === "popular") {
+        const asw = (a.user.receivedSwaps ?? 0) + (a.user.sentSwaps ?? 0);
+        const bsw = (b.user.receivedSwaps ?? 0) + (b.user.sentSwaps ?? 0);
+        return bsw - asw;
+      }
+
+      return 0;
+    });
+  }, [recommendations, sortBy]);
+
+  const renderCard = (item: ExploreResultItem, idx: number) => {
+    const skillId = getSkillIdentifier(item.skill);
+    const userId = getUserIdentifier(item.user);
+    const canViewDetails = Boolean(skillId && userId);
+    const rating = item.user.rating ?? item.user.avgRate ?? item.user.avarage;
+    const swaps = (item.user.receivedSwaps ?? 0) + (item.user.sentSwaps ?? 0);
+
+    return (
+      <div
+        key={`${item.user.userName}-${item.skill.name}-${idx}`}
+        className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex gap-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex items-center justify-center text-white text-xl font-bold">
+              {item.user.userName?.charAt(0) || "U"}
+            </div>
+            <div>
+              <h4 className="text-2xl font-semibold text-text-primary">{item.user.userName}</h4>
+              <p className="text-[#666]">{item.user.level || "Skill Provider"}</p>
+              <div className="flex items-center gap-2 mt-1 text-sm text-[#666]">
+                <span className="text-yellow-500">★</span>
+                <span>{rating ? Number(rating).toFixed(1) : "N/A"}</span>
+                <span>•</span>
+                <span>{swaps} swaps</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" className="text-gray-400 hover:text-text-primary" aria-label="Bookmark">
+            ♡
+          </button>
+        </div>
+
+        <div className="mt-4">
+          <h5 className="text-xl font-semibold text-text-primary">{item.skill.name}</h5>
+          <p className="text-[#666] mt-1">{item.skill.description || "No description available"}</p>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {item.skill.category?.name ? (
+            <span className="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-lg">
+              {item.skill.category.name}
+            </span>
+          ) : null}
+          {item.skill.language ? (
+            <span className="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-lg">
+              {item.skill.language}
+            </span>
+          ) : null}
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <button
+            type="button"
+            onClick={() => {
+              if (!canViewDetails) return;
+              navigate(`/explore/${skillId}/${userId}`);
+            }}
+            disabled={!canViewDetails}
+            className="min-w-[128px] bg-primary text-white py-2 rounded-xl text-xs font-medium hover:bg-opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            View Details
+          </button>
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className="bg-white min-h-screen">
-      <Header />
+      <Header activeTab="Explore" />
 
       <div className="max-w-screen-xl mx-auto px-6 py-8 relative">
         <div>
-          {/* Search Bar */}
           <div className="flex gap-4 h-12 mb-8">
             <div className="flex-1 flex items-center gap-2 bg-gray-50 border border-primary rounded-lg px-4 py-2">
               <svg
@@ -187,16 +283,16 @@ const Search = () => {
                 placeholder="Search for a skill (e.g. UX, Coding...)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => {
+                onKeyDown={(e) => {
                   if (e.key === "Enter") handleSearch();
                 }}
                 className="flex-1 bg-transparent outline-none text-text-primary text-base"
               />
-              {searchQuery && (
+              {searchQuery ? (
                 <button onClick={() => setSearchQuery("")} className="text-gray-400 hover:text-gray-600">
-                  ×
+                  x
                 </button>
-              )}
+              ) : null}
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -220,8 +316,7 @@ const Search = () => {
             </div>
           </div>
 
-          {/* Recent Searches */}
-          {recentSearches.length > 0 && (
+          {recentSearches.length > 0 ? (
             <div className="space-y-4 mb-6">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-text-primary">Recent Search</h3>
@@ -236,123 +331,63 @@ const Search = () => {
                       {search}
                     </button>
                     <button onClick={() => clearSearch(index)} className="text-gray-600 hover:text-text-primary text-lg leading-none">
-                      ×
+                      x
                     </button>
                   </div>
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
 
-          {/* Error */}
-          {error && (
+          {error ? (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
               <p className="text-red-600 text-sm">{error}</p>
             </div>
-          )}
+          ) : null}
 
-          {/* Results Grid */}
+          {!loading && sortedRecommendations.length > 0 ? (
+            <div className="flex justify-between items-center mb-4">
+              <p className="text-lg font-semibold text-gray-600">
+                {sortedRecommendations.length} Results found
+              </p>
+              <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-4 py-2">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as "recent" | "popular" | "rating")}
+                  className="outline-none text-text-primary font-semibold"
+                >
+                  <option value="recent">Most Recent</option>
+                  <option value="popular">Most Popular</option>
+                  <option value="rating">Highest Rating</option>
+                </select>
+              </div>
+            </div>
+          ) : null}
+
           {loading ? (
-            <div className="grid grid-cols-2 gap-8">
+            <div className="space-y-4">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-gray-200 h-64 rounded-2xl animate-pulse" />
+                <div key={i} className="bg-gray-200 h-48 rounded-2xl animate-pulse" />
               ))}
             </div>
-          ) : recommendations.length > 0 ? (
-            <>
-              {searchQuery.trim() !== "" && (
-                <div className="flex justify-between items-center mb-4">
-                  <p className="text-lg font-semibold text-gray-600">
-                    {recommendations.length} Results found
-                  </p>
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-8">
-                {recommendations.slice(0, 6).map((rec, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition"
-                  >
-                    <div className="space-y-6">
-                      {/* Header */}
-                      <div className="flex gap-4 items-start">
-                        <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex-shrink-0 flex items-center justify-center text-white text-2xl font-bold">
-                          {rec.user?.userName?.charAt(0) || "U"}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex gap-2 items-start mb-1">
-                            <h4 className="text-xl font-semibold text-text-primary">
-                              {rec.user?.userName}
-                            </h4>
-                          </div>
-                          <p className="text-sm text-gray-600">{rec.user?.bio}</p>
-                          <div className="flex gap-4 mt-2 text-sm">
-                            <div className="flex items-center gap-1">
-                              <svg className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8 0l2.5 5h5.5l-4.5 3.5 1.5 5-5-3.5-5 3.5 1.5-5-4.5-3.5h5.5z" />
-                              </svg>
-                              <span className="text-text-primary">{rec.user?.rating?.toFixed(1) ?? "N/A"}</span>
-                            </div>
-                            <span className="text-gray-600">
-                              · {(rec.user?.receivedSwaps ?? 0) + (rec.user?.sentSwaps ?? 0)} swaps
-                            </span>
-                            <span className="text-gray-600 capitalize">
-                              · {rec.user?.level?.toLowerCase()}
-                            </span>
-                          </div>
-                        </div>
-                        <button className="text-gray-400 hover:text-text-primary">🔖</button>
-                      </div>
-
-                      {/* Skill Info */}
-                      <div className="space-y-2">
-                        <h5 className="text-lg font-semibold text-text-primary">{rec.skill?.name}</h5>
-                        <p className="text-sm text-gray-600">{rec.skill?.description}</p>
-                      </div>
-
-                      {/* Category */}
-                      {rec.skill?.category && (
-                        <div className="flex gap-2 flex-wrap">
-                          <span className="px-3 py-1 bg-gray-200 text-gray-600 text-sm rounded-lg">
-                            {rec.skill.category.name}
-                          </span>
-                          {rec.skill?.language && (
-                            <span className="px-3 py-1 bg-gray-200 text-gray-600 text-sm rounded-lg">
-                              {rec.skill.language}
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Button */}
-                      <button
-                        onClick={() => handleViewDetails(rec.skill?.id ?? "", rec.user?.id ?? "")}
-                        className="w-full bg-primary text-white py-2 rounded-xl text-xs font-medium hover:bg-opacity-90 transition"
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
+          ) : sortedRecommendations.length > 0 ? (
+            <div className="space-y-4">{sortedRecommendations.map(renderCard)}</div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12">
               <p className="text-xl font-semibold text-gray-600 mb-2">No skills found</p>
-              <p className="text-gray-500">Try adjusting your search query or browse all skills</p>
+              <p className="text-gray-500">Try adjusting your search query or filters</p>
             </div>
           )}
         </div>
 
-        {/* Filters Sidebar */}
-        {showFilters && (
+        {showFilters ? (
           <>
             <div className="hidden lg:block absolute top-28 right-0 z-40">
               <div className="w-96">
                 <FiltersSidebar
                   filters={filters}
                   onToggleFilter={handleToggleFilter}
-                  onChangeLanguage={(lang) => setFilters({ ...filters, language: lang })}
+                  onChangeLanguage={(lang) => setFilters((prev) => ({ ...prev, language: lang }))}
                   onClear={clearAllFilters}
                   onApply={handleApplyFilters}
                   onClose={() => setShowFilters(false)}
@@ -364,7 +399,7 @@ const Search = () => {
                 <FiltersSidebar
                   filters={filters}
                   onToggleFilter={handleToggleFilter}
-                  onChangeLanguage={(lang) => setFilters({ ...filters, language: lang })}
+                  onChangeLanguage={(lang) => setFilters((prev) => ({ ...prev, language: lang }))}
                   onClear={clearAllFilters}
                   onApply={handleApplyFilters}
                   onClose={() => setShowFilters(false)}
@@ -372,7 +407,7 @@ const Search = () => {
               </div>
             </div>
           </>
-        )}
+        ) : null}
       </div>
     </div>
   );

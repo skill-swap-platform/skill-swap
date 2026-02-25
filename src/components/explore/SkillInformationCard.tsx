@@ -1,20 +1,26 @@
+import type { SkillDetailsResponse } from "@/services/exploreService";
+
 interface SkillInformationCardProps {
-  data?: any;
+  data?: SkillDetailsResponse | null;
   loading?: boolean;
   error?: string | null;
 }
 
-const SkillInformationCard = ({ data, loading = false, error = null }: SkillInformationCardProps) => {
+const SkillInformationCard = ({
+  data,
+  loading = false,
+  error = null,
+}: SkillInformationCardProps) => {
   if (loading) {
     return (
       <div className="bg-white border border-neutral-border rounded-[10px] p-6 flex flex-col gap-4">
-        <div className="h-10 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+        <div className="h-10 bg-gray-200 rounded w-1/2 animate-pulse" />
         <div className="flex gap-2">
-          <div className="h-6 bg-gray-200 rounded w-24 animate-pulse"></div>
-          <div className="h-6 bg-gray-200 rounded w-24 animate-pulse"></div>
-          <div className="h-6 bg-gray-200 rounded w-24 animate-pulse"></div>
+          <div className="h-6 bg-gray-200 rounded w-24 animate-pulse" />
+          <div className="h-6 bg-gray-200 rounded w-24 animate-pulse" />
+          <div className="h-6 bg-gray-200 rounded w-24 animate-pulse" />
         </div>
-        <div className="h-20 bg-gray-200 rounded animate-pulse"></div>
+        <div className="h-20 bg-gray-200 rounded animate-pulse" />
       </div>
     );
   }
@@ -36,45 +42,40 @@ const SkillInformationCard = ({ data, loading = false, error = null }: SkillInfo
     );
   }
 
-  const skill = data?.skill || {};
-  const level = data?.level || 'N/A';
-  const sessionLanguage = data?.sessionLanguage || 'Not specified';
-  const skillDescription = data?.skillDescription || skill?.description || '';
-  const avgRating = data?.reviews?.LatestReviewDto?.rating || 0;
-  const reviewCount = data?.reviews?.count || 0;
+  const skill = data.skill || { name: "Skill" };
+  const level = data.level || "N/A";
+  const sessionLanguage = data.sessionLanguage || "Not specified";
+  const skillDescription = data.skillDescription || skill.description || "";
+  const avgRating =
+    data.reviews?.LatestReviewDto?.rating || data.reviews?.latestReview?.rating || 0;
+  const reviewCount = data.reviews?.count || 0;
+  const sessionsCount = data.sessions?.length || data.countSessions || 0;
 
   return (
     <div className="bg-white border border-neutral-border rounded-[10px] p-4 sm:p-6 flex flex-col gap-4">
       <h1 className="text-text-primary text-2xl sm:text-3xl lg:text-4xl font-bold">
-        {skill?.name || 'Skill'}
+        {skill.name || "Skill"}
       </h1>
-      
-      {/* Chips */}
+
       <div className="flex flex-wrap gap-2">
         <div className="bg-chip-background rounded-[10px] px-2 py-1 h-5 flex items-center">
           <p className="text-chip_text text-sm font-inter">{level}</p>
         </div>
         <div className="bg-chip-background rounded-[10px] px-2 py-1 h-5 flex items-center">
-          <p className="text-chip_text text-sm font-inter">
-            {data?.sessions?.length || 0} sessions
-          </p>
+          <p className="text-chip_text text-sm font-inter">{sessionsCount} sessions</p>
         </div>
         <div className="bg-chip-background rounded-[10px] px-2 py-1 h-5 flex items-center">
           <p className="text-chip_text text-sm font-inter">{sessionLanguage}</p>
         </div>
       </div>
 
-      {/* Description with border */}
-      {skillDescription && (
+      {skillDescription ? (
         <div className="border-l-[1.5px] border-chip_text px-2 py-2">
-          <p className="text-text-primary text-lg">
-            {skillDescription}
-          </p>
+          <p className="text-text-primary text-lg">{skillDescription}</p>
         </div>
-      )}
+      ) : null}
 
-      {/* Rating */}
-      {reviewCount > 0 && (
+      {reviewCount > 0 ? (
         <div className="flex items-center gap-1 py-2 px-1">
           <svg
             className="w-3.5 h-3.5 text-yellow-400"
@@ -83,22 +84,21 @@ const SkillInformationCard = ({ data, loading = false, error = null }: SkillInfo
           >
             <path d="M8 0l2.5 5h5.5l-4.5 3.5 1.5 5-5-3.5-5 3.5 1.5-5-4.5-3.5h5.5z" />
           </svg>
-          <p className="text-text-primary text-sm">{avgRating.toFixed(1)}</p>
+          <p className="text-text-primary text-sm">{Number(avgRating).toFixed(1)}</p>
           <p className="text-[#666] text-sm">({reviewCount} reviews)</p>
         </div>
-      )}
+      ) : null}
 
-      {/* Category Info */}
-      {skill?.category && (
+      {skill.category ? (
         <div className="flex items-center gap-2 pt-2">
-          <span className="text-2xl">{skill.category?.icon || '📚'}</span>
+          <span className="text-2xl">#</span>
           <p className="text-text-primary text-sm">
-            <span className="font-semibold">{skill.category?.name || 'Category'}</span>
+            <span className="font-semibold">{skill.category.name || "Category"}</span>
           </p>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };
 
-export default SkillInformationCard
+export default SkillInformationCard;

@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
+import type { Review, ReviewsData } from "@/services/exploreService";
 
 interface ReviewsProps {
-  data?: any;
+  data?: ReviewsData | null;
   loading?: boolean;
   error?: string | null;
   userId?: string;
@@ -16,8 +17,13 @@ const Reviews = ({
   skillId = "",
 }: ReviewsProps) => {
   const navigate = useNavigate();
+  const hasParams = Boolean(userId && skillId);
 
   const handleSeeAll = () => {
+    if (!hasParams) {
+      return;
+    }
+
     navigate(`/all-reviews?userId=${userId}&skillId=${skillId}`);
   };
 
@@ -30,22 +36,23 @@ const Reviews = ({
           </h2>
           <button
             onClick={handleSeeAll}
-            className="text-primary hover:text-opacity-80 text-xs sm:text-sm font-semibold transition w-fit"
+            disabled={!hasParams}
+            className="text-primary hover:text-opacity-80 text-xs sm:text-sm font-semibold transition w-fit disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            See All →
+            See All
           </button>
         </div>
 
         <div className="bg-white rounded-[10px] shadow-lg p-4">
           <div className="flex gap-2 mb-3">
-            <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0 animate-pulse"></div>
+            <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0 animate-pulse" />
             <div className="flex-1">
-              <div className="h-5 bg-gray-200 rounded w-1/3 animate-pulse mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+              <div className="h-5 bg-gray-200 rounded w-1/3 animate-pulse mb-2" />
+              <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse" />
             </div>
           </div>
-          <div className="h-6 bg-gray-200 rounded w-full animate-pulse mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+          <div className="h-6 bg-gray-200 rounded w-full animate-pulse mb-2" />
+          <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse" />
         </div>
       </div>
     );
@@ -65,10 +72,8 @@ const Reviews = ({
     );
   }
 
-  const reviews = data?.review || data?.reviews || [];
-  const hasReviews = reviews && reviews.length > 0;
-  
-  if (!hasReviews) {
+  const reviews = data?.reviews ?? [];
+  if (reviews.length === 0) {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -77,9 +82,10 @@ const Reviews = ({
           </h2>
           <button
             onClick={handleSeeAll}
-            className="text-primary hover:text-opacity-80 text-xs sm:text-sm font-semibold transition w-fit"
+            disabled={!hasParams}
+            className="text-primary hover:text-opacity-80 text-xs sm:text-sm font-semibold transition w-fit disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            See All →
+            See All
           </button>
         </div>
         <div className="bg-white rounded-[10px] shadow-lg p-4 sm:p-6 text-center">
@@ -97,42 +103,38 @@ const Reviews = ({
         <h2 className="text-text-primary text-2xl sm:text-3xl lg:text-4xl font-bold">
           Reviews
         </h2>
-        {reviews.length > 0 && (
-          <button
-            onClick={handleSeeAll}
-            className="text-primary hover:text-opacity-80 text-xs sm:text-sm font-semibold transition w-fit"
-          >
-            See All →
-          </button>
-        )}
+        <button
+          onClick={handleSeeAll}
+          disabled={!hasParams}
+          className="text-primary hover:text-opacity-80 text-xs sm:text-sm font-semibold transition w-fit disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          See All
+        </button>
       </div>
 
-      {/* Review Cards */}
-      {latestReviews.map((review: any, index: number) => (
+      {latestReviews.map((review: Review, index: number) => (
         <div
-          key={review?.id || index}
+          key={review.id || index}
           className="bg-white rounded-[10px] shadow-lg p-3 sm:p-4"
         >
           <div className="flex gap-2 sm:gap-3 mb-2 sm:mb-3">
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-green-400 to-blue-400 flex-shrink-0 flex items-center justify-center overflow-hidden">
               <img
-                src={
-                  review?.reviewer?.image || "https://via.placeholder.com/48"
-                }
-                alt={review?.reviewer?.userName || "Reviewer"}
+                src={review.reviewer?.image || "https://via.placeholder.com/48"}
+                alt={review.reviewer?.userName || "Reviewer"}
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="flex-1">
               <p className="text-text-primary font-semibold text-sm sm:text-base">
-                {review?.reviewer?.userName || "Anonymous"}
+                {review.reviewer?.userName || "Anonymous"}
               </p>
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <svg
-                    key={i}
+                    key={`${review.id}-${i}`}
                     className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${
-                      i < Math.floor(review?.overallRating || 0)
+                      i < Math.floor(Number(review.overallRating) || 0)
                         ? "text-yellow-400"
                         : "text-gray-300"
                     }`}
@@ -143,19 +145,19 @@ const Reviews = ({
                   </svg>
                 ))}
                 <p className="text-text-primary text-xs sm:text-sm ml-1">
-                  {review?.overallRating || "N/A"}
+                  {review.overallRating || "N/A"}
                 </p>
               </div>
             </div>
           </div>
           <p className="text-[#666] text-sm sm:text-base lg:text-lg mb-2">
-            "{review?.comment || "No comment provided"}"
+            "{review.comment || "No comment provided"}"
           </p>
-          {review?.createdAt && (
+          {review.createdAt ? (
             <p className="text-chip_text text-xs sm:text-sm">
               {new Date(review.createdAt).toLocaleDateString()}
             </p>
-          )}
+          ) : null}
         </div>
       ))}
     </div>

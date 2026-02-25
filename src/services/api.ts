@@ -1,6 +1,6 @@
 import axios, { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'https://skill-swap-platform-api.onrender.com/api',
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
@@ -8,7 +8,7 @@ const api = axios.create({
 })
 api.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-        const token = localStorage.getItem('authToken')
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken')
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
         }
@@ -25,8 +25,10 @@ api.interceptors.response.use(
             const { status, data } = error.response
 
             if (status === 401) {
+                localStorage.removeItem('accessToken')
+                localStorage.removeItem('refreshToken')
                 localStorage.removeItem('authToken')
-                window.location.href = '/login'
+                window.location.href = '/auth/login'
             }
             if (status === 403) {
                 console.error('Forbidden: You do not have permission to access this resource')
