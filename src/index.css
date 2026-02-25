@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -21,13 +21,13 @@
   }
 
   body {
-    font-family:
-      -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
       "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-color: #f9fafb;
+    color: #0C0D0F;
     overflow-x: hidden;
   }
 
@@ -38,6 +38,7 @@
 }
 
 @layer components {
+
   /* Custom CSS for numbered list styling */
   .css-8097nc {
     list-style-type: decimal;
@@ -51,11 +52,13 @@
 }
 
 @layer utilities {
+
   /* Animation keyframes */
   @keyframes fadeIn {
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
@@ -66,6 +69,7 @@
       opacity: 0;
       transform: scale(0.95) translateY(20px);
     }
+
     to {
       opacity: 1;
       transform: scale(1) translateY(0);
@@ -140,7 +144,7 @@
     height: auto;
   }
 
-  .requests-page .requests-details-panel [class*="h-[48px]"][class*="w-full"][class*="px-[8px]"] > button {
+  .requests-page .requests-details-panel [class*="h-[48px]"][class*="w-full"][class*="px-[8px]"]>button {
     min-height: 44px;
   }
 

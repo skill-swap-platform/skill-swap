@@ -82,121 +82,119 @@ const ProfilePage: React.FC = () => {
         `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.userName || 'user'}`;
 
     return (
-        <div className="min-h-screen bg-[#F5F6FA] flex flex-col">
+        <div className="min-h-screen bg-[#F9FAFB] flex flex-col font-sans">
             <Header />
-            <main className="flex-1 py-8 px-4">
-                <div className="max-w-[600px] mx-auto">
-                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden min-h-[500px]">
-                        <div className="flex items-center justify-between px-5 pt-5 pb-2">
+            <main className="flex-1 py-10 px-4">
+                <div className="max-w-[800px] mx-auto">
+                    <div className="bg-white rounded-[32px] shadow-sm overflow-hidden p-6 sm:p-10 min-h-[600px]">
+                        <div className="flex items-center justify-between mb-8">
                             <button
                                 onClick={() => navigate(-1)}
-                                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-800"
                             >
-                                <ArrowLeft className="w-5 h-5 text-gray-700" />
+                                <ArrowLeft className="w-6 h-6" />
                             </button>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-3">
                                 <button
                                     onClick={() => navigate('/profile/edit')}
-                                    className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
                                     title="Edit profile"
                                 >
-                                    <Pencil className="w-4 h-4 text-gray-500" />
+                                    <Pencil className="w-5 h-5" />
                                 </button>
                                 <button
-                                    className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-                                    title="Settings"
                                     onClick={() => navigate('/profile/settings')}
+                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+                                    title="Settings"
                                 >
-                                    <Settings className="w-4 h-4 text-gray-500" />
+                                    <Settings className="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
 
-                        {/* Profile Header Section */}
-                        <div className="flex flex-col items-center pt-2 pb-5 px-5">
+                        <div className="flex flex-col items-center mb-10">
                             {isLoading ? (
                                 <>
-                                    <div className="w-20 h-20 rounded-full bg-gray-100 animate-pulse mb-3" />
-                                    <div className="h-6 w-32 bg-gray-100 animate-pulse rounded-md mb-2" />
-                                    <div className="h-4 w-48 bg-gray-50 animate-pulse rounded-md" />
+                                    <div className="w-24 h-24 rounded-full bg-gray-100 animate-pulse mb-4" />
+                                    <div className="h-8 w-40 bg-gray-100 animate-pulse rounded-lg mb-2" />
+                                    <div className="h-4 w-32 bg-gray-50 animate-pulse rounded-md mb-3" />
+                                    <div className="h-4 w-20 bg-gray-50 animate-pulse rounded-md" />
                                 </>
                             ) : (
                                 <>
-                                    <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-100 mb-3">
+                                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md mb-4 ring-1 ring-gray-100">
                                         <img
                                             src={avatarUrl}
                                             alt={user?.userName || 'User'}
                                             className="w-full h-full object-cover"
                                         />
                                     </div>
-                                    <h1 className="text-[18px] font-bold text-[#0C0D0F]">
-                                        {user?.userName || 'Your Name'}
+                                    <h1 className="text-[24px] font-bold text-[#0C0D0F] mb-1">
+                                        {user?.userName || 'Dena Abdo'}
                                     </h1>
-                                    <p className="text-[13px] text-gray-400 mt-0.5">
-                                        {user?.bio || 'No bio yet'}
+                                    <p className="text-[14px] font-medium text-gray-400 mb-2">
+                                        {user?.bio || 'UI/UX Designer'}
                                     </p>
-                                    <div className="flex items-center gap-1 mt-1.5">
+                                    <div className="flex items-center gap-1.5">
                                         <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                        <span className="text-[13px] font-semibold text-gray-800">
+                                        <span className="text-[14px] font-bold text-gray-800">
                                             {rating.average.toFixed(1)}
                                         </span>
-                                        <span className="text-[12px] text-gray-400">({rating.total})</span>
+                                        <span className="text-[14px] text-gray-400">({rating.total})</span>
                                     </div>
                                 </>
                             )}
                         </div>
 
-                        {/* Stats Section */}
-                        <div className="grid grid-cols-3 mx-5 mb-6 border border-gray-100 rounded-xl overflow-hidden">
+                        <div className="grid grid-cols-3 gap-4 mb-12">
                             {[
                                 { label: 'Sessions', value: stats.sessions },
                                 { label: 'Points', value: stats.points },
                                 { label: 'Badges', value: stats.badges },
-                            ].map(({ label, value }, idx) => (
+                            ].map(({ label, value }) => (
                                 <div
                                     key={label}
-                                    className={`flex flex-col items-center py-4 ${idx < 2 ? 'border-r border-gray-100' : ''}`}
+                                    className="bg-[#F8F9FA] rounded-2xl py-5 px-2 flex flex-col items-center transition-all hover:bg-gray-100/80"
                                 >
                                     {isLoading ? (
-                                        <div className="h-5 w-8 bg-gray-100 animate-pulse rounded-md mb-1" />
+                                        <div className="h-7 w-10 bg-gray-200 animate-pulse rounded-md mb-1" />
                                     ) : (
-                                        <span className="text-[17px] font-bold text-gray-900">{value}</span>
+                                        <span className="text-[20px] font-bold text-[#0C0D0F]">{value}</span>
                                     )}
-                                    <span className="text-[11px] text-gray-400 mt-0.5">{label}</span>
+                                    <span className="text-[12px] font-medium text-gray-400 uppercase tracking-wide">{label}</span>
                                 </div>
                             ))}
                         </div>
 
-                        {/* Skills Section */}
-                        <div className="px-5 mb-6">
-                            <div className="flex items-center justify-between mb-3">
-                                <h2 className="text-[15px] font-bold text-gray-900">My Skills</h2>
+                        <section className="mb-12">
+                            <div className="flex items-center justify-between mb-5">
+                                <h2 className="text-[18px] font-bold text-[#0C0D0F]">My Skills</h2>
                                 <button
                                     onClick={() => navigate('/profile/skills')}
-                                    className="text-[13px] text-gray-400 hover:text-[#3E8FCC] transition-colors"
+                                    className="text-[13px] font-bold text-gray-400 hover:text-[#3E8FCC] transition-colors"
                                 >
                                     See All
                                 </button>
                             </div>
 
                             {isLoading ? (
-                                <div className="grid grid-cols-2 xs:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     {[1, 2, 3].map((i) => (
-                                        <div key={i} className="h-24 bg-gray-50 border border-gray-100 rounded-xl animate-pulse" />
+                                        <div key={i} className="h-32 bg-gray-50 border border-gray-100 rounded-2xl animate-pulse" />
                                     ))}
                                 </div>
                             ) : skills.length === 0 ? (
-                                <div className="border border-dashed border-gray-200 rounded-xl p-6 text-center">
-                                    <p className="text-gray-400 text-sm">No skills added yet</p>
+                                <div className="bg-gray-50 border border-dashed border-gray-200 rounded-2xl p-10 text-center">
+                                    <p className="text-gray-400 text-sm mb-4">No skills added yet</p>
                                     <button
                                         onClick={() => navigate('/profile/skills')}
-                                        className="mt-2 text-sm text-[#3E8FCC] font-medium hover:underline"
+                                        className="px-6 py-2.5 bg-[#3E8FCC] text-white text-[13px] font-bold rounded-xl hover:bg-[#2F71A3] transition-all shadow-md shadow-blue-100"
                                     >
                                         + Add your first skill
                                     </button>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-2 xs:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     {skills.slice(0, 3).map((us) => (
                                         <SkillCard
                                             key={us.id}
@@ -207,32 +205,31 @@ const ProfilePage: React.FC = () => {
                                     ))}
                                 </div>
                             )}
-                        </div>
+                        </section>
 
-                        {/* Badges Section */}
-                        <div className="px-5 pb-7">
-                            <h2 className="text-[15px] font-bold text-gray-900 mb-4">
+                        <section>
+                            <h2 className="text-[18px] font-bold text-[#0C0D0F] mb-6">
                                 Recognition Badges
                             </h2>
 
                             {isLoading ? (
-                                <div className="flex gap-4">
-                                    {[1, 2, 3, 4].map((i) => (
-                                        <div key={i} className="flex flex-col items-center gap-2">
-                                            <div className="w-14 h-14 rounded-full bg-gray-50 animate-pulse" />
-                                            <div className="h-3 w-10 bg-gray-50 animate-pulse rounded" />
+                                <div className="flex gap-8">
+                                    {[1, 2].map((i) => (
+                                        <div key={i} className="flex flex-col items-center gap-3">
+                                            <div className="w-16 h-16 rounded-full bg-gray-50 animate-pulse" />
+                                            <div className="h-4 w-16 bg-gray-50 animate-pulse rounded" />
                                         </div>
                                     ))}
                                 </div>
                             ) : badges.length === 0 ? (
-                                <div className="py-2">
-                                    <p className="text-gray-400 text-[13px] italic">No badges earned yet. Complete sessions to unlock them!</p>
+                                <div className="bg-blue-50/30 rounded-2xl p-6 text-center border border-blue-50">
+                                    <p className="text-gray-400 text-[14px] font-medium">Earn badges by being active and helping others!</p>
                                 </div>
                             ) : (
-                                <div className="flex gap-4 flex-wrap">
+                                <div className="flex gap-8 flex-wrap">
                                     {badges.map((badge: any, i: number) => {
                                         const getIcon = (iconName: string) => {
-                                            const props = { className: "w-6 h-6 text-[#3E8FCC]" };
+                                            const props = { className: "w-7 h-7 text-[#3E8FCC]" };
                                             switch (iconName?.toLowerCase()) {
                                                 case 'award': return <Award {...props} />;
                                                 case 'users': return <Users {...props} />;
@@ -244,11 +241,11 @@ const ProfilePage: React.FC = () => {
                                             }
                                         };
                                         return (
-                                            <div key={badge.id ?? i} className="flex flex-col items-center gap-1.5">
-                                                <div className="w-14 h-14 rounded-full bg-[#EFF6FF] flex items-center justify-center border border-blue-100 shadow-sm">
+                                            <div key={badge.id ?? i} className="flex flex-col items-center gap-2 group cursor-pointer">
+                                                <div className="w-16 h-16 rounded-full bg-blue-50/50 flex items-center justify-center border border-blue-100 shadow-sm transition-transform group-hover:scale-110">
                                                     {getIcon(badge.icon)}
                                                 </div>
-                                                <span className="text-[11px] text-gray-500 text-center max-w-[64px] leading-tight font-medium">
+                                                <span className="text-[12px] text-gray-600 text-center max-w-[80px] leading-tight font-bold">
                                                     {badge.name}
                                                 </span>
                                             </div>
@@ -256,8 +253,7 @@ const ProfilePage: React.FC = () => {
                                     })}
                                 </div>
                             )}
-                        </div>
-
+                        </section>
                     </div>
                 </div>
             </main>
@@ -265,23 +261,26 @@ const ProfilePage: React.FC = () => {
         </div>
     );
 };
+
 const SkillCard: React.FC<{ userSkill: UserSkill; rating: number; onClick: () => void }> = ({ userSkill, rating, onClick }) => {
     const initial = userSkill.skill?.name?.[0]?.toUpperCase() || 'S';
     return (
         <button
             onClick={onClick}
-            className="bg-white border border-gray-100 rounded-xl p-3 text-left hover:border-[#3E8FCC] hover:shadow-sm transition-all group"
+            className="flex flex-col bg-white border border-gray-100 rounded-2xl p-4 text-left hover:border-[#3E8FCC] hover:shadow-lg transition-all group relative min-h-[140px]"
         >
-            <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] flex items-center justify-center mb-2">
-                <span className="text-sm font-bold text-[#3E8FCC]">{initial}</span>
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
+                <span className="text-base font-bold text-[#3E8FCC]">{initial}</span>
             </div>
-            <p className="text-[11px] font-semibold text-gray-800 truncate">{userSkill.skill?.name}</p>
-            <div className="flex items-center gap-1 mt-1">
-                <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                <span className="text-[10px] text-gray-500">{rating.toFixed(1)}</span>
+            <p className="text-[14px] font-bold text-[#0C0D0F] truncate mb-1">
+                {userSkill.skill?.name}
+            </p>
+            <div className="flex items-center gap-1">
+                <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                <span className="text-[12px] font-bold text-gray-500">{rating.toFixed(1)}</span>
             </div>
-            <div className="flex justify-end mt-1">
-                <ChevronRight className="w-3 h-3 text-gray-300 group-hover:text-[#3E8FCC] transition-colors" />
+            <div className="absolute bottom-4 right-4 text-gray-300 group-hover:text-[#3E8FCC] transition-colors">
+                <ChevronRight className="w-4 h-4" />
             </div>
         </button>
     );

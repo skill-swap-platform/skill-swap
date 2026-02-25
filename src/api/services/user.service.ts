@@ -24,7 +24,7 @@ export const userService = {
             skillId: skillData.skillId,
             level: skillData.level,
             sessionLanguage: skillData.sessionLanguage || 'English',
-            skillDescription: skillData.skillDescription || '',
+            skillDescription: skillData.skillDescription?.trim() || 'I can help you learn this skill and share my knowledge.',
         };
         const response = await axiosInstance.post('/api/v1/user/me/skills', payload);
         return response.data;

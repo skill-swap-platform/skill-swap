@@ -87,7 +87,6 @@ const OnboardingProfile: React.FC = () => {
                 userName: formData.full_name,
                 bio: formData.bio,
                 location: formData.location,
-                country: formData.location,
                 availability: (availabilityMap[formData.availability] || 'FLEXIBLE') as any
             });
 
