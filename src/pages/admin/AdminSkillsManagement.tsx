@@ -457,8 +457,8 @@ export const AdminSkillsManagement: React.FC = () => {
                     </div>
                 </header>
 
-                <main className="space-y-4 px-4 py-4 md:px-6 md:py-6">
-                    <div className="hidden items-center text-sm md:flex">
+                <main className="space-y-4 px-3 py-4 sm:px-4 md:px-4 md:py-6 lg:px-6">
+                    <div className="hidden items-center text-sm lg:flex">
                         <span className="text-[#9CA3AF]">Dashboard</span>
                         <ChevronRight className="mx-1 h-4 w-4 text-[#9CA3AF]" />
                         <span className="text-[#3272A3]">Skills Management</span>
@@ -517,8 +517,8 @@ export const AdminSkillsManagement: React.FC = () => {
                         <h1 className="font-sans text-[24px] font-bold text-[#0C0D0F] md:text-[28px]">Skills Management</h1>
                     </div>
 
-                    <div className="flex flex-col gap-3 md:flex-row md:items-center">
-                        <div className="flex h-12 w-full items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 md:max-w-[543px]">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                        <div className="flex h-12 w-full items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 sm:max-w-[543px]">
                             <Search className="h-5 w-5 text-[#9CA3AF]" />
                             <input
                                 type="text"
@@ -529,18 +529,18 @@ export const AdminSkillsManagement: React.FC = () => {
                             />
                         </div>
 
-                        <div className="relative ml-auto" ref={sortMenuRef}>
+                        <div className="relative w-full sm:ml-auto sm:w-auto" ref={sortMenuRef}>
                             <button
                                 type="button"
                                 onClick={() => setSortMenuOpen((previous) => !previous)}
-                                className="flex h-12 items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 text-[16px] text-[#0C0D0F]"
+                                className="flex h-12 w-full items-center justify-between gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 text-[16px] text-[#0C0D0F] sm:w-auto sm:justify-center"
                             >
                                 {sort === 'newest' ? 'Newest' : 'Oldest'}
                                 <SortOrderIcon sort={sort} />
                             </button>
 
                             {sortMenuOpen && (
-                                <div className="absolute right-0 top-[56px] z-20 min-w-[112px] rounded-lg border border-[#E5E7EB] bg-white p-2 shadow-[0px_0px_4.7px_0px_rgba(0,0,0,0.25)]">
+                                <div className="absolute left-0 right-0 top-[56px] z-20 rounded-lg border border-[#E5E7EB] bg-white p-2 shadow-[0px_0px_4.7px_0px_rgba(0,0,0,0.25)] sm:left-auto sm:right-0 sm:min-w-[112px]">
                                     {(['newest', 'oldest'] as const).map((sortOption) => {
                                         const isActive = sort === sortOption
                                         return (
@@ -590,7 +590,7 @@ export const AdminSkillsManagement: React.FC = () => {
 
                     {!error && skillsState.rows.length > 0 && (
                         <>
-                            <div className="hidden overflow-x-auto rounded-xl border border-[#F9FAFB] md:block">
+                            <div className="hidden overflow-x-auto rounded-xl border border-[#F9FAFB] lg:block">
                                 <table className="min-w-full table-fixed">
                                     <thead>
                                         <tr className="h-[62px] bg-[#F9FAFB] text-left">
@@ -652,10 +652,10 @@ export const AdminSkillsManagement: React.FC = () => {
                                 </table>
                             </div>
 
-                            <div className="space-y-3 md:hidden">
+                            <div className="space-y-3 lg:hidden">
                                 {skillsState.rows.map((skillRow) => (
                                     <article key={skillRow.id} className="rounded-xl border border-[#E5E7EB] bg-white p-4">
-                                        <div className="mb-2 flex items-start justify-between gap-3">
+                                        <div className="mb-3 flex items-start justify-between gap-3">
                                             <h3 className="text-sm font-semibold text-[#0C0D0F]">{skillRow.name || 'Untitled Skill'}</h3>
                                             <div className="relative" data-actions-menu-root>
                                                 <button
@@ -668,7 +668,7 @@ export const AdminSkillsManagement: React.FC = () => {
                                                 </button>
 
                                                 {activeActionSkillId === skillRow.id && (
-                                                    <div className="absolute right-0 top-10 z-20 w-[138px] rounded-lg border border-[#E5E7EB] bg-white p-2 shadow-[0px_0px_4.7px_0px_rgba(0,0,0,0.25)]">
+                                                    <div className="absolute right-0 top-10 z-20 w-[148px] rounded-lg border border-[#E5E7EB] bg-white p-2 shadow-[0px_0px_4.7px_0px_rgba(0,0,0,0.25)]">
                                                         <button
                                                             type="button"
                                                             onClick={() => openDetails(skillRow.id)}
@@ -688,29 +688,34 @@ export const AdminSkillsManagement: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        <div className="mb-2 flex items-center gap-2">
+                                        <div className="mb-3 flex items-center gap-2">
                                             <Avatar src={providerImage(skillRow)} name={providerName(skillRow)} size={32} />
                                             <span className="text-sm text-[#0C0D0F]">{providerName(skillRow)}</span>
                                         </div>
 
-                                        <div className="mb-2">
-                                            <span className="inline-flex h-6 items-center rounded-[10px] bg-[rgba(62,143,204,0.2)] px-[10px] text-xs font-medium text-[#3272A3]">
-                                                {skillRow.requestsCount} requests
-                                            </span>
+                                        <div className="grid grid-cols-2 gap-3 text-xs">
+                                            <div className="rounded-lg bg-[#F9FAFB] px-2 py-2">
+                                                <p className="mb-1 text-[#9CA3AF]">Requests</p>
+                                                <span className="inline-flex h-6 items-center rounded-[10px] bg-[rgba(62,143,204,0.2)] px-[10px] text-xs font-medium text-[#3272A3]">
+                                                    {skillRow.requestsCount}
+                                                </span>
+                                            </div>
+                                            <div className="rounded-lg bg-[#F9FAFB] px-2 py-2">
+                                                <p className="mb-1 text-[#9CA3AF]">Created</p>
+                                                <p className="text-xs text-[#666666]">{formatIsoDate(skillRow.createdAt)}</p>
+                                            </div>
                                         </div>
-
-                                        <p className="text-sm text-[#666666]">{formatIsoDate(skillRow.createdAt)}</p>
                                     </article>
                                 ))}
                             </div>
 
-                            <div className="flex flex-col gap-3 py-2 md:h-[49px] md:flex-row md:items-center">
-                                <div className="md:flex-1">
+                            <div className="flex flex-col gap-3 py-2 sm:flex-row sm:items-center">
+                                <div className="text-center sm:text-left sm:flex-1">
                                     <p className="text-[16px] text-[#3272A3]">
                                         Page {page} of {totalPages}
                                     </p>
                                 </div>
-                                <div className="ml-auto flex items-center gap-2">
+                                <div className="flex items-center justify-center gap-2 sm:ml-auto sm:justify-end">
                                     {pageNumbers.map((pageNumber) => {
                                         const active = pageNumber === page
                                         return (
@@ -744,8 +749,8 @@ export const AdminSkillsManagement: React.FC = () => {
             </div>
 
             {detailsModalOpen && (
-                <div className="fixed inset-0 z-40 flex items-center justify-center bg-[rgba(94,95,96,0.2)] p-4">
-                    <div className="w-full max-w-[600px] rounded-[10px] border border-[#E5E7EB] bg-white shadow-[0px_0px_4.7px_0px_rgba(0,0,0,0.25)]">
+                <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-[rgba(94,95,96,0.2)] p-3 sm:items-center sm:p-4">
+                    <div className="my-3 w-full max-w-[600px] overflow-hidden rounded-[10px] border border-[#E5E7EB] bg-white shadow-[0px_0px_4.7px_0px_rgba(0,0,0,0.25)] sm:my-0">
                         <div className="flex items-center gap-2 border-b border-[#F3F4F6] p-4">
                             <h2 className="flex-1 text-base font-semibold text-[#0C0D0F]">Skill Details</h2>
                             <button
@@ -758,7 +763,7 @@ export const AdminSkillsManagement: React.FC = () => {
                             </button>
                         </div>
 
-                        <div className="space-y-6 p-4">
+                        <div className="max-h-[calc(100vh-120px)] space-y-6 overflow-y-auto p-4 sm:max-h-[85vh]">
                             {detailsLoading && (
                                 <div className="rounded-lg border border-[#E5E7EB] p-6 text-center text-sm text-[#666666]">
                                     Loading details...
@@ -797,7 +802,7 @@ export const AdminSkillsManagement: React.FC = () => {
                                         <h3 className="inline-flex border-b border-[#3272A3] pb-1 text-base font-medium text-[#0C0D0F]">
                                             Provider
                                         </h3>
-                                        <div className="flex h-[72px] items-center gap-3 rounded-[5px] bg-white p-2 shadow-[1px_3px_3.1px_0px_rgba(0,0,0,0.03)]">
+                                        <div className="flex min-h-[72px] items-center gap-3 rounded-[5px] bg-white p-2 shadow-[1px_3px_3.1px_0px_rgba(0,0,0,0.03)]">
                                             <Avatar src={detailsProviderImage} name={detailsProviderName} size={48} />
                                             <div className="min-w-0 flex-1">
                                                 <p className="truncate text-base font-medium text-[#0C0D0F]">{detailsProviderName}</p>
@@ -819,15 +824,15 @@ export const AdminSkillsManagement: React.FC = () => {
                                         </h3>
                                         <div className="border-b border-[#F3F4F6]">
                                             <div className="flex min-h-10 items-center border-b border-[#E5E7EB] px-4">
-                                                <p className="w-[178px] text-sm text-[#666666]">Skill Language</p>
+                                                <p className="w-[132px] text-sm text-[#666666] sm:w-[178px]">Skill Language</p>
                                                 <p className="text-sm text-[#0C0D0F]">{detailsLanguage}</p>
                                             </div>
                                             <div className="flex min-h-10 items-center border-b border-[#E5E7EB] px-4">
-                                                <p className="w-[178px] text-sm text-[#666666]">Session Duration:</p>
+                                                <p className="w-[132px] text-sm text-[#666666] sm:w-[178px]">Session Duration:</p>
                                                 <p className="text-sm text-[#0C0D0F]">{detailsDuration}</p>
                                             </div>
                                             <div className="flex min-h-10 items-center px-4">
-                                                <p className="w-[178px] text-sm text-[#666666]">Skill Level:</p>
+                                                <p className="w-[132px] text-sm text-[#666666] sm:w-[178px]">Skill Level:</p>
                                                 <p className="text-sm text-[#0C0D0F]">{detailsLevel}</p>
                                             </div>
                                         </div>
@@ -850,8 +855,8 @@ export const AdminSkillsManagement: React.FC = () => {
             )}
 
             {deleteModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(94,95,96,0.2)] p-4">
-                    <div className="w-full max-w-[410px] rounded-[10px] border border-[#E5E7EB] bg-white shadow-[0px_0px_4.7px_0px_rgba(0,0,0,0.25)]">
+                <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[rgba(94,95,96,0.2)] p-3 sm:items-center sm:p-4">
+                    <div className="my-6 w-full max-w-[410px] rounded-[10px] border border-[#E5E7EB] bg-white shadow-[0px_0px_4.7px_0px_rgba(0,0,0,0.25)] sm:my-0">
                         <div className="flex items-center gap-2 border-b border-[#F3F4F6] px-4 py-[10px]">
                             <h2 className="flex-1 text-base font-medium text-[#0C0D0F]">Confirm Deletion</h2>
                             <button
@@ -883,7 +888,7 @@ export const AdminSkillsManagement: React.FC = () => {
                                 </p>
                             ) : null}
 
-                            <div className="flex items-center gap-4 pt-2">
+                            <div className="flex flex-col items-stretch gap-3 pt-2 sm:flex-row sm:items-center sm:gap-4">
                                 <button
                                     type="button"
                                     disabled={deleteLoading}
