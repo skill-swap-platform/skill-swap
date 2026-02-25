@@ -4,7 +4,8 @@ import {
     Compass,
     Layers,
     AlertCircle,
-    Search
+    Search,
+    X,
 } from 'lucide-react'
 
 const UsersListFigmaIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -212,18 +213,126 @@ const AuditLogFigmaIcon: React.FC<{ className?: string }> = ({ className }) => (
     </svg>
 )
 
-export const AdminSidebar: React.FC = () => {
+type AdminSidebarNavItem = {
+    icon: React.ComponentType<{ className?: string }>
+    label: string
+    to: string
+}
+
+interface AdminSidebarProps {
+    mobileOpen?: boolean
+    onMobileClose?: () => void
+}
+
+const primaryNavItems: AdminSidebarNavItem[] = [
+    { icon: Compass, label: 'Dashboard', to: '/admin/dashboard' },
+    { icon: Layers, label: 'Skills Management', to: '/admin/skills' },
+    { icon: UsersListFigmaIcon, label: 'Users List', to: '/admin/users' },
+    { icon: BadgesManagementFigmaIcon, label: 'Badges Management', to: '/points-badges' },
+    { icon: SwapRequestsFigmaIcon, label: 'Swap Requests', to: '/admin/requests' },
+    { icon: SessionsFigmaIcon, label: 'Sessions', to: '/session-history' },
+    { icon: AlertCircle, label: 'Disputes', to: '/admin/disputes' },
+]
+
+const secondaryNavItems: AdminSidebarNavItem[] = [
+    { icon: SettingFigmaIcon, label: 'Setting', to: '/admin/settings' },
+    { icon: AuditLogFigmaIcon, label: 'Audit Log', to: '/admin/audit-log' },
+]
+
+const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
+    `flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${isActive
+        ? 'bg-[#FBF8FF] text-[#3272A3]'
+        : 'text-[#1C1C1C] hover:bg-[#F9FAFB] hover:text-[#0C0D0F]'
+    }`
+
+export const AdminSidebar: React.FC<AdminSidebarProps> = ({
+    mobileOpen = false,
+    onMobileClose,
+}) => {
+    const closeMobile = () => {
+        onMobileClose?.()
+    }
+
     return (
-        <aside className="z-40 flex w-full flex-col border-b border-[#F3F4F6] bg-white md:fixed md:left-0 md:top-0 md:h-screen md:w-[236px] md:border-b-0 md:border-r">
-            <div className="p-4 md:p-4 md:pt-6">
-                <div className="mb-6 flex items-center justify-center gap-0.5 text-xl font-poppins md:mb-8">
+        <>
+            {mobileOpen && (
+                <div
+                    className="fixed inset-0 z-40 bg-[#0C0D0F]/40 backdrop-blur-[1px] md:hidden"
+                    onClick={closeMobile}
+                />
+            )}
+
+            <aside
+                className={`fixed inset-y-0 left-0 z-50 w-[280px] border-r border-[#F3F4F6] bg-white transition-transform duration-300 md:hidden ${mobileOpen ? 'translate-x-0' : '-translate-x-full'
+                    }`}
+                aria-hidden={!mobileOpen}
+            >
+                <div className="flex h-full flex-col p-4 pt-5">
+                    <div className="mb-4 flex items-center justify-between">
+                        <div className="flex items-center gap-0.5 text-xl font-poppins">
+                            <span className="font-normal text-[#F59E0B]">Skill</span>
+                            <span className="font-bold text-[#3E8FCC]">Swap</span>
+                            <span className="font-bold text-[#F59E0B]">.</span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={closeMobile}
+                            className="rounded-lg p-2 text-[#1C1C1C] transition-colors hover:bg-[#F3F4F6]"
+                            aria-label="Close menu"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
+                    </div>
+
+                    <div className="relative mb-4">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            className="w-full rounded-lg bg-[#F9FAFB] py-2.5 pl-9 pr-4 text-sm text-[#0C0D0F] placeholder:text-[#9CA3AF] outline-none transition-all hover:bg-[#F3F4F6] focus:bg-white focus:ring-1 focus:ring-[#E5E7EB]"
+                        />
+                    </div>
+
+                    <nav className="space-y-1">
+                        {primaryNavItems.map((item) => (
+                            <NavLink
+                                key={item.label}
+                                to={item.to}
+                                onClick={closeMobile}
+                                className={navLinkClassName}
+                            >
+                                <item.icon className="h-5 w-5 shrink-0" />
+                                {item.label}
+                            </NavLink>
+                        ))}
+                    </nav>
+
+                    <div className="mt-4 border-t border-[#E5E7EB] pt-4 space-y-1">
+                        {secondaryNavItems.map((item) => (
+                            <NavLink
+                                key={item.label}
+                                to={item.to}
+                                onClick={closeMobile}
+                                className={navLinkClassName}
+                            >
+                                <item.icon className="h-5 w-5 shrink-0" />
+                                {item.label}
+                            </NavLink>
+                        ))}
+                    </div>
+                </div>
+            </aside>
+
+            <aside className="z-40 hidden h-screen w-[236px] flex-col border-r border-[#F3F4F6] bg-white md:fixed md:left-0 md:top-0 md:flex">
+                <div className="p-4 pt-6">
+                    <div className="mb-8 flex items-center justify-center gap-0.5 text-xl font-poppins">
                     <span className="font-normal text-[#F59E0B]">Skill</span>
                     <span className="font-bold text-[#3E8FCC]">Swap</span>
                     <span className="font-bold text-[#F59E0B]">.</span>
                 </div>
 
-                <div className="relative mb-4 hidden md:block">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+                    <div className="relative mb-4">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
                     <input
                         type="text"
                         placeholder="Search..."
@@ -231,25 +340,12 @@ export const AdminSidebar: React.FC = () => {
                     />
                 </div>
 
-                <nav className="grid grid-cols-2 gap-1 md:flex md:flex-col md:space-y-1">
-                    {[
-                        { icon: Compass, label: 'Dashboard', to: '/admin/dashboard' },
-                        { icon: Layers, label: 'Skills Management', to: '/admin/skills' },
-                        { icon: UsersListFigmaIcon, label: 'Users List', to: '/admin/users' },
-                        { icon: BadgesManagementFigmaIcon, label: 'Badges Management', to: '/points-badges' },
-                        { icon: SwapRequestsFigmaIcon, label: 'Swap Requests', to: '/admin/requests' },
-                        { icon: SessionsFigmaIcon, label: 'Sessions', to: '/session-history' },
-                        { icon: AlertCircle, label: 'Disputes', to: '/admin/disputes' },
-                    ].map((item) => (
+                    <nav className="space-y-1">
+                        {primaryNavItems.map((item) => (
                         <NavLink
                             key={item.label}
                             to={item.to}
-                            className={({ isActive }) =>
-                                `flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${isActive
-                                    ? 'bg-[#FBF8FF] text-[#3272A3]'
-                                    : 'text-[#1C1C1C] hover:bg-[#F9FAFB] hover:text-[#0C0D0F]'
-                                }`
-                            }
+                                className={navLinkClassName}
                         >
                             <item.icon className="h-5 w-5 shrink-0" />
                             {item.label}
@@ -257,27 +353,20 @@ export const AdminSidebar: React.FC = () => {
                     ))}
                 </nav>
 
-                <div className="mt-4 hidden border-t border-[#E5E7EB] pt-4 md:block md:space-y-1">
-                    {[
-                        { icon: SettingFigmaIcon, label: 'Setting', to: '/admin/settings' },
-                        { icon: AuditLogFigmaIcon, label: 'Audit Log', to: '/admin/audit-log' },
-                    ].map((item) => (
+                    <div className="mt-4 space-y-1 border-t border-[#E5E7EB] pt-4">
+                        {secondaryNavItems.map((item) => (
                         <NavLink
                             key={item.label}
                             to={item.to}
-                            className={({ isActive }) =>
-                                `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${isActive
-                                    ? 'bg-[#FBF8FF] text-[#3272A3]'
-                                    : 'text-[#1C1C1C] hover:bg-[#F9FAFB] hover:text-[#0C0D0F]'
-                                }`
-                            }
+                                className={navLinkClassName}
                         >
                             <item.icon className="h-5 w-5" />
                             {item.label}
                         </NavLink>
                     ))}
                 </div>
-            </div>
-        </aside>
+                </div>
+            </aside>
+        </>
     )
 }

@@ -11,7 +11,7 @@ import Search from "@/pages/search/Search";
 import SearchResults from "@/pages/search/SearchResults";
 import SearchWithFilters from "@/pages/search/SearchWithFilters";
 
-// import { Dashboard } from "@/pages/Dashboard";
+import { Dashboard } from "@/pages/Dashboard";
 import { AdminDashboard } from "@/pages/admin/AdminDashboard";
 import { PointsAndBadges } from "@/pages/PointsAndBadges";
 import { SessionHistory } from "@/pages/SessionHistory";
@@ -92,6 +92,14 @@ export const routesConfig: RouteConfig[] = [
     element: (
       <ProtectedRoute>
         <HomePage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <ProtectedRoute>
+        <Dashboard />
       </ProtectedRoute>
     ),
   },

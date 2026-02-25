@@ -67,11 +67,11 @@ export const AchievementsWidget: React.FC<AchievementsWidgetProps> = ({
 
             <CardContent>
                 <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         {stats.map((stat, index) => (
                             <div
                                 key={index}
-                                className="p-4 rounded-lg border border-neutral-light hover:border-primary transition-colors"
+                                className="rounded-lg border border-neutral-light p-4 transition-colors hover:border-primary"
                             >
                                 <div className="flex items-center gap-3 mb-2">
                                     <div
@@ -82,7 +82,7 @@ export const AchievementsWidget: React.FC<AchievementsWidgetProps> = ({
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-xs text-text-secondary">{stat.label}</p>
-                                        <p className="text-2xl font-poppins font-bold text-text-primary">
+                                        <p className="text-xl font-poppins font-bold text-text-primary sm:text-2xl">
                                             {formatNumber(stat.value)}
                                         </p>
                                     </div>
@@ -92,7 +92,7 @@ export const AchievementsWidget: React.FC<AchievementsWidgetProps> = ({
                     </div>
                     {nextMilestone && (
                         <div className="pt-4 border-t border-neutral-light">
-                            <div className="flex items-center justify-between mb-3">
+                            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-text-primary">
                                         Next Milestone

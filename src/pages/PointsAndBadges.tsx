@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
     Award,
     Bell,
@@ -7,7 +7,8 @@ import {
     Zap,
     RefreshCw,
     Crown,
-    Trophy
+    Trophy,
+    Menu,
 } from 'lucide-react'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import { BadgeCard } from '@/components/gamification/BadgeCard'
@@ -71,6 +72,17 @@ const mockBadges = [
 export const PointsAndBadges: React.FC = () => {
     const [selectedBadge, setSelectedBadge] = useState<typeof mockBadges[0] | null>(null)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+
+    useEffect(() => {
+        if (!isMobileSidebarOpen) {
+            document.body.classList.remove('overflow-hidden')
+            return
+        }
+
+        document.body.classList.add('overflow-hidden')
+        return () => document.body.classList.remove('overflow-hidden')
+    }, [isMobileSidebarOpen])
 
     const handleEditCondition = (badge: typeof mockBadges[0]) => {
         setSelectedBadge(badge)
@@ -86,15 +98,28 @@ export const PointsAndBadges: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-white">
-            <AdminSidebar />
+            <AdminSidebar
+                mobileOpen={isMobileSidebarOpen}
+                onMobileClose={() => setIsMobileSidebarOpen(false)}
+            />
 
             <main className="p-4 md:ml-[236px] md:p-8">
                 {/* Header */}
                 <header className="flex items-center justify-between mb-8">
-                    <div className="text-xl font-poppins font-bold">
-                        <span className="text-[#F59E0B]">Skill</span>
-                        <span className="text-[#3E8FCC]">Swap</span>
-                        <span className="text-[#F59E0B]">.</span>
+                    <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setIsMobileSidebarOpen(true)}
+                            className="rounded-lg p-2 text-[#1C1C1C] transition-colors hover:bg-[#F3F4F6] md:hidden"
+                            aria-label="Open menu"
+                        >
+                            <Menu className="h-5 w-5" />
+                        </button>
+                        <div className="text-xl font-poppins font-bold">
+                            <span className="text-[#F59E0B]">Skill</span>
+                            <span className="text-[#3E8FCC]">Swap</span>
+                            <span className="text-[#F59E0B]">.</span>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-4">

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
-import { ArrowLeftRight, ChevronDown, ClipboardCheck, TriangleAlert, Users } from 'lucide-react'
+import { ArrowLeftRight, ChevronDown, ClipboardCheck, Menu, TriangleAlert, Users } from 'lucide-react'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import {
     adminService,
@@ -172,6 +172,7 @@ export const AdminDashboard: React.FC = () => {
     const [isRefreshing, setIsRefreshing] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [reloadCounter, setReloadCounter] = useState(0)
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
     const hasFetchedOnce = useRef(false)
 
     useEffect(() => {
@@ -216,6 +217,16 @@ export const AdminDashboard: React.FC = () => {
         }
     }, [period, reloadCounter])
 
+    useEffect(() => {
+        if (!isMobileSidebarOpen) {
+            document.body.classList.remove('overflow-hidden')
+            return
+        }
+
+        document.body.classList.add('overflow-hidden')
+        return () => document.body.classList.remove('overflow-hidden')
+    }, [isMobileSidebarOpen])
+
     const data = dashboardData ?? DEFAULT_DASHBOARD_DATA
     const periodLabel = formatPeriodLabel(period)
 
@@ -256,10 +267,29 @@ export const AdminDashboard: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-white">
-            <AdminSidebar />
+            <AdminSidebar
+                mobileOpen={isMobileSidebarOpen}
+                onMobileClose={() => setIsMobileSidebarOpen(false)}
+            />
 
             <div className="md:ml-[236px]">
-                <header className="flex h-[80px] items-center justify-end border-b border-[#F3F4F6] px-4 md:px-6">
+                <header className="flex h-[80px] items-center justify-between border-b border-[#F3F4F6] px-4 md:justify-end md:px-6">
+                    <div className="flex items-center gap-3 md:hidden">
+                        <button
+                            type="button"
+                            onClick={() => setIsMobileSidebarOpen(true)}
+                            className="rounded-lg p-2 text-[#1C1C1C] transition-colors hover:bg-[#F3F4F6]"
+                            aria-label="Open menu"
+                        >
+                            <Menu className="h-5 w-5" />
+                        </button>
+                        <div className="text-lg font-poppins font-bold">
+                            <span className="text-[#F59E0B]">Skill</span>
+                            <span className="text-[#3E8FCC]">Swap</span>
+                            <span className="text-[#F59E0B]">.</span>
+                        </div>
+                    </div>
+
                     <div className="flex items-center gap-4 md:gap-6">
                         <button type="button" className="rounded-full p-2 text-[#1C1C1C] hover:bg-[#F3F4F6]">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">

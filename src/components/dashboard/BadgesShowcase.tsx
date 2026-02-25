@@ -29,7 +29,7 @@ export const BadgesShowcase: React.FC<BadgesShowcaseProps> = ({
                     {onViewAll && (
                         <button
                             onClick={onViewAll}
-                            className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
+                            className="flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:text-primary-dark sm:text-sm"
                         >
                             View All
                             <ChevronRight className="w-4 h-4" />
@@ -56,15 +56,15 @@ export const BadgesShowcase: React.FC<BadgesShowcaseProps> = ({
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                             {displayedBadges.map((badge) => (
                                 <button
                                     key={badge.id}
-                                    className="group relative aspect-square flex flex-col items-center justify-center p-3 rounded-lg border-2 border-neutral-light hover:border-primary hover:bg-primary hover:bg-opacity-5 transition-all"
+                                    className="group relative flex aspect-square flex-col items-center justify-center rounded-lg border-2 border-neutral-light p-2 transition-all hover:border-primary hover:bg-primary hover:bg-opacity-5 sm:p-3"
                                     title={badge.name}
                                 >
                                     <div
-                                        className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl mb-1"
+                                        className="mb-1 flex h-10 w-10 items-center justify-center rounded-lg text-xl sm:h-12 sm:w-12 sm:text-2xl"
                                         style={{ backgroundColor: `${badge.color}20` }}
                                     >
                                         {badge.icon}
@@ -80,7 +80,7 @@ export const BadgesShowcase: React.FC<BadgesShowcaseProps> = ({
                             {remainingCount > 0 && (
                                 <button
                                     onClick={onViewAll}
-                                    className="aspect-square flex flex-col items-center justify-center p-3 rounded-lg border-2 border-dashed border-neutral-light hover:border-primary hover:bg-primary hover:bg-opacity-5 transition-all"
+                                    className="flex aspect-square flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-light p-2 transition-all hover:border-primary hover:bg-primary hover:bg-opacity-5 sm:p-3"
                                 >
                                     <div className="text-2xl mb-1">+{remainingCount}</div>
                                     <p className="text-xs font-medium text-text-secondary">More</p>
