@@ -14,6 +14,7 @@ import SearchWithFilters from "@/pages/search/SearchWithFilters";
 import { Dashboard } from "@/pages/Dashboard";
 import { AdminDashboard } from "@/pages/admin/AdminDashboard";
 import { AdminSkillsManagement } from "@/pages/admin/AdminSkillsManagement";
+import { AdminUsersList } from "@/pages/admin/AdminUsersList";
 import { PointsAndBadges } from "@/pages/PointsAndBadges";
 import { SessionHistory } from "@/pages/SessionHistory";
 import { SessionFeedback } from "@/pages/SessionFeedback";
@@ -117,6 +118,14 @@ export const routesConfig: RouteConfig[] = [
     element: (
       <ProtectedRoute allowedRoles={["ADMIN"]}>
         <AdminSkillsManagement />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/users",
+    element: (
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
+        <AdminUsersList />
       </ProtectedRoute>
     ),
   },
