@@ -47,35 +47,36 @@ export const Dashboard: React.FC = () => {
     ]
 
     return (
-        <div className="space-y-10 animate-in fade-in duration-700">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="relative w-full max-w-md">
+        <div className="space-y-6 animate-in fade-in duration-700 sm:space-y-8 lg:space-y-10">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+                <div className="relative w-full lg:max-w-xl">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
                     <input
                         type="text"
                         placeholder="Search for skills, sessions, or achievements..."
-                        className="w-full h-14 pl-12 pr-6 rounded-2xl border border-[#E5E7EB] bg-white outline-none focus:ring-2 focus:ring-[#3E8FCC] transition-all"
+                        className="h-12 w-full rounded-2xl border border-[#E5E7EB] bg-white pl-12 pr-4 text-sm outline-none transition-all focus:ring-2 focus:ring-[#3E8FCC] sm:h-14 sm:pr-6 sm:text-base"
                     />
                 </div>
-                <div className="flex gap-4">
-                    <div className="flex -space-x-3">
+
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 lg:justify-end">
+                    <div className="flex -space-x-2 sm:-space-x-3">
                         {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-[#F3F4F6] overflow-hidden">
+                            <div key={i} className="h-9 w-9 overflow-hidden rounded-full border-2 border-white bg-[#F3F4F6] sm:h-10 sm:w-10">
                                 <img src={`https://i.pravatar.cc/100?u=${i}`} alt="Avatar" />
                             </div>
                         ))}
-                        <div className="w-10 h-10 rounded-full border-2 border-white bg-[#3E8FCC] text-white flex items-center justify-center text-[10px] font-bold">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-[#3E8FCC] text-[10px] font-bold text-white sm:h-10 sm:w-10">
                             +12
                         </div>
                     </div>
-                    <p className="text-sm font-medium text-[#666666] flex items-center">
+                    <p className="flex items-center text-sm font-medium text-[#666666]">
                         Community is active
                     </p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                <div className="lg:col-span-2 space-y-10">
+            <div className="grid grid-cols-1 gap-6 lg:gap-8 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+                <div className="space-y-6 lg:space-y-8">
                     <PointsWidget
                         totalPoints={pointsData?.totalPoints || 0}
                         lifetimePoints={pointsData?.lifetimePoints}
@@ -100,11 +101,12 @@ export const Dashboard: React.FC = () => {
 
                     <RecentAchievements
                         achievements={mockAchievements}
-                        onViewAll={() => navigate('/history')}
+                        onViewAll={() => navigate('/session-history')}
                         className="rounded-[32px] overflow-hidden border-[#E5E7EB] shadow-sm"
                     />
                 </div>
-                <div className="space-y-10">
+
+                <div className="space-y-6 lg:space-y-8">
                     <BadgesShowcase
                         userBadges={userBadges || []}
                         totalBadges={allBadges?.length}
@@ -112,14 +114,14 @@ export const Dashboard: React.FC = () => {
                         className="rounded-[32px] overflow-hidden border-[#E5E7EB] shadow-sm"
                     />
 
-                    <div className="bg-[#FFFFFF] rounded-[32px] p-8 border border-[#E5E7EB] shadow-sm group">
-                        <h3 className="text-xl font-bold text-[#0C0D0F] mb-8">
+                    <div className="group rounded-[32px] border border-[#E5E7EB] bg-[#FFFFFF] p-5 shadow-sm sm:p-6 lg:p-8">
+                        <h3 className="mb-6 text-lg font-bold text-[#0C0D0F] sm:mb-8 sm:text-xl">
                             Quick Actions
                         </h3>
-                        <div className="space-y-4">
+                        <div className="space-y-3 sm:space-y-4">
                             <button
-                                onClick={() => navigate('/history')}
-                                className="w-full flex items-center justify-between p-6 rounded-2xl bg-[#3E8FCC]/5 border border-[#3E8FCC]/10 hover:bg-[#3E8FCC] hover:text-white group transition-all duration-300"
+                                onClick={() => navigate('/sessions')}
+                                className="group flex w-full items-center justify-between rounded-2xl border border-[#3E8FCC]/10 bg-[#3E8FCC]/5 p-4 text-left transition-all duration-300 hover:bg-[#3E8FCC] hover:text-white sm:p-6"
                             >
                                 <div className="text-left">
                                     <p className="font-bold mb-0.5">Start New Session</p>
@@ -129,24 +131,24 @@ export const Dashboard: React.FC = () => {
                             </button>
 
                             <button
-                                onClick={() => navigate('/history')}
-                                className="w-full text-left p-6 rounded-2xl bg-[#F9FAFB] border border-transparent hover:border-[#E5E7EB] hover:bg-white transition-all"
+                                onClick={() => navigate('/session-history')}
+                                className="w-full rounded-2xl border border-transparent bg-[#F9FAFB] p-4 text-left transition-all hover:border-[#E5E7EB] hover:bg-white sm:p-6"
                             >
                                 <p className="font-bold text-[#0C0D0F] mb-0.5">View History</p>
                                 <p className="text-xs text-[#666666]">See past sessions</p>
                             </button>
 
                             <button
-                                onClick={() => navigate('/points-badges')}
-                                className="w-full text-left p-6 rounded-2xl bg-[#F9FAFB] border border-transparent hover:border-[#E5E7EB] hover:bg-white transition-all"
+                                onClick={() => navigate('/profile')}
+                                className="w-full rounded-2xl border border-transparent bg-[#F9FAFB] p-4 text-left transition-all hover:border-[#E5E7EB] hover:bg-white sm:p-6"
                             >
-                                <p className="font-bold text-[#0C0D0F] mb-0.5">Leaderboard</p>
-                                <p className="text-xs text-[#666666]">See your ranking</p>
+                                <p className="font-bold text-[#0C0D0F] mb-0.5">My Profile</p>
+                                <p className="text-xs text-[#666666]">Track your latest progress</p>
                             </button>
                         </div>
 
-                        <div className="mt-8 pt-8 border-t border-[#F3F4F6]">
-                            <div className="flex items-center gap-4 p-4 rounded-3xl bg-[#FFFBEB] border border-[#FEF3C7]">
+                        <div className="mt-6 border-t border-[#F3F4F6] pt-6 sm:mt-8 sm:pt-8">
+                            <div className="flex items-center gap-3 rounded-3xl border border-[#FEF3C7] bg-[#FFFBEB] p-4 sm:gap-4">
                                 <div className="w-10 h-10 bg-[#F59E0B] rounded-xl flex items-center justify-center text-white shadow-md">
                                     <Target className="w-5 h-5" />
                                 </div>

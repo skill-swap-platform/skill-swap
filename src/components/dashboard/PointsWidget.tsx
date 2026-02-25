@@ -39,7 +39,7 @@ export const PointsWidget: React.FC<PointsWidgetProps> = ({
                             <Award className="w-10 h-10 text-primary" />
                         </div>
                         <p className="text-sm text-text-secondary mb-1">Total Points</p>
-                        <p className="text-4xl font-poppins font-bold text-primary">
+                        <p className="text-3xl font-poppins font-bold text-primary sm:text-4xl">
                             {formatPoints(totalPoints)}
                         </p>
                         {recentPointsGained !== undefined && recentPointsGained > 0 && (
@@ -51,7 +51,7 @@ export const PointsWidget: React.FC<PointsWidgetProps> = ({
                             </div>
                         )}
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         {lifetimePoints !== undefined && (
                             <div className="text-center p-4 bg-neutral-lightest rounded-lg">
                                 <p className="text-xs text-text-secondary mb-1">Lifetime</p>
@@ -71,7 +71,7 @@ export const PointsWidget: React.FC<PointsWidgetProps> = ({
                     </div>
                     {pointsToNextRank !== undefined && pointsToNextRank > 0 && (
                         <div className="space-y-3">
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="flex items-center gap-2">
                                     <Target className="w-4 h-4 text-primary" />
                                     <span className="text-sm font-medium text-text-primary">

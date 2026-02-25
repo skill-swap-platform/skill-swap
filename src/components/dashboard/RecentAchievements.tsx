@@ -28,49 +28,51 @@ export const RecentAchievements: React.FC<RecentAchievementsProps> = ({
 }) => {
     return (
         <Card className={className}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-xl font-bold flex items-center gap-2">
-                    <Award className="w-5 h-5 text-[#3E8FCC]" />
+            <CardHeader className="flex flex-col gap-3 pb-2 sm:flex-row sm:items-center sm:justify-between">
+                <CardTitle className="flex items-center gap-2 text-lg font-bold sm:text-xl">
+                    <Award className="h-5 w-5 text-[#3E8FCC]" />
                     Recent Achievements
                 </CardTitle>
                 {onViewAll && (
                     <button
                         onClick={onViewAll}
-                        className="text-sm font-medium text-[#3E8FCC] hover:underline flex items-center gap-1"
+                        className="flex items-center gap-1 self-start text-xs font-medium text-[#3E8FCC] hover:underline sm:self-auto sm:text-sm"
                     >
                         View All
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="h-4 w-4" />
                     </button>
                 )}
             </CardHeader>
+
             <CardContent>
                 <div className="space-y-6">
                     {achievements.length > 0 ? (
                         achievements.map((achievement) => (
-                            <div key={achievement.id} className="flex gap-4">
+                            <div key={achievement.id} className="flex gap-3 sm:gap-4">
                                 <div className="mt-1">
-                                    <div className="h-10 w-10 rounded-full bg-[#F3F4F6] flex items-center justify-center text-xl">
-                                        {achievement.icon || '🏆'}
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F3F4F6] text-lg sm:h-10 sm:w-10 sm:text-xl">
+                                        {achievement.icon || <Award className="h-5 w-5 text-[#3E8FCC]" />}
                                     </div>
                                 </div>
-                                <div className="flex-1 min-w-0">
+
+                                <div className="min-w-0 flex-1">
                                     <div className="flex items-start justify-between gap-2">
                                         <div>
-                                            <h4 className="font-semibold text-[#0C0D0F] truncate">
+                                            <h4 className="truncate text-sm font-semibold text-[#0C0D0F] sm:text-base">
                                                 {achievement.title}
                                             </h4>
-                                            <p className="text-sm text-[#666666]">
+                                            <p className="text-xs text-[#666666] sm:text-sm">
                                                 {achievement.description}
                                             </p>
                                         </div>
-                                        <Badge variant="neutral" className="whitespace-nowrap shrink-0">
+                                        <Badge variant="neutral" className="shrink-0 whitespace-nowrap">
                                             {formatRelativeTime(achievement.timestamp)}
                                         </Badge>
                                     </div>
 
                                     {achievement.type === 'points' && achievement.value && (
                                         <div className="mt-2 flex items-center gap-2">
-                                            <div className="flex-1 h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden">
+                                            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#F3F4F6]">
                                                 <div
                                                     className="h-full bg-[#3E8FCC]"
                                                     style={{ width: `${Math.min((achievement.value / 1000) * 100, 100)}%` }}
@@ -85,28 +87,28 @@ export const RecentAchievements: React.FC<RecentAchievementsProps> = ({
                             </div>
                         ))
                     ) : (
-                        <div className="text-center py-8">
-                            <Star className="w-12 h-12 text-[#E5E7EB] mx-auto mb-3" />
+                        <div className="py-8 text-center">
+                            <Star className="mx-auto mb-3 h-12 w-12 text-[#E5E7EB]" />
                             <p className="text-[#666666]">No recent achievements yet.</p>
-                            <p className="text-sm text-[#9CA3AF] mt-1">
+                            <p className="mt-1 text-sm text-[#9CA3AF]">
                                 Complete sessions and earn points to unlock badges!
                             </p>
                         </div>
                     )}
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-[#F3F4F6]">
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="text-center">
-                            <div className="text-sm text-[#666666] mb-1">Total XP</div>
+                <div className="mt-8 border-t border-[#F3F4F6] pt-6">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+                        <div className="rounded-lg bg-[#F9FAFB] p-3 text-center sm:bg-transparent sm:p-0">
+                            <div className="mb-1 text-sm text-[#666666]">Total XP</div>
                             <div className="text-lg font-bold text-[#0C0D0F]">2,450</div>
                         </div>
-                        <div className="text-center border-x border-[#F3F4F6]">
-                            <div className="text-sm text-[#666666] mb-1">Rank</div>
+                        <div className="rounded-lg bg-[#F9FAFB] p-3 text-center sm:rounded-none sm:border-x sm:border-[#F3F4F6] sm:bg-transparent sm:p-0">
+                            <div className="mb-1 text-sm text-[#666666]">Rank</div>
                             <div className="text-lg font-bold text-[#0C0D0F]">#12</div>
                         </div>
-                        <div className="text-center">
-                            <div className="text-sm text-[#666666] mb-1">Badges</div>
+                        <div className="rounded-lg bg-[#F9FAFB] p-3 text-center sm:bg-transparent sm:p-0">
+                            <div className="mb-1 text-sm text-[#666666]">Badges</div>
                             <div className="text-lg font-bold text-[#0C0D0F]">8</div>
                         </div>
                     </div>
