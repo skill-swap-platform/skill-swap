@@ -1,32 +1,35 @@
-import api from "./api";
-
-// ── Types based on actual API response shapes ────────────────────────────────
+import axiosInstance from "@/api/axiosInstance";
 
 export interface SkillCategory {
   id: string;
   name: string;
-  icon?: string;
-  description?: string;
+  icon?: unknown;
+  description?: unknown;
 }
 
 export interface SkillInfo {
-  id: string;
+  id?: string;
   name: string;
-  description: string;
+  description?: string;
   language?: string;
-  category: SkillCategory;
+  category?: SkillCategory;
 }
 
 export interface SkillProvider {
+  id?: string;
+  userId?: string;
   userName: string;
   image: string | null;
+  level?: string;
+  yearsOfExperience?: string | number;
   bio?: string;
-  rating: number;
+  receivedSwaps?: number;
+  sentSwaps?: number;
+  rating?: number;
+  totalFeedback?: number;
   totalFeedbacks?: number;
-}
-
-export interface SkillProviderWithId extends SkillProvider {
-  id: string;
+  avgRate?: number;
+  avarage?: number;
 }
 
 export interface SkillSession {
@@ -43,33 +46,19 @@ export interface LatestReviewDto {
 }
 
 export interface SkillDetailsResponse {
-  provider: SkillProviderWithId;
+  provider: SkillProvider;
   skill: SkillInfo;
-  level: string;
-  sessionLanguage: string;
-  skillDescription: string;
-  userSkillId: string;
-  reviews: {
-    count: number;
-    LatestReviewDto: LatestReviewDto | null;
+  level?: string;
+  sessionLanguage?: string;
+  skillDescription?: string;
+  userSkillId?: string;
+  reviews?: {
+    count?: number;
+    LatestReviewDto?: LatestReviewDto | null;
+    latestReview?: LatestReviewDto | null;
   };
-  sessions: SkillSession[];
-  countSessions: number;
-}
-
-export interface SimilarSkillUser {
-  skill: SkillInfo;
-  user: {
-    userName: string;
-    image: string | null;
-    level: string;
-    bio?: string;
-    receivedSwaps: number;
-    sentSwaps: number;
-    rating: number;
-    totalFeedbacks: number;
-    id?: string;
-  };
+  sessions?: SkillSession[];
+  countSessions?: number;
 }
 
 export interface Reviewer {
@@ -88,107 +77,146 @@ export interface Review {
 }
 
 export interface ReviewsData {
-  review: Review[];
+  reviews: Review[];
   avgRatingUserSkill?: { reviewCount: number };
-  total?: number;
-  page?: number;
-  limit?: number;
-  totalPages?: number;
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
-export interface ApiReviewsResponse {
-  success: boolean;
-  data: ReviewsData;
-}
-
-export interface RecommendedUserSkill {
-  skill: SkillInfo & { id: string };
-  user: {
-    userName: string;
-    image: string | null;
-    level: string;
-    yearsOfExperience?: string | number;
-    bio?: string;
-    receivedSwaps: number;
-    sentSwaps: number;
-    avarage?: number;
-    totalFeedbacks: number;
-    id?: string;
-  };
-}
-
-export interface ApiRecommendedResponse {
-  success: boolean;
-  data: RecommendedUserSkill;
-}
-
-/** Shape returned by GET /api/v1/skills/search per item */
-export interface SearchResultItem {
+export interface ExploreResultItem {
   skill: SkillInfo;
-  user: {
-    userName: string;
-    image: string | null;
-    level: string;
-    yearsOfExperience?: string | number;
-    bio?: string;
-    receivedSwaps: number;
-    sentSwaps: number;
-    rating: number;
-    totalFeedback: number;
+  user: SkillProvider;
+}
+
+export interface RecommendedUserSkill extends ExploreResultItem {}
+
+type ApiEnvelope<T> = {
+  success?: boolean;
+  message?: string;
+  data?: T;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const unwrapData = <T>(payload: T | ApiEnvelope<T>): T => {
+  if (isRecord(payload) && "data" in payload && payload.data !== undefined) {
+    return payload.data as T;
+  }
+
+  return payload as T;
+};
+
+const toArray = <T>(payload: unknown): T[] => {
+  if (Array.isArray(payload)) {
+    return payload as T[];
+  }
+
+  if (!isRecord(payload)) {
+    return [];
+  }
+
+  const candidates = [payload.data, payload.items, payload.results] as unknown[];
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) {
+      return candidate as T[];
+    }
+  }
+
+  return [];
+};
+
+const toResultItem = (value: unknown): ExploreResultItem | null => {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  if (!isRecord(value.skill) || !isRecord(value.user)) {
+    return null;
+  }
+
+  return {
+    skill: value.skill as unknown as SkillInfo,
+    user: value.user as unknown as SkillProvider,
   };
-}
+};
 
-export interface ApiSearchResponse {
-  success: boolean;
-  data: SearchResultItem | SearchResultItem[];
-}
+const normalizeReviewData = (
+  payload: unknown,
+  page: number,
+  limit: number,
+): ReviewsData => {
+  const data = unwrapData(payload as Record<string, unknown>);
+  const reviewContainer = isRecord(data) ? data : {};
 
-/** Shape used by GET /api/v1/skills/discover per item */
-export interface DiscoverResultItem {
-  skill: Pick<SkillInfo, "name" | "category">;
-  user: {
-    userName: string;
-    image: string | null;
-    level: string;
-    bio?: string;
-    receivedSwaps: number;
-    sentSwaps: number;
-    rating: number;
-    totalFeedbacks: number;
+  const rawReviews = Array.isArray(reviewContainer.reviews)
+    ? reviewContainer.reviews
+    : Array.isArray(reviewContainer.review)
+      ? reviewContainer.review
+      : [];
+
+  const reviews = rawReviews as Review[];
+  const total =
+    typeof reviewContainer.total === "number" ? reviewContainer.total : reviews.length;
+  const totalPages =
+    typeof reviewContainer.totalPages === "number"
+      ? reviewContainer.totalPages
+      : total > 0
+        ? Math.ceil(total / limit)
+        : 0;
+
+  return {
+    reviews,
+    avgRatingUserSkill: reviewContainer.avgRatingUserSkill as
+      | { reviewCount: number }
+      | undefined,
+    total,
+    page: typeof reviewContainer.page === "number" ? reviewContainer.page : page,
+    limit: typeof reviewContainer.limit === "number" ? reviewContainer.limit : limit,
+    totalPages,
   };
-}
+};
 
-// ── API Functions ─────────────────────────────────────────────────────────────
+export const getUserIdentifier = (user?: Partial<SkillProvider> | null): string =>
+  user?.id || user?.userId || "";
+
+export const getSkillIdentifier = (skill?: Partial<SkillInfo> | null): string =>
+  skill?.id || "";
 
 /**
- * Get skill details for a specific user
  * GET /api/v1/skills/{skillId}/users/{userId}/details
  */
 export const getSkillDetails = async (
   skillId: string,
   userId: string,
 ): Promise<SkillDetailsResponse> => {
-  const response = await api.get<SkillDetailsResponse>(
-    `/skills/${skillId}/users/${userId}/details`,
-  );
-  return response.data;
+  const response = await axiosInstance.get<
+    SkillDetailsResponse | ApiEnvelope<SkillDetailsResponse>
+  >(`/api/v1/skills/${skillId}/users/${userId}/details`);
+  return unwrapData(response.data);
 };
 
 /**
- * Get one similar user offering the same skill
  * GET /api/v1/skills/{skillId}/similar
  */
 export const getSimilarSkillUsers = async (
   skillId: string,
-): Promise<SimilarSkillUser> => {
-  const response = await api.get<SimilarSkillUser>(
-    `/skills/${skillId}/similar`,
-  );
-  return response.data;
+): Promise<ExploreResultItem | null> => {
+  const response = await axiosInstance.get<
+    ExploreResultItem | ApiEnvelope<ExploreResultItem> | { data?: unknown }
+  >(`/api/v1/skills/${skillId}/similar`);
+
+  const payload = unwrapData(response.data);
+  if (Array.isArray(payload)) {
+    return toResultItem(payload[0]);
+  }
+
+  return toResultItem(payload);
 };
 
 /**
- * Get reviews received by a user for a specific skill
  * GET /api/v1/reviews/{userId}/received?skillId={skillId}&page={page}&limit={limit}
  */
 export const getReviews = async (
@@ -197,27 +225,25 @@ export const getReviews = async (
   page: number = 1,
   limit: number = 10,
 ): Promise<ReviewsData> => {
-  const response = await api.get<ApiReviewsResponse>(
-    `/reviews/${userId}/received`,
-    { params: { skillId, page, limit } },
-  );
-  return response.data.data;
+  const response = await axiosInstance.get(`/api/v1/reviews/${userId}/received`, {
+    params: { skillId, page, limit },
+  });
+
+  return normalizeReviewData(response.data, page, limit);
 };
 
 /**
- * Get recommended user skill
  * GET /api/v1/skills/recommended-user
  */
-export const getRecommendedUserSkill =
-  async (): Promise<RecommendedUserSkill> => {
-    const response = await api.get<ApiRecommendedResponse>(
-      `/v1/skills/recommended-user`,
-    );
-    return response.data.data;
-  };
+export const getRecommendedUserSkill = async (): Promise<RecommendedUserSkill | null> => {
+  const response = await axiosInstance.get<
+    RecommendedUserSkill | ApiEnvelope<RecommendedUserSkill>
+  >(`/api/v1/skills/recommended-user`);
+
+  return toResultItem(unwrapData(response.data));
+};
 
 /**
- * Get all reviews for a user skill (detailed, paginated)
  * GET /api/v1/reviews/{userId}/received?skillId={skillId}&page={page}&limit={limit}
  */
 export const getAllUserSkillReviews = async (
@@ -226,45 +252,45 @@ export const getAllUserSkillReviews = async (
   page: number = 1,
   limit: number = 50,
 ): Promise<ReviewsData> => {
-  const response = await api.get<ApiReviewsResponse>(
-    `/reviews/${userId}/received`,
-    { params: { skillId, page, limit } },
-  );
-  return response.data.data;
+  const response = await axiosInstance.get(`/api/v1/reviews/${userId}/received`, {
+    params: { skillId, page, limit },
+  });
+
+  return normalizeReviewData(response.data, page, limit);
 };
 
 /**
- * Get public user profile by ID
  * GET /api/v1/user/{userId}
  */
 export const getProviderProfile = async (userId: string) => {
-  const response = await api.get<{ success: boolean; data: unknown }>(
-    `/user/${userId}`,
-  );
-  return response.data.data;
+  const response = await axiosInstance.get(`/api/v1/user/${userId}`);
+  return unwrapData(response.data);
 };
 
 /**
- * Search for skills by name
  * GET /api/v1/skills/search?name={name}&page={page}&limit={limit}
  */
 export const searchSkills = async (
   name: string,
   page: number = 1,
   limit: number = 10,
-): Promise<SearchResultItem[]> => {
-  const response = await api.get<ApiSearchResponse>(`/skills/search`, {
+): Promise<ExploreResultItem[]> => {
+  const response = await axiosInstance.get(`/api/v1/skills/search`, {
     params: { name, page, limit },
   });
-  // The API may return a single object or array depending on the result
-  const data = response.data.data;
-  if (Array.isArray(data)) return data;
-  if (data) return [data];
-  return [];
+
+  const payload = unwrapData(response.data);
+  if (Array.isArray(payload)) {
+    return payload
+      .map(toResultItem)
+      .filter((item): item is ExploreResultItem => item !== null);
+  }
+
+  const single = toResultItem(payload);
+  return single ? [single] : [];
 };
 
 /**
- * Discover skills with filters
  * GET /api/v1/skills/discover?availability={}&language={}&level={}&page={}&limit={}
  */
 export const discoverSkills = async (params: {
@@ -273,13 +299,12 @@ export const discoverSkills = async (params: {
   level?: string;
   page?: number;
   limit?: number;
-}): Promise<DiscoverResultItem[]> => {
-  const response = await api.get<{ data: DiscoverResultItem[] }>(
-    `/skills/discover`,
-    { params },
-  );
-  const data = response.data?.data;
-  if (Array.isArray(data)) return data;
-  if (data) return [data as unknown as DiscoverResultItem];
-  return [];
+}): Promise<ExploreResultItem[]> => {
+  const response = await axiosInstance.get(`/api/v1/skills/discover`, { params });
+
+  const payload = unwrapData(response.data);
+  const items = Array.isArray(payload) ? payload : toArray(payload);
+  return items
+    .map(toResultItem)
+    .filter((item): item is ExploreResultItem => item !== null);
 };

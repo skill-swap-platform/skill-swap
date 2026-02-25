@@ -1,4 +1,4 @@
-import React from "react";
+import type { FC } from "react";
 
 interface Props {
   filters: {
@@ -14,14 +14,29 @@ interface Props {
   onClose: () => void;
 }
 
-const FiltersSidebar: React.FC<Props> = ({ filters, onToggleFilter, onChangeLanguage, onClear, onApply, onClose }) => {
+const FiltersSidebar: FC<Props> = ({
+  filters,
+  onToggleFilter,
+  onChangeLanguage,
+  onClear,
+  onApply,
+  onClose,
+}) => {
   return (
     <div className="w-96 bg-white border border-gray-300 rounded-2xl p-6 h-fit sticky top-8 space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-2xl font-bold text-text-primary">Filter Skills</h3>
         <div className="flex items-center gap-2">
-          <button onClick={onClear} className="text-sm text-gray-600 hover:text-text-primary">clear all</button>
-          <button onClick={onClose} aria-label="Close filters" className="text-gray-600 hover:text-text-primary text-xl font-bold leading-none">×</button>
+          <button onClick={onClear} className="text-sm text-gray-600 hover:text-text-primary">
+            clear all
+          </button>
+          <button
+            onClick={onClose}
+            aria-label="Close filters"
+            className="text-gray-600 hover:text-text-primary text-xl font-bold leading-none"
+          >
+            x
+          </button>
         </div>
       </div>
 
@@ -61,18 +76,23 @@ const FiltersSidebar: React.FC<Props> = ({ filters, onToggleFilter, onChangeLang
 
       <div className="space-y-3">
         <h4 className="font-semibold text-text-primary">Language</h4>
-        <select value={filters.language} onChange={(e) => onChangeLanguage(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-text-primary outline-none">
+        <select
+          value={filters.language}
+          onChange={(e) => onChangeLanguage(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-text-primary outline-none"
+        >
           <option value="">Choose a language</option>
           <option value="english">English</option>
           <option value="spanish">Spanish</option>
           <option value="french">French</option>
+          <option value="arabic">Arabic</option>
         </select>
       </div>
 
       <div className="space-y-3">
         <h4 className="font-semibold text-text-primary">Difficulty Level</h4>
         <div className="flex flex-wrap gap-2">
-          {["Beginner", "Intermediate", "Advance"].map((level) => (
+          {["Beginner", "Intermediate", "Advanced"].map((level) => (
             <label key={level} className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -86,7 +106,12 @@ const FiltersSidebar: React.FC<Props> = ({ filters, onToggleFilter, onChangeLang
         </div>
       </div>
 
-      <button onClick={onApply} className="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-opacity-90 transition">Apply Filter</button>
+      <button
+        onClick={onApply}
+        className="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-opacity-90 transition"
+      >
+        Apply Filter
+      </button>
     </div>
   );
 };
