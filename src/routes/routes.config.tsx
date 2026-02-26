@@ -38,6 +38,7 @@ import {
   PreviewManageBadges,
   PreviewPointsManage,
   MessagesPage,
+  SessionRoom,
 } from "@/pages";
 import VerifyEmailRoute from "@/pages/auth/VerifyEmailRoute";
 import HomePage from "@/pages/HomePage";
@@ -182,6 +183,14 @@ export const routesConfig: RouteConfig[] = [
     element: (
       <ProtectedRoute>
         <UpcomingSession />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/session-room",
+    element: (
+      <ProtectedRoute>
+        <SessionRoom />
       </ProtectedRoute>
     ),
   },
