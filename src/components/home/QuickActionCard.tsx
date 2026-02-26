@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { QuickAction } from "@/types/home.types";
 import IconBadge from "./IconBadge";
 
@@ -13,6 +14,8 @@ const accentText = {
 } as const;
 
 export default function QuickActionCard({ item }: Props) {
+  const navigate = useNavigate();
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="mb-3">
@@ -24,6 +27,7 @@ export default function QuickActionCard({ item }: Props) {
 
       <button
         type="button"
+        onClick={() => navigate(item.path)}
         className={`inline-flex items-center gap-2 text-sm font-semibold ${accentText[item.accent]}`}
       >
         {item.ctaLabel}

@@ -20,6 +20,7 @@ export type QuickAction = {
   title: string;
   description: string;
   ctaLabel: string;
+  path: string;
   icon: IconName;
   accent: "blue" | "orange" | "green";
 };
