@@ -41,6 +41,9 @@ import {
   SessionRoom,
 } from "@/pages";
 import VerifyEmailRoute from "@/pages/auth/VerifyEmailRoute";
+import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
+import ForgotPasswordVerifyRoute from "@/pages/auth/ForgotPasswordVerifyRoute";
+import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 import HomePage from "@/pages/HomePage";
 
 import ProtectedRoute from "./ProtectedRoute";
@@ -87,6 +90,22 @@ export const routesConfig: RouteConfig[] = [
   {
     path: "/auth/verify-email",
     element: <VerifyEmailRoute />,
+  },
+  {
+    path: "/auth/forgot-password",
+    element: (
+      <GuestRoute>
+        <ForgotPasswordPage />
+      </GuestRoute>
+    ),
+  },
+  {
+    path: "/auth/forgot-password/verify",
+    element: <ForgotPasswordVerifyRoute />,
+  },
+  {
+    path: "/auth/reset-password",
+    element: <ResetPasswordPage />,
   },
 
   // ── Protected routes (require authentication) ──────────────────────────────
