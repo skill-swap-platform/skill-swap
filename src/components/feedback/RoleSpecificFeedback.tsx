@@ -3,16 +3,25 @@ import { Star } from 'lucide-react'
 
 interface RoleSpecificFeedbackProps {
     partnerName: string
+    partnerImage?: string
     sessionId: string
     role: 'teaching' | 'learning' | 'both'
+    sessionMetadata?: {
+        date?: string
+        duration?: string
+        skillName?: string
+        communicationType?: string
+    }
     onSubmit: (data: any) => void
     onSkip: () => void
 }
 
 export const RoleSpecificFeedback: React.FC<RoleSpecificFeedbackProps> = ({
     partnerName,
+    partnerImage,
     sessionId,
     role,
+    sessionMetadata,
     onSubmit,
     onSkip,
 }) => {
@@ -58,18 +67,26 @@ export const RoleSpecificFeedback: React.FC<RoleSpecificFeedbackProps> = ({
                     <h3 className="text-lg font-bold text-gray-900 mb-6">Session Details</h3>
 
                     <div className="flex flex-col items-center mb-8 py-4">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center mb-3">
-                            <span className="text-2xl">👤</span>
-                        </div>
+                        {partnerImage ? (
+                            <img
+                                src={partnerImage}
+                                alt={partnerName}
+                                className="w-16 h-16 rounded-full object-cover mb-3 border-2 border-[#E5F1FF]"
+                            />
+                        ) : (
+                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center mb-3">
+                                <span className="text-2xl text-white font-bold">{partnerName.charAt(0).toUpperCase()}</span>
+                            </div>
+                        )}
                         <h4 className="text-xl font-bold text-gray-900">{partnerName}</h4>
                         <p className="text-xs text-gray-400 mt-1">Session Partner</p>
                     </div>
 
                     <div className="space-y-4 pt-6 border-t border-gray-50">
-                        <DetailRow label="Session Date" value="Dec 28, 2025" />
-                        <DetailRow label="Duration" value="1 hour 30 min" />
-                        <DetailRow label="Skill Learned" value="Adobe Illustrator Basics" />
-                        <DetailRow label="Meeting Type" value="Video Call" />
+                        <DetailRow label="Session Date" value={sessionMetadata?.date || 'N/A'} />
+                        <DetailRow label="Duration" value={sessionMetadata?.duration || '90 min'} />
+                        <DetailRow label="Skill" value={sessionMetadata?.skillName || 'Skill Setup'} />
+                        <DetailRow label="Meeting Type" value={sessionMetadata?.communicationType || 'Standard'} />
                     </div>
                 </div>
             </div>

@@ -15,14 +15,20 @@ interface SessionHistoryListProps {
         feedback?: Feedback
         status?: string
     }>
-    onViewFeedback?: (sessionId: string) => void
+    onViewFeedback?: (sessionId: string, action?: 'view' | 'complete') => void
     emptyMessage?: string
+    currentPage?: number
+    totalPages?: number
+    onPageChange?: (page: number) => void
 }
 
 export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
     sessions,
     onViewFeedback,
     emptyMessage = 'No sessions yet',
+    currentPage = 1,
+    totalPages = 1,
+    onPageChange,
 }) => {
     const [filter] = useState<'all' | 'provider' | 'seeker'>('all')
 
@@ -191,31 +197,46 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                 })}
             </div>
 
-            <div className="flex items-center justify-between px-2 pt-4">
-                <button className="flex items-center gap-2 text-[10px] font-bold text-[#666666] hover:text-[#0C0D0F] transition-colors px-3 py-1.5 rounded-lg border border-[#E5E7EB] bg-white">
-                    <ChevronLeft className="w-4 h-4" />
-                    Prev
-                </button>
-                <div className="flex items-center gap-1.5">
-                    {[1, 2, 3, '...', 8, 9, 10].map((page, i) => (
-                        <button
-                            key={i}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold transition-all ${page === 1
-                                ? 'bg-[#EBF5FF] text-[#3E8FCC] border border-[#3E8FCC]'
-                                : page === '...'
-                                    ? 'text-[#9CA3AF] cursor-default'
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between px-2 pt-4">
+                    <button
+                        onClick={() => onPageChange?.(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className={`flex items-center gap-2 text-[10px] font-bold transition-all px-3 py-1.5 rounded-lg border ${currentPage === 1
+                            ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                            : 'bg-white text-[#666666] border-[#E5E7EB] hover:text-[#0C0D0F]'
+                            }`}
+                    >
+                        <ChevronLeft className="w-4 h-4" />
+                        Prev
+                    </button>
+                    <div className="flex items-center gap-1.5">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                            <button
+                                key={page}
+                                onClick={() => onPageChange?.(page as number)}
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold transition-all ${page === currentPage
+                                    ? 'bg-[#EBF5FF] text-[#3E8FCC] border border-[#3E8FCC]'
                                     : 'text-[#666666] hover:bg-[#F9FAFB] hover:text-[#0C0D0F]'
-                                }`}
-                        >
-                            {page}
-                        </button>
-                    ))}
+                                    }`}
+                            >
+                                {page}
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        onClick={() => onPageChange?.(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className={`flex items-center gap-2 text-[10px] font-bold transition-all px-3 py-1.5 rounded-lg border ${currentPage === totalPages
+                            ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                            : 'bg-white text-[#666666] border-[#E5E7EB] hover:text-[#0C0D0F]'
+                            }`}
+                    >
+                        Next
+                        <ChevronRight className="w-4 h-4" />
+                    </button>
                 </div>
-                <button className="flex items-center gap-2 text-[10px] font-bold text-[#666666] hover:text-[#0C0D0F] transition-colors px-3 py-1.5 rounded-lg border border-[#E5E7EB] bg-white">
-                    Next
-                    <ChevronRight className="w-4 h-4" />
-                </button>
-            </div>
+            )}
         </div>
     )
 }

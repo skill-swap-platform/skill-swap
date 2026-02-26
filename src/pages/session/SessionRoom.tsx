@@ -156,7 +156,7 @@ const SessionRoom: React.FC = () => {
 
                     <div className="flex flex-col items-center gap-2">
                         <button
-                            onClick={() => navigate('/session-feedback/3b6f1d2e-1111-4b2c-9c2f-1a2b3c4d5e6f')}
+                            onClick={() => navigate('/session-history')}
                             className="w-[60px] h-[60px] bg-[#E74C3C] hover:bg-[#C0392B] text-white rounded-[18px] flex items-center justify-center shadow-lg transition-all active:scale-95 group"
                         >
                             <LogOut className="w-6 h-6 transform rotate-180 transition-transform group-hover:-translate-x-1" />

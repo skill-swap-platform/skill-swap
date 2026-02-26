@@ -12,6 +12,11 @@ export const sessionService = {
         return response.data;
     },
 
+    getSessionSummary: async (sessionId: string): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.get(`/api/v1/sessions/${sessionId}/summary`);
+        return response.data;
+    },
+
     submitRoleFeedback: async (role: 'teaching' | 'learning' | 'both', feedbackData: any): Promise<ApiResponse<any>> => {
         const endpoint = role === 'teaching' ? '/api/v1/feedback/teaching' : '/api/v1/feedback/learning';
         const response = await axiosInstance.post(endpoint, feedbackData);
@@ -28,12 +33,46 @@ export const sessionService = {
         return response.data;
     },
 
-    // Note: Backend does not yet have a /report endpoint.
-    reportIssue: async (sessionId: string, issueData: any): Promise<ApiResponse<any>> => {
-        console.warn('[ReportIssue] Backend endpoint not yet available. Logging report locally.', {
-            sessionId,
-            ...issueData,
+    submitDispute: async (disputeData: {
+        type: string;
+        description: string;
+        sessionId: string;
+        screenshot?: string
+    }): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.post('/api/v1/disputes', disputeData);
+        return response.data;
+    },
+
+    uploadDisputeScreenshot: async (file: File): Promise<ApiResponse<any>> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await axiosInstance.post('/api/v1/disputes/screenshot', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
-        return { success: true, message: 'Report received (pending backend implementation)', data: null };
+        return response.data;
+    },
+
+    getMyDisputes: async (params?: { status?: string; page?: number; limit?: number }): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.get('/api/v1/disputes', { params });
+        return response.data;
+    },
+
+    reportIssue: async (sessionId: string, issueData: any): Promise<ApiResponse<any>> => {
+        return sessionService.submitDispute({
+            sessionId,
+            type: issueData.type || 'SESSION_ISSUE',
+            description: issueData.description || issueData.reason || '',
+            screenshot: issueData.screenshot
+        });
+    },
+
+    getReceivedReviews: async (page = 1, limit = 10): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.get('/api/v1/reviews/me/received', { params: { page, limit } });
+        return response.data;
+    },
+
+    getReviewDetail: async (reviewId: string): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.get(`/api/v1/reviews/${reviewId}`);
+        return response.data;
     }
 };
