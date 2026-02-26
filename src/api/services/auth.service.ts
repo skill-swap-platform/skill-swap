@@ -19,6 +19,12 @@ type ResendOtpDto = {
     type: "VERIFY_EMAIL";
 };
 
+type ResetPasswordDto = {
+    email: string;
+    password: string;
+    confirmPassword: string;
+};
+
 function setTokens(data?: AuthResponseDto) {
     if (!data) return;
     localStorage.setItem("accessToken", data.accessToken);
@@ -104,5 +110,36 @@ export const authService = {
             // Continue with local logout even if API call fails
         }
         clearTokens();
+    },
+
+    // ✅ Forgot Password: Request reset code
+    forgotPassword: async (email: string): Promise<ApiResponse<null>> => {
+        try {
+            const response = await axiosInstance.post("/api/v1/auth/forgot-password", { email });
+            return { success: true, data: null, message: response.data?.message || "Reset code sent successfully" };
+        } catch (e) {
+            return { success: false, message: extractApiMessage(e), data: null };
+        }
+    },
+
+    // ✅ Reset Password: Set new password after OTP verification
+    resetPassword: async (payload: ResetPasswordDto): Promise<ApiResponse<null>> => {
+        try {
+            const response = await axiosInstance.post("/api/v1/auth/reset-password", payload);
+            return { success: true, data: null, message: response.data?.message || "Password reset successfully" };
+        } catch (e) {
+            const status = (e as AxiosError)?.response?.status;
+            let message = extractApiMessage(e);
+
+            // Map common error codes to user-friendly messages
+            if (status === 404) {
+                message = "No account found with this email address.";
+            } else if (status === 400) {
+                // Keep the API message for validation errors (weak password, etc.)
+                message = message || "Invalid input. Please check your password requirements.";
+            }
+
+            return { success: false, message, data: null };
+        }
     },
 };

@@ -220,12 +220,12 @@ export default function LoginPage() {
                       Remember me?
                     </label>
 
-                    <a
-                      href="#"
+                    <Link
+                      to="/auth/forgot-password"
                       className="text-base text-gray-600 hover:underline"
                     >
                       Forgot Password?
-                    </a>
+                    </Link>
                   </div>
                   {fieldErrors.password && (
                     <p className="text-sm text-[#D14343]">
