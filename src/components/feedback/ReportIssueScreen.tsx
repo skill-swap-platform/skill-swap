@@ -4,11 +4,12 @@ import { ArrowLeft, Upload } from 'lucide-react'
 interface ReportIssueScreenProps {
     onBack: () => void
     onSubmit: (data: any) => void
+    isLoading?: boolean
 }
 
 type IssueType = 'session' | 'points' | 'behavior' | 'technical' | 'other' | null
 
-export const ReportIssueScreen: React.FC<ReportIssueScreenProps> = ({ onBack, onSubmit }) => {
+export const ReportIssueScreen: React.FC<ReportIssueScreenProps> = ({ onBack, onSubmit, isLoading }) => {
     const [selectedIssue, setSelectedIssue] = useState<IssueType>(null)
     const [description, setDescription] = useState('')
     const [screenshot, setScreenshot] = useState<File | null>(null)
@@ -39,7 +40,6 @@ export const ReportIssueScreen: React.FC<ReportIssueScreenProps> = ({ onBack, on
         <div className="min-h-screen bg-[#F9FAFB] py-8 px-4">
             <div className="max-w-2xl mx-auto">
                 <div className="bg-white rounded-xl p-8 border-2 border-[#3E8FCC] shadow-sm">
-                    {/* Header */}
                     <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-100">
                         <button
                             onClick={onBack}
@@ -50,7 +50,6 @@ export const ReportIssueScreen: React.FC<ReportIssueScreenProps> = ({ onBack, on
                         <h2 className="text-2xl font-bold text-gray-900">Report Issue</h2>
                     </div>
 
-                    {/* Issue Type Selection */}
                     <div className="space-y-4 mb-6">
                         <label className="text-sm font-bold text-gray-900">What went wrong?</label>
                         <div className="space-y-3">
@@ -69,7 +68,6 @@ export const ReportIssueScreen: React.FC<ReportIssueScreenProps> = ({ onBack, on
                         </div>
                     </div>
 
-                    {/* Description */}
                     <div className="space-y-4 mb-6">
                         <label className="text-sm font-bold text-gray-900">Tell us more</label>
                         <div className="relative">
@@ -86,7 +84,6 @@ export const ReportIssueScreen: React.FC<ReportIssueScreenProps> = ({ onBack, on
                         </div>
                     </div>
 
-                    {/* Screenshot Upload */}
                     <div className="space-y-4 mb-8">
                         <label className="text-sm font-bold text-gray-900">
                             Attach Screenshot <span className="text-gray-400 font-normal">(Optional)</span>
@@ -110,17 +107,22 @@ export const ReportIssueScreen: React.FC<ReportIssueScreenProps> = ({ onBack, on
                             </label>
                         </div>
                     </div>
-
-                    {/* Submit Button */}
                     <button
                         onClick={handleSubmit}
-                        disabled={!selectedIssue || !description}
-                        className={`w-full h-12 rounded-xl font-bold transition-all ${selectedIssue && description
+                        disabled={!selectedIssue || !description || isLoading}
+                        className={`w-full h-12 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${selectedIssue && description && !isLoading
                             ? 'bg-[#3E8FCC] text-white hover:bg-[#2F71A3] shadow-sm'
                             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                             }`}
                     >
-                        Submit
+                        {isLoading ? (
+                            <>
+                                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Submitting...
+                            </>
+                        ) : (
+                            'Submit'
+                        )}
                     </button>
                 </div>
             </div>
