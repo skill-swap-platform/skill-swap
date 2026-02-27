@@ -11,18 +11,140 @@ import SessionCard from "@/components/home/SessionCard";
 import TestimonialCard from "@/components/home/TestimonialCard";
 import { HomeDashboardMockData } from "@/data/home.mock";
 import { Footer, Header } from "@/components";
+import { useEffect, useState } from "react";
+import {
+  getDashboardData,
+  type DashboardApiResponse,
+} from "@/api/services/home.service";
+import type { DashboardData, TrendingItem, MentorCardItem, SessionItem } from "@/types/home.types";
 
-// Later:
-// import { useEffect, useState } from "react";
-// fetch from API and store in state.
+const TRENDING_ICONS: TrendingItem["icon"][] = ["globe", "bar-chart", "music", "pen-tool"];
+
+const LEVEL_MAP: Record<string, SessionItem["level"]> = {
+  BEGINNER: "Beginner",
+  BEGINEER: "Beginner",
+  INTERMEDIATE: "Intermediate",
+  ADVANCED: "Advanced",
+};
+
+function mapApiToDashboard(
+  api: DashboardApiResponse,
+  userName: string
+): DashboardData {
+  const mock = HomeDashboardMockData;
+
+  // ── Trending ─────────────────────────────────────────────────────────
+  const trending: TrendingItem[] =
+    Array.isArray(api.trending) && api.trending.length > 0
+      ? api.trending.map((t, i) => ({
+          id: `tr-${i + 1}`,
+          title: t.skillName,
+          learningCount: t.learningCount,
+          growthLabel: "",
+          icon: TRENDING_ICONS[i % TRENDING_ICONS.length],
+        }))
+      : mock.trending;
+
+  // ── Recommendations ──────────────────────────────────────────────────
+  let recommendations: MentorCardItem[] = mock.recommendations;
+  if (api.recommended) {
+    const r = api.recommended;
+    recommendations = [
+      {
+        id: r.skill.id,
+        mentorName: r.user.userName,
+        mentorRole: r.skill.category?.name ?? "",
+        mentorAvatar: r.user.image ?? "",
+        rating: r.user.avarage ?? 0,
+        reviewCount: r.user.totalFeedbacks,
+        swapCount: r.user.receivedSwaps + r.user.sentSwaps,
+        title: r.skill.name,
+        description: r.skill.description,
+        tags: [r.skill.category?.name].filter(Boolean) as string[],
+      },
+    ];
+  }
+
+  // ── Upcoming sessions ────────────────────────────────────────────────
+  const sessionsList = api.sessions?.data;
+  const upcomingSessions: SessionItem[] =
+    Array.isArray(sessionsList) && sessionsList.length > 0
+      ? sessionsList.map((s) => {
+          const date = new Date(s.scheduledAt);
+          const endDate = new Date(s.endsAt);
+          const dateLabel = date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          });
+          const fmt = (d: Date) =>
+            d.toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            });
+          const timeLabel = `${fmt(date)} - ${fmt(endDate)}`;
+
+          return {
+            id: s.id,
+            category: s.skill?.name ?? "",
+            image: mock.upcomingSessions[0]?.image ?? "",
+            title: s.title,
+            mentorName: s.host?.userName ?? "",
+            level: LEVEL_MAP[s.attendee?.userName ? "" : ""] ?? "Beginner",
+            dateLabel,
+            timeLabel,
+          };
+        })
+      : mock.upcomingSessions;
+
+  // ── Stats ────────────────────────────────────────────────────────────
+  const learnedCount =
+    typeof api.learnedSkillsCount === "number"
+      ? api.learnedSkillsCount
+      : Number(mock.stats[0].value);
+
+  const activeSwaps = api.swaps?.accepted ?? Number(mock.stats[1].value);
+
+  const ratingValue = api.rating?.rating ?? Number(mock.stats[2].value);
+
+  return {
+    userName,
+    heroSubtitle: mock.heroSubtitle,
+    quickActions: mock.quickActions,
+    stats: [
+      { ...mock.stats[0], value: String(learnedCount) },
+      { ...mock.stats[1], value: String(activeSwaps) },
+      { ...mock.stats[2], value: String(ratingValue) },
+    ],
+    swapBanner: mock.swapBanner,
+    trending,
+    interests: mock.interests,
+    recommendations,
+    upcomingSessions,
+    testimonials: mock.testimonials,
+  };
+}
 
 export default function DashboardPage() {
   // Get the logged-in user's name from localStorage
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : null;
+  const userId = user?.id || "";
   const userName = user?.userName || HomeDashboardMockData.userName;
 
-  const data = { ...HomeDashboardMockData, userName };
+  const [data, setData] = useState<DashboardData>({
+    ...HomeDashboardMockData,
+    userName,
+  });
+
+  useEffect(() => {
+    if (userId) {
+      getDashboardData(userId)
+        .then((apiData) => setData(mapApiToDashboard(apiData, userName)))
+        .catch(console.error);
+    }
+  }, [userId, userName]);
 
   return (
     <main className="min-h-screen bg-slate-100">
