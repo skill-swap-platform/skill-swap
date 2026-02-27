@@ -47,19 +47,19 @@ function mapApiToDashboard(
 
   // ── Recommendations ──────────────────────────────────────────────────
   let recommendations: MentorCardItem[] = mock.recommendations;
-  if (api.recommended) {
+  if (api.recommended?.skill && api.recommended?.user) {
     const r = api.recommended;
     recommendations = [
       {
-        id: r.skill.id,
-        mentorName: r.user.userName,
+        id: r.skill.id ?? `rec-${Date.now()}`,
+        mentorName: r.user.userName ?? "",
         mentorRole: r.skill.category?.name ?? "",
         mentorAvatar: r.user.image ?? "",
         rating: r.user.avarage ?? 0,
-        reviewCount: r.user.totalFeedbacks,
-        swapCount: r.user.receivedSwaps + r.user.sentSwaps,
-        title: r.skill.name,
-        description: r.skill.description,
+        reviewCount: r.user.totalFeedbacks ?? 0,
+        swapCount: (r.user.receivedSwaps ?? 0) + (r.user.sentSwaps ?? 0),
+        title: r.skill.name ?? "",
+        description: r.skill.description ?? "",
         tags: [r.skill.category?.name].filter(Boolean) as string[],
       },
     ];
@@ -89,9 +89,9 @@ function mapApiToDashboard(
             id: s.id,
             category: s.skill?.name ?? "",
             image: mock.upcomingSessions[0]?.image ?? "",
-            title: s.title,
+            title: s.title ?? "",
             mentorName: s.host?.userName ?? "",
-            level: LEVEL_MAP[s.attendee?.userName ? "" : ""] ?? "Beginner",
+            level: LEVEL_MAP[s.status ?? ""] ?? "Beginner",
             dateLabel,
             timeLabel,
           };
