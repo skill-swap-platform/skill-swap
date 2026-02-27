@@ -1,4 +1,3 @@
-import { TrendingUp } from "lucide-react";
 import HeroSection from "@/components/home/HeroSection";
 import QuickActionCard from "@/components/home/QuickActionCard";
 import StatCard from "@/components/home/StatCard";
@@ -11,18 +10,157 @@ import SessionCard from "@/components/home/SessionCard";
 import TestimonialCard from "@/components/home/TestimonialCard";
 import { HomeDashboardMockData } from "@/data/home.mock";
 import { Footer, Header } from "@/components";
+import { useEffect, useState } from "react";
+import {
+  getDashboardData,
+  type DashboardApiResponse,
+} from "@/api/services/home.service";
+import type { DashboardData, TrendingItem, MentorCardItem, SessionItem } from "@/types/home.types";
 
-// Later:
-// import { useEffect, useState } from "react";
-// fetch from API and store in state.
+const TRENDING_ICONS: TrendingItem["icon"][] = ["globe", "bar-chart", "music", "pen-tool"];
+
+const LEVEL_MAP: Record<string, SessionItem["level"]> = {
+  BEGINNER: "Beginner",
+  BEGINEER: "Beginner",
+  INTERMEDIATE: "Intermediate",
+  ADVANCED: "Advanced",
+};
+
+function mapApiToDashboard(
+  api: DashboardApiResponse,
+  userName: string
+): DashboardData {
+  const mock = HomeDashboardMockData;
+
+  // ── Trending ─────────────────────────────────────────────────────────
+  const trending: TrendingItem[] =
+    Array.isArray(api.trending) && api.trending.length > 0
+      ? api.trending.map((t, i) => ({
+          id: `tr-${i + 1}`,
+          title: t.skillName,
+          learningCount: t.learningCount,
+          growthLabel: "",
+          icon: TRENDING_ICONS[i % TRENDING_ICONS.length],
+        }))
+      : mock.trending;
+
+  // ── Recommendations ──────────────────────────────────────────────────
+  let recommendations: MentorCardItem[] = mock.recommendations;
+  if (api.recommended?.skill && api.recommended?.user) {
+    const r = api.recommended;
+    recommendations = [
+      {
+        id: r.skill.id ?? `rec-${Date.now()}`,
+        mentorName: r.user.userName ?? "",
+        mentorRole: r.skill.category?.name ?? "",
+        mentorAvatar: r.user.image ?? "",
+        rating: r.user.avarage ?? 0,
+        reviewCount: r.user.totalFeedbacks ?? 0,
+        swapCount: (r.user.receivedSwaps ?? 0) + (r.user.sentSwaps ?? 0),
+        title: r.skill.name ?? "",
+        description: r.skill.description ?? "",
+        tags: [r.skill.category?.name].filter(Boolean) as string[],
+      },
+    ];
+  }
+
+  // ── Upcoming sessions ────────────────────────────────────────────────
+  const sessionsList = api.sessions?.data;
+  const upcomingSessions: SessionItem[] =
+    Array.isArray(sessionsList) && sessionsList.length > 0
+      ? sessionsList.map((s) => {
+          const date = new Date(s.scheduledAt);
+          const endDate = new Date(s.endsAt);
+          const dateLabel = date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          });
+          const fmt = (d: Date) =>
+            d.toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            });
+          const timeLabel = `${fmt(date)} - ${fmt(endDate)}`;
+
+          return {
+            id: s.id,
+            category: s.skill?.name ?? "",
+            image: mock.upcomingSessions[0]?.image ?? "",
+            title: s.title ?? "",
+            mentorName: s.host?.userName ?? "",
+            level: LEVEL_MAP[s.status ?? ""] ?? "Beginner",
+            dateLabel,
+            timeLabel,
+          };
+        })
+      : mock.upcomingSessions;
+
+  // ── Stats ────────────────────────────────────────────────────────────
+  const learnedCount =
+    typeof api.learnedSkillsCount === "number"
+      ? api.learnedSkillsCount
+      : Number(mock.stats[0].value);
+
+  const activeSwaps = api.swaps?.accepted ?? Number(mock.stats[1].value);
+
+  const ratingValue = api.rating?.rating ?? Number(mock.stats[2].value);
+
+  return {
+    userName,
+    heroSubtitle: mock.heroSubtitle,
+    quickActions: mock.quickActions,
+    stats: [
+      { ...mock.stats[0], value: String(learnedCount) },
+      { ...mock.stats[1], value: String(activeSwaps) },
+      { ...mock.stats[2], value: String(ratingValue) },
+    ],
+    swapBanner: mock.swapBanner,
+    trending,
+    interests: mock.interests,
+    recommendations,
+    upcomingSessions,
+    testimonials: mock.testimonials,
+  };
+}
+
+// Initial number of items shown per section
+const INITIAL_LIMITS = {
+  trending: 4,
+  interests: 4,
+  recommendations: 3,
+  upcomingSessions: 2,
+  testimonials: 3,
+};
 
 export default function DashboardPage() {
   // Get the logged-in user's name from localStorage
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : null;
+  const userId = user?.id || "";
   const userName = user?.userName || HomeDashboardMockData.userName;
 
-  const data = { ...HomeDashboardMockData, userName };
+  const [data, setData] = useState<DashboardData>({
+    ...HomeDashboardMockData,
+    userName,
+  });
+
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const toggle = (section: string) =>
+    setExpanded((prev) => ({ ...prev, [section]: !prev[section] }));
+
+  const sliced = <T,>(items: T[], section: keyof typeof INITIAL_LIMITS): T[] =>
+    expanded[section] ? items : items.slice(0, INITIAL_LIMITS[section]);
+
+  useEffect(() => {
+    if (userId) {
+      getDashboardData(userId)
+        .then((apiData) => setData(mapApiToDashboard(apiData, userName)))
+        .catch(console.error);
+    }
+  }, [userId, userName]);
 
   return (
     <main className="min-h-screen bg-slate-100">
@@ -56,15 +194,15 @@ export default function DashboardPage() {
 
         {/* Trending */}
         <section className="mt-10">
-          <div className="mb-4 flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-slate-700" />
-            <h2 className="text-2xl font-bold text-slate-900">
-              Trending This Week
-            </h2>
-          </div>
+          <SectionHeader
+            title="Trending This Week"
+            actionLabel="See all"
+            expanded={!!expanded.trending}
+            onActionClick={() => toggle("trending")}
+          />
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {data.trending.map((item) => (
+            {sliced(data.trending, "trending").map((item) => (
               <TrendingCard key={item.id} item={item} />
             ))}
           </div>
@@ -72,9 +210,14 @@ export default function DashboardPage() {
 
         {/* Interests */}
         <section className="mt-10">
-          <SectionHeader title="Your Interests" actionLabel="See all" />
+          <SectionHeader
+            title="Your Interests"
+            actionLabel="See all"
+            expanded={!!expanded.interests}
+            onActionClick={() => toggle("interests")}
+          />
           <div className="flex flex-wrap gap-3">
-            {data.interests.map((item) => (
+            {sliced(data.interests, "interests").map((item) => (
               <InterestChip key={item.id} item={item} />
             ))}
           </div>
@@ -82,9 +225,14 @@ export default function DashboardPage() {
 
         {/* Recommended */}
         <section className="mt-10">
-          <SectionHeader title="Recommended for you" actionLabel="See all" />
+          <SectionHeader
+            title="Recommended for you"
+            actionLabel="See all"
+            expanded={!!expanded.recommendations}
+            onActionClick={() => toggle("recommendations")}
+          />
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {data.recommendations.map((item) => (
+            {sliced(data.recommendations, "recommendations").map((item) => (
               <MentorCard key={item.id} item={item} />
             ))}
           </div>
@@ -92,9 +240,14 @@ export default function DashboardPage() {
 
         {/* Upcoming sessions */}
         <section className="mt-10">
-          <SectionHeader title="Upcoming Sessions" actionLabel="See all" />
+          <SectionHeader
+            title="Upcoming Sessions"
+            actionLabel="See all"
+            expanded={!!expanded.upcomingSessions}
+            onActionClick={() => toggle("upcomingSessions")}
+          />
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {data.upcomingSessions.map((item) => (
+            {sliced(data.upcomingSessions, "upcomingSessions").map((item) => (
               <SessionCard key={item.id} item={item} />
             ))}
           </div>
@@ -113,10 +266,22 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {data.testimonials.map((item) => (
+            {sliced(data.testimonials, "testimonials").map((item) => (
               <TestimonialCard key={item.id} item={item} />
             ))}
           </div>
+
+          {data.testimonials.length > INITIAL_LIMITS.testimonials && (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => toggle("testimonials")}
+                className="text-sm font-medium text-blue-500 hover:text-blue-600"
+              >
+                {expanded.testimonials ? "Show less" : "See all testimonials"}
+              </button>
+            </div>
+          )}
         </section>
       </div>
       <Footer />
