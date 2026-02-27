@@ -23,6 +23,7 @@ import { AddSkill, RequestSkill } from "@/pages/RequestSkill";
 import RequestsSent from "@/pages/RequestsSent/RequestsSent";
 import UpcomingSession from "@/pages/session/UpcomingSession";
 import Explore from "@/pages/explore/Explore";
+import ProviderProfile from "@/pages/explore/ProviderProfile";
 import AllReviews from "@/components/explore/AllReviews";
 
 import {
@@ -227,6 +228,22 @@ export const routesConfig: RouteConfig[] = [
     element: (
       <ProtectedRoute>
         <Explore />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/explore/:skillId/:userId",
+    element: (
+      <ProtectedRoute>
+        <Explore />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/provider/:userId/:skillId",
+    element: (
+      <ProtectedRoute>
+        <ProviderProfile />
       </ProtectedRoute>
     ),
   },

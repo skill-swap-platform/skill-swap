@@ -1,141 +1,146 @@
+import type { ReactNode } from "react";
+import type { SkillDetailsResponse } from "@/services/exploreService";
+
 interface SessionDetailsProps {
-  data?: any;
+  data?: SkillDetailsResponse | null;
   loading?: boolean;
   error?: string | null;
 }
 
-const SessionDetails = ({ data, loading = false, error = null }: SessionDetailsProps) => {
+interface DetailCardProps {
+  label: string;
+  value: string;
+  icon: ReactNode;
+}
+
+const SkillLanguageIcon = () => (
+  <svg className="h-6 w-6" viewBox="0 0 21.5 21.5" fill="none" aria-hidden="true">
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M10.75 0C4.81294 0 0 4.81294 0 10.75C0 16.6871 4.81294 21.5 10.75 21.5C16.6871 21.5 21.5 16.6871 21.5 10.75C21.5 4.81294 16.6871 0 10.75 0ZM5.75 6.37931H9.5V5.25H11V6.37931H15.75V7.87931H13.8033C13.2641 9.48013 12.3627 10.979 11.3489 12.3149L12.8262 13.8508L11.7452 14.8906L10.3973 13.4894C9.47743 14.5581 8.51369 15.5083 7.65051 16.3021L6.6352 15.1979C7.51185 14.3918 8.47949 13.4335 9.3854 12.3645C9.15691 12.0776 8.92079 11.7667 8.70417 11.4663C8.36723 10.999 8.03915 10.5049 7.87735 10.1577L9.23693 9.52408C9.33228 9.72865 9.58277 10.1201 9.92083 10.5889C10.0564 10.7769 10.1998 10.9688 10.3431 11.1548C11.1054 10.1175 11.7608 9.01546 12.2071 7.87931H5.75V6.37931Z"
+      fill="#3E8FCC"
+    />
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M10.75 0C4.81294 0 0 4.81294 0 10.75C0 16.6871 4.81294 21.5 10.75 21.5C16.6871 21.5 21.5 16.6871 21.5 10.75C21.5 4.81294 16.6871 0 10.75 0ZM5.75 6.37931H9.5V5.25H11V6.37931H15.75V7.87931H13.8033C13.2641 9.48013 12.3627 10.979 11.3489 12.3149L12.8262 13.8508L11.7452 14.8906L10.3973 13.4894C9.47743 14.5581 8.51369 15.5083 7.65051 16.3021L6.6352 15.1979C7.51185 14.3918 8.47949 13.4335 9.3854 12.3645C9.15691 12.0776 8.92079 11.7667 8.70417 11.4663C8.36723 10.999 8.03915 10.5049 7.87735 10.1577L9.23693 9.52408C9.33228 9.72865 9.58277 10.1201 9.92083 10.5889C10.0564 10.7769 10.1998 10.9688 10.3431 11.1548C11.1054 10.1175 11.7608 9.01546 12.2071 7.87931H5.75V6.37931Z"
+      fill="black"
+      fillOpacity="0.2"
+    />
+  </svg>
+);
+
+const SessionDurationIcon = () => (
+  <svg className="h-6 w-6" viewBox="0 0 21.5 18.0772" fill="none" aria-hidden="true">
+    <path
+      d="M0.573242 0.415039C3.99643 -0.416885 6.66221 0.133597 8.4834 0.915039C9.0839 1.17271 9.59024 1.45416 10 1.7168V18.0771C9.9118 18.0012 9.79546 17.9067 9.65234 17.7998C9.2623 17.5085 8.67271 17.1291 7.8916 16.7939C6.33784 16.1273 4.00341 15.6243 0.926758 16.3721C0.703259 16.4263 0.466951 16.3755 0.286133 16.2334C0.105339 16.0912 0 15.8736 0 15.6436V1.14355C2.79952e-05 0.797596 0.237065 0.496746 0.573242 0.415039ZM13.0166 0.915039C14.8378 0.133597 17.5036 -0.416885 20.9268 0.415039C21.2629 0.496746 21.5 0.797596 21.5 1.14355V15.6436C21.5 15.8736 21.3947 16.0912 21.2139 16.2334C21.0331 16.3755 20.7967 16.4263 20.5732 16.3721C17.4966 15.6243 15.1622 16.1273 13.6084 16.7939C12.8273 17.1291 12.2377 17.5085 11.8477 17.7998C11.7045 17.9067 11.5882 18.0012 11.5 18.0771V1.7168C11.9098 1.45416 12.4161 1.17271 13.0166 0.915039ZM3.75 8C3.33579 8 3 8.33579 3 8.75C3.00003 9.16419 3.33581 9.5 3.75 9.5C5.57506 9.5 6.45237 9.93907 7.40625 10.416L7.41504 10.4199C7.78544 10.6048 8.23573 10.4543 8.4209 10.084C8.60592 9.71356 8.45535 9.26332 8.08496 9.07812C7.04217 8.55673 5.9194 8 3.75 8ZM3.75 4.00098C3.33579 4.00098 3 4.33676 3 4.75098C3 5.16519 3.33579 5.50098 3.75 5.50098C5.57506 5.50098 6.45236 5.94004 7.40625 6.41699L7.41504 6.4209C7.78544 6.60582 8.23573 6.45531 8.4209 6.08496C8.60588 5.71454 8.45533 5.26429 8.08496 5.0791C7.04217 4.55771 5.91939 4.00098 3.75 4.00098Z"
+      fill="#3E8FCC"
+    />
+    <path
+      d="M0.573242 0.415039C3.99643 -0.416885 6.66221 0.133597 8.4834 0.915039C9.0839 1.17271 9.59024 1.45416 10 1.7168V18.0771C9.9118 18.0012 9.79546 17.9067 9.65234 17.7998C9.2623 17.5085 8.67271 17.1291 7.8916 16.7939C6.33784 16.1273 4.00341 15.6243 0.926758 16.3721C0.703259 16.4263 0.466951 16.3755 0.286133 16.2334C0.105339 16.0912 0 15.8736 0 15.6436V1.14355C2.79952e-05 0.797596 0.237065 0.496746 0.573242 0.415039ZM13.0166 0.915039C14.8378 0.133597 17.5036 -0.416885 20.9268 0.415039C21.2629 0.496746 21.5 0.797596 21.5 1.14355V15.6436C21.5 15.8736 21.3947 16.0912 21.2139 16.2334C21.0331 16.3755 20.7967 16.4263 20.5732 16.3721C17.4966 15.6243 15.1622 16.1273 13.6084 16.7939C12.8273 17.1291 12.2377 17.5085 11.8477 17.7998C11.7045 17.9067 11.5882 18.0012 11.5 18.0771V1.7168C11.9098 1.45416 12.4161 1.17271 13.0166 0.915039ZM3.75 8C3.33579 8 3 8.33579 3 8.75C3.00003 9.16419 3.33581 9.5 3.75 9.5C5.57506 9.5 6.45237 9.93907 7.40625 10.416L7.41504 10.4199C7.78544 10.6048 8.23573 10.4543 8.4209 10.084C8.60592 9.71356 8.45535 9.26332 8.08496 9.07812C7.04217 8.55673 5.9194 8 3.75 8ZM3.75 4.00098C3.33579 4.00098 3 4.33676 3 4.75098C3 5.16519 3.33579 5.50098 3.75 5.50098C5.57506 5.50098 6.45236 5.94004 7.40625 6.41699L7.41504 6.4209C7.78544 6.60582 8.23573 6.45531 8.4209 6.08496C8.60588 5.71454 8.45533 5.26429 8.08496 5.0791C7.04217 4.55771 5.91939 4.00098 3.75 4.00098Z"
+      fill="black"
+      fillOpacity="0.2"
+    />
+  </svg>
+);
+
+const SkillLevelIcon = () => (
+  <svg className="h-6 w-6" viewBox="0 0 21.5 19.5" fill="none" aria-hidden="true">
+    <path
+      d="M4.5 16.25C4.5 16.3858 4.46338 16.5192 4.39355 16.6357L2.89355 19.1357C2.75801 19.3616 2.51345 19.5 2.25 19.5C1.98655 19.5 1.74199 19.3616 1.60645 19.1357L0.106445 16.6357C0.03662 16.5192 0 16.3858 0 16.25V5.5H4.5V16.25ZM17.75 0C19.2688 0 20.5 1.23122 20.5 2.75V10.7656C20.046 10.8226 19.6088 11.0347 19.2754 11.3984L15.3535 15.6777L14.8115 15.001C14.1215 14.1385 12.8635 13.9985 12.001 14.6885C11.1385 15.3785 10.9986 16.6365 11.6885 17.499L13.2891 19.5H8.75C7.23122 19.5 6 18.2688 6 16.75V2.75C6 1.23122 7.23122 0 8.75 0H17.75ZM20.1973 12.2432C20.4772 11.9379 20.9515 11.9174 21.2568 12.1973C21.5621 12.4772 21.5826 12.9515 21.3027 13.2568L15.8027 19.2568C15.6547 19.4182 15.4435 19.5074 15.2246 19.5C15.0058 19.4926 14.8008 19.3897 14.6641 19.2188L12.6641 16.7188C12.4053 16.3953 12.4578 15.9228 12.7812 15.6641C13.1047 15.4053 13.5772 15.4578 13.8359 15.7812L15.2891 17.5977L20.1973 12.2432ZM9.75 8C9.33579 8 9 8.33579 9 8.75C9 9.16421 9.33579 9.5 9.75 9.5H16.75C17.1642 9.5 17.5 9.16421 17.5 8.75C17.5 8.33579 17.1642 8 16.75 8H9.75ZM9.75 4C9.33579 4 9 4.33579 9 4.75C9 5.16421 9.33579 5.5 9.75 5.5H16.75C17.1642 5.5 17.5 5.16421 17.5 4.75C17.5 4.33579 17.1642 4 16.75 4H9.75ZM2.75 0C3.7165 0 4.5 0.783502 4.5 1.75V4H0V1.75C0 0.783502 0.783502 0 1.75 0H2.75Z"
+      fill="#3E8FCC"
+    />
+    <path
+      d="M4.5 16.25C4.5 16.3858 4.46338 16.5192 4.39355 16.6357L2.89355 19.1357C2.75801 19.3616 2.51345 19.5 2.25 19.5C1.98655 19.5 1.74199 19.3616 1.60645 19.1357L0.106445 16.6357C0.03662 16.5192 0 16.3858 0 16.25V5.5H4.5V16.25ZM17.75 0C19.2688 0 20.5 1.23122 20.5 2.75V10.7656C20.046 10.8226 19.6088 11.0347 19.2754 11.3984L15.3535 15.6777L14.8115 15.001C14.1215 14.1385 12.8635 13.9985 12.001 14.6885C11.1385 15.3785 10.9986 16.6365 11.6885 17.499L13.2891 19.5H8.75C7.23122 19.5 6 18.2688 6 16.75V2.75C6 1.23122 7.23122 0 8.75 0H17.75ZM20.1973 12.2432C20.4772 11.9379 20.9515 11.9174 21.2568 12.1973C21.5621 12.4772 21.5826 12.9515 21.3027 13.2568L15.8027 19.2568C15.6547 19.4182 15.4435 19.5074 15.2246 19.5C15.0058 19.4926 14.8008 19.3897 14.6641 19.2188L12.6641 16.7188C12.4053 16.3953 12.4578 15.9228 12.7812 15.6641C13.1047 15.4053 13.5772 15.4578 13.8359 15.7812L15.2891 17.5977L20.1973 12.2432ZM9.75 8C9.33579 8 9 8.33579 9 8.75C9 9.16421 9.33579 9.5 9.75 9.5H16.75C17.1642 9.5 17.5 9.16421 17.5 8.75C17.5 8.33579 17.1642 8 16.75 8H9.75ZM9.75 4C9.33579 4 9 4.33579 9 4.75C9 5.16421 9.33579 5.5 9.75 5.5H16.75C17.1642 5.5 17.5 5.16421 17.5 4.75C17.5 4.33579 17.1642 4 16.75 4H9.75ZM2.75 0C3.7165 0 4.5 0.783502 4.5 1.75V4H0V1.75C0 0.783502 0.783502 0 1.75 0H2.75Z"
+      fill="black"
+      fillOpacity="0.2"
+    />
+  </svg>
+);
+
+const DetailCard = ({ label, value, icon }: DetailCardProps) => (
+  <div className="bg-white rounded-[10px] p-4">
+    <div className="flex items-center gap-3">
+      <div className="h-[50px] w-[50px] rounded-full bg-[rgba(0,122,255,0.15)] text-[#3272a3] flex items-center justify-center shrink-0">
+        {icon}
+      </div>
+      <p className="text-[#0c0d0f] text-base sm:text-lg font-semibold flex-1 min-w-0">
+        {label}
+      </p>
+      <div className="h-8 rounded-[20px] bg-[#f3f4f6] px-3 sm:px-4 flex items-center justify-center">
+        <p className="text-[#666] text-sm sm:text-base font-medium whitespace-nowrap">
+          {value}
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+const SessionDetails = ({
+  data,
+  loading = false,
+  error = null,
+}: SessionDetailsProps) => {
   if (loading) {
     return (
-      <div className="flex flex-col gap-4 sm:gap-6">
-        <h2 className="text-text-primary text-2xl sm:text-3xl lg:text-4xl font-bold">Session Details</h2>
-        <div className="bg-neutral-background2 rounded-[12px] p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex-1 bg-white rounded-[10px] p-3 sm:p-4">
-                <div className="h-6 bg-gray-200 rounded w-1/2 animate-pulse mb-3"></div>
-                <div className="h-5 bg-gray-200 rounded w-1/3 animate-pulse"></div>
-              </div>
-            ))}
-          </div>
+      <section className="flex flex-col gap-4">
+        <h2 className="text-[#0c0d0f] text-[24px] font-semibold">Session Details</h2>
+        <div className="bg-[#f7faff] rounded-[12px] p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-3">
+          {[1, 2, 3].map((item) => (
+            <div key={item} className="bg-white rounded-[10px] p-4">
+              <div className="h-8 bg-gray-200 rounded w-3/4 animate-pulse mb-3" />
+              <div className="h-6 bg-gray-200 rounded w-1/2 animate-pulse" />
+            </div>
+          ))}
         </div>
-      </div>
+      </section>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col gap-4 sm:gap-6">
-        <h2 className="text-text-primary text-2xl sm:text-3xl lg:text-4xl font-bold">Session Details</h2>
-        <div className="bg-red-50 border border-red-200 rounded-[10px] p-4 sm:p-6">
+      <section className="flex flex-col gap-4">
+        <h2 className="text-[#0c0d0f] text-[24px] font-semibold">Session Details</h2>
+        <div className="bg-red-50 border border-red-200 rounded-[10px] p-6">
           <p className="text-red-600 font-semibold">Error loading session details</p>
           <p className="text-red-500 text-sm mt-2">{error}</p>
         </div>
-      </div>
+      </section>
     );
   }
 
-  const sessionLanguage = data?.sessionLanguage || 'Not specified';
-  const level = data?.level || 'Not specified';
-  const sessionCount = data?.countSessions || 0;
+  const sessionLanguage = data?.sessionLanguage || "Not specified";
+  const level = data?.level || "Not specified";
+  const sessionDuration =
+    data?.sessions?.[0]?.duration && data.sessions[0].duration > 0
+      ? `${data.sessions[0].duration} min`
+      : "Not specified";
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-6">
-      <h2 className="text-text-primary text-2xl sm:text-3xl lg:text-4xl font-bold">Session Details</h2>
+    <section className="flex flex-col gap-4">
+      <h2 className="text-[#0c0d0f] text-[24px] font-semibold">Session Details</h2>
 
-      <div className="bg-neutral-background2 rounded-[12px] p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-          {/* Skill Language */}
-          <div className="flex-1 bg-white rounded-[10px] p-3 sm:p-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-3">
-              <div className="bg-tint-fill rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center flex-shrink-0">
-                <svg
-                  className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m0 0H4M15.25 5H21"
-                  />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="text-text-primary text-sm sm:text-lg lg:text-lg font-semibold">
-                  Skill Language
-                </p>
-              </div>
-              <div className="bg-neutral-divider rounded-[20px] px-3 py-1 sm:px-4 sm:py-2 whitespace-nowrap">
-                <p className="text-[#666] text-xs sm:text-base lg:text-base font-medium">{sessionLanguage}</p>
-              </div>
-            </div>
-          </div>
+      <div className="bg-[#f7faff] rounded-[12px] p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <DetailCard
+          label="Skill Language"
+          value={sessionLanguage}
+          icon={<SkillLanguageIcon />}
+        />
 
-          {/* Session Duration */}
-          <div className="flex-1 bg-white rounded-[10px] p-3 sm:p-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-3">
-              <div className="bg-tint-fill rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center flex-shrink-0">
-                <svg
-                  className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6.253v13m0-13C6.5 6.253 2 10.998 2 17s4.5 10.747 10 10.747c5.5 0 10-4.998 10-10.747S17.5 6.253 12 6.253z"
-                  />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="text-text-primary text-sm sm:text-lg lg:text-lg font-semibold">
-                  Sessions Available
-                </p>
-              </div>
-              <div className="bg-neutral-divider rounded-[20px] px-3 py-1 sm:px-4 sm:py-2 whitespace-nowrap\">
-                <p className="text-[#666] text-xs sm:text-base lg:text-base font-medium\">{sessionCount}</p>
-              </div>
-            </div>
-          </div>
+        <DetailCard
+          label="Session Duration"
+          value={sessionDuration}
+          icon={<SessionDurationIcon />}
+        />
 
-          {/* Skill Level */}
-          <div className="flex-1 bg-white rounded-[10px] p-3 sm:p-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-              <div className="flex items-center gap-2 flex-1 min-w-0\">
-                <div className="bg-tint-fill rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center flex-shrink-0\">
-                  <svg
-                    className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-text-primary text-sm sm:text-lg lg:text-lg font-semibold">
-                    Skill Level
-                  </p>
-                </div>
-              </div>
-              <div className="bg-neutral-divider rounded-[20px] px-3 py-1 sm:px-4 sm:py-2 whitespace-nowrap">
-                <p className="text-[#666] text-xs sm:text-base lg:text-base font-medium">{level}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DetailCard
+          label="Skill Level"
+          value={level}
+          icon={<SkillLevelIcon />}
+        />
       </div>
-    </div>
+    </section>
   );
 };
 

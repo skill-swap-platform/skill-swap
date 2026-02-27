@@ -26,11 +26,14 @@ const SESSION_DURATIONS = [
 interface SkillOption {
   id: string;
   name: string;
+  skillId?: string;
+  userSkillId?: string;
 }
 
 interface RequestSkillNavigationState {
   receiverId?: string;
   requestedSkillId?: string;
+  requestedUserSkillId?: string;
   requestedSkillName?: string;
   newSkill?: SkillOption;
 }
@@ -187,6 +190,8 @@ const AddSkill: React.FC = () => {
           newSkill: {
             id: createdUserSkillId,
             name: finalSkill.name,
+            userSkillId: createdUserSkillId,
+            skillId: finalSkill.id,
           },
         } satisfies RequestSkillNavigationState,
       });
