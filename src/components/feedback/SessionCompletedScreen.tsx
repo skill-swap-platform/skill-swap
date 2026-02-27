@@ -11,7 +11,6 @@ interface SessionCompletedScreenProps {
 export const SessionCompletedScreen: React.FC<SessionCompletedScreenProps> = ({
     partnerName,
     onContinue,
-    // onSkip,
     onReport,
 }) => {
     return (

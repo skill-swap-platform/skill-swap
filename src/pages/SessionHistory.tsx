@@ -6,50 +6,23 @@ import Footer from '@/components/Footer/Footer'
 import { SessionHistoryList } from '@/components/feedback/index'
 import { ViewFeedbackModal } from '@/components/feedback/index'
 import { SessionHistorySidebar } from '@/components/feedback/SessionHistorySidebar'
-import type { SessionFeedback } from '@/types/index'
 import { sessionService } from '@/api/services/session.service'
 import { userService } from '@/api/services/user.service'
-
-const mockSessionFeedback: SessionFeedback = {
-    sessionId: 's1',
-    providerFeedback: {
-        id: 'f1',
-        sessionId: 's1',
-        fromUserId: 'u1',
-        toUserId: 'u2',
-        rating: 5,
-        comment: 'Great participation!',
-        wasHelpful: true,
-        wouldRecommend: true,
-        tags: ['Helpfulness', 'Clarity'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-    seekerFeedback: {
-        id: 'f2',
-        sessionId: 's1',
-        fromUserId: 'u2',
-        toUserId: 'u1',
-        rating: 5,
-        comment: 'Excellent session!',
-        wasHelpful: true,
-        wouldRecommend: true,
-        tags: ['Professional'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-    mutualRating: 5,
-    isComplete: true,
-}
 
 export const SessionHistory: React.FC = () => {
     const navigate = useNavigate()
     const [isViewFeedbackOpen, setIsViewFeedbackOpen] = useState(false)
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
+    const [selectedSession, setSelectedSession] = useState<any>(null)
+    const [receivedReview, setReceivedReview] = useState<any>(null)
     const [sessions, setSessions] = useState<any[]>([])
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [sessionDetailLoading, setSessionDetailLoading] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+    const [pageSize] = useState(10)
 
     useEffect(() => {
         const fetchSessions = async () => {
@@ -61,38 +34,31 @@ export const SessionHistory: React.FC = () => {
                     setCurrentUser(userRes.data)
                 }
 
-                const response = await sessionService.getHistory()
+                const response = await sessionService.getHistory({ page: currentPage, limit: pageSize })
                 if (response.success && userRes.success) {
                     const rawSessions = response.data.data || []
                     const currentUserId = userRes.data.id
 
-                    if (rawSessions.length === 0) {
-                        setSessions([{
-                            id: '3b6f1d2e-1111-4b2c-9c2f-1a2b3c4d5e6f',
-                            date: new Date(),
-                            partnerName: 'Test Partner',
-                            partnerAvatar: '',
-                            skillName: 'JavaScript Basics',
-                            role: 'seeker',
-                            status: 'SCHEDULED'
-                        }])
-                    } else {
-                        const transformed = rawSessions.map((s: any) => {
-                            const isHost = s.host?.id === currentUserId
-                            const partner = isHost ? s.attendee : s.host
+                    // Backend returns totalPages or we calculate it
+                    setTotalPages(response.data.totalPages || Math.ceil((response.data.total || 0) / pageSize) || 1)
 
-                            return {
-                                id: s.id,
-                                date: new Date(s.scheduledAt),
-                                partnerName: partner?.userName || 'Unknown Partner',
-                                partnerAvatar: partner?.image,
-                                skillName: s.skill?.name || s.title,
-                                role: isHost ? 'provider' : 'seeker',
-                                status: s.status
-                            }
-                        })
-                        setSessions(transformed)
-                    }
+                    const transformed = rawSessions.map((s: any) => {
+                        const isHost = s.host?.id === currentUserId
+                        const partner = isHost ? s.attendee : s.host
+
+                        return {
+                            id: s.id,
+                            date: new Date(s.scheduledAt),
+                            partnerName: partner?.userName || 'Unknown Partner',
+                            partnerAvatar: partner?.image,
+                            skillName: s.skill?.name || s.title,
+                            role: isHost ? 'provider' : 'seeker',
+                            status: s.status,
+                            _raw: s,
+                            _partner: partner,
+                        }
+                    })
+                    setSessions(transformed)
                 } else if (!response.success) {
                     setError('Failed to load session history')
                 }
@@ -107,14 +73,16 @@ export const SessionHistory: React.FC = () => {
             }
         }
         fetchSessions()
-    }, [])
+    }, [currentPage, pageSize])
+
+    const handlePageChange = (page: number) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page)
+        }
+    }
 
     const handleViewFeedback = async (sessionId: string, action?: 'view' | 'complete') => {
         if (action === 'complete') {
-            if (sessionId === '3b6f1d2e-1111-4b2c-9c2f-1a2b3c4d5e6f') {
-                navigate(`/session-feedback/${sessionId}`)
-                return
-            }
             try {
                 const response = await sessionService.completeSession(sessionId, 'Completed via history page')
                 if (response.success) {
@@ -126,9 +94,63 @@ export const SessionHistory: React.FC = () => {
             }
             return
         }
+
         setSelectedSessionId(sessionId)
         setIsViewFeedbackOpen(true)
+        setSessionDetailLoading(true)
+        try {
+            const [detailRes, reviewsRes] = await Promise.all([
+                sessionService.getSessionDetail(sessionId),
+                sessionService.getReceivedReviews(1, 50)
+            ])
+
+            if (detailRes.success) {
+                const sData = detailRes.data;
+                setSelectedSession(sData)
+
+                const isHost = sData.host?.id === currentUser?.id;
+                const partnerId = isHost ? sData.attendee?.id : sData.host?.id;
+
+                if (reviewsRes.success && reviewsRes.data.reviews) {
+                    const match = reviewsRes.data.reviews.find((r: any) =>
+                        r.reviewer?.id === partnerId
+                    );
+
+                    if (match) {
+                        try {
+                            const fullReview = await sessionService.getReviewDetail(match.id);
+                            setReceivedReview(fullReview.success ? fullReview.data : match);
+                        } catch {
+                            setReceivedReview(match);
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Failed to fetch session feedback details:', err)
+        } finally {
+            setSessionDetailLoading(false)
+        }
     }
+
+    const getSessionNames = () => {
+        if (!selectedSession || !currentUser) {
+            const fallback = sessions.find(s => s.id === selectedSessionId)
+            return {
+                providerName: fallback?.role === 'provider' ? currentUser?.userName || 'You' : fallback?.partnerName || 'Provider',
+                seekerName: fallback?.role === 'seeker' ? currentUser?.userName || 'You' : fallback?.partnerName || 'Seeker',
+                skillName: fallback?.skillName || 'Session',
+            }
+        }
+        const isHost = selectedSession.host?.id === currentUser.id
+        return {
+            providerName: isHost ? currentUser.userName || 'You' : selectedSession.host?.userName || 'Provider',
+            seekerName: isHost ? selectedSession.attendee?.userName || 'Seeker' : currentUser.userName || 'You',
+            skillName: selectedSession.skill?.name || selectedSession.title || 'Session',
+        }
+    }
+
+    const sessionNames = getSessionNames()
 
     return (
         <div className="min-h-screen bg-[#F9FAFB] flex flex-col font-sans">
@@ -191,24 +213,49 @@ export const SessionHistory: React.FC = () => {
                                 <SessionHistoryList
                                     sessions={sessions}
                                     onViewFeedback={handleViewFeedback}
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={handlePageChange}
                                 />
                             )}
                         </div>
 
-                        <SessionHistorySidebar />
+                        <SessionHistorySidebar sessions={sessions} />
                     </div>
                 </div>
             </div>
 
             <ViewFeedbackModal
                 isOpen={isViewFeedbackOpen}
-                onClose={() => setIsViewFeedbackOpen(false)}
-                sessionFeedback={{
-                    ...mockSessionFeedback,
-                    sessionId: selectedSessionId || 's1',
+                onClose={() => {
+                    setIsViewFeedbackOpen(false)
+                    setSelectedSession(null)
+                    setSelectedSessionId(null)
+                    setReceivedReview(null)
                 }}
-                providerName="Sarah Jones"
-                seekerName="Alex Smith"
+                sessionFeedback={selectedSession ? {
+                    sessionId: selectedSession.id,
+                    isComplete: selectedSession.status === 'COMPLETED',
+                    comment: receivedReview?.comment || selectedSession.notes || 'No public review available yet.',
+                    providerFeedback: (selectedSession.host?.id === currentUser?.id)
+                        ? (selectedSession.feedbackAttendee ||
+                            selectedSession.feedbacks?.find((f: any) => f.role === 'learning' || f.type === 'LEARNING') ||
+                            receivedReview)
+                        : undefined,
+                    seekerFeedback: (selectedSession.attendee?.id === currentUser?.id)
+                        ? (selectedSession.feedbackHost ||
+                            selectedSession.feedbacks?.find((f: any) => f.role === 'teaching' || f.type === 'TEACHING') ||
+                            receivedReview)
+                        : undefined,
+                    mutualRating: receivedReview?.overallRating || selectedSession.swapRequest?.rating || 5,
+                } : {
+                    sessionId: selectedSessionId || '',
+                    isComplete: true,
+                }}
+                providerName={sessionNames.providerName}
+                seekerName={sessionNames.seekerName}
+                skillName={sessionNames.skillName}
+                isLoading={sessionDetailLoading}
             />
 
             <Footer />
