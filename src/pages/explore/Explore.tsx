@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import { Footer, Header } from "@/components";
 import ProviderCard from "@/components/explore/ProviderCard";
 import Reviews from "@/components/explore/Reviews";
 import SessionDetails from "@/components/explore/SessionDetails";
 import SimilarSkills from "@/components/explore/SimilarSkills";
 import SkillInformationCard from "@/components/explore/SkillInformationCard";
-import { useNavigate, useParams } from "react-router";
 import {
   getRecommendedUserSkill,
   getReviews,
@@ -19,6 +19,17 @@ import {
   type SkillDetailsResponse,
 } from "@/services";
 
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (typeof error === "object" && error !== null) {
+    const candidate = error as { response?: { data?: { message?: unknown } } };
+    if (typeof candidate.response?.data?.message === "string") {
+      return candidate.response.data.message;
+    }
+  }
+
+  return fallback;
+};
+
 const Explore = () => {
   const navigate = useNavigate();
   const { skillId: paramSkillId, userId: paramUserId } = useParams<{
@@ -27,7 +38,7 @@ const Explore = () => {
   }>();
 
   const [skillData, setSkillData] = useState<SkillDetailsResponse | null>(null);
-  const [similarUser, setSimilarUser] = useState<ExploreResultItem | null>(null);
+  const [similarUsers, setSimilarUsers] = useState<ExploreResultItem[]>([]);
   const [reviews, setReviews] = useState<ReviewsData | null>(null);
   const [recommendedSkill, setRecommendedSkill] =
     useState<RecommendedUserSkill | null>(null);
@@ -62,9 +73,9 @@ const Explore = () => {
     return {
       provider: recommendedSkill.user,
       skill: recommendedSkill.skill,
-      level: recommendedSkill.user.level,
-      sessionLanguage: recommendedSkill.skill.language,
-      skillDescription: recommendedSkill.skill.description,
+      level: recommendedSkill.user.level || "Not specified",
+      sessionLanguage: recommendedSkill.skill.language || "Not specified",
+      skillDescription: recommendedSkill.skill.description || "",
       reviews: {
         count:
           recommendedSkill.user.totalFeedbacks ??
@@ -74,7 +85,8 @@ const Explore = () => {
           rating:
             recommendedSkill.user.rating ??
             recommendedSkill.user.avgRate ??
-            recommendedSkill.user.avarage,
+            recommendedSkill.user.avarage ??
+            0,
         },
       },
       sessions: [],
@@ -89,17 +101,15 @@ const Explore = () => {
         setErrorRecommended(null);
         const data = await getRecommendedUserSkill();
         setRecommendedSkill(data);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.warn("Could not load recommended skill:", error);
-        setErrorRecommended(
-          error?.response?.data?.message || "Could not load recommended users",
-        );
+        setErrorRecommended(getErrorMessage(error, "Could not load recommended users"));
       } finally {
         setLoadingRecommended(false);
       }
     };
 
-    fetchRecommendedSkill();
+    void fetchRecommendedSkill();
   }, []);
 
   useEffect(() => {
@@ -114,23 +124,21 @@ const Explore = () => {
         setErrorSkill(null);
         const data = await getSkillDetails(finalSkillId, finalUserId);
         setSkillData(data);
-      } catch (error: any) {
-        setErrorSkill(
-          error?.response?.data?.message || "Failed to load skill details",
-        );
+      } catch (error: unknown) {
+        setErrorSkill(getErrorMessage(error, "Failed to load skill details"));
         console.error("Error loading skill details:", error);
       } finally {
         setLoadingSkill(false);
       }
     };
 
-    fetchSkillDetails();
+    void fetchSkillDetails();
   }, [canLoadDetails, finalSkillId, finalUserId]);
 
   useEffect(() => {
     const fetchSimilarUsers = async () => {
       if (!finalSkillId) {
-        setSimilarUser(null);
+        setSimilarUsers([]);
         return;
       }
 
@@ -138,18 +146,16 @@ const Explore = () => {
         setLoadingSimilar(true);
         setErrorSimilar(null);
         const data = await getSimilarSkillUsers(finalSkillId);
-        setSimilarUser(data);
-      } catch (error: any) {
-        setErrorSimilar(
-          error?.response?.data?.message || "Failed to load similar users",
-        );
+        setSimilarUsers(data);
+      } catch (error: unknown) {
+        setErrorSimilar(getErrorMessage(error, "Failed to load similar users"));
         console.error("Error loading similar users:", error);
       } finally {
         setLoadingSimilar(false);
       }
     };
 
-    fetchSimilarUsers();
+    void fetchSimilarUsers();
   }, [finalSkillId]);
 
   useEffect(() => {
@@ -164,15 +170,15 @@ const Explore = () => {
         setErrorReviews(null);
         const data = await getReviews(finalUserId, finalSkillId, 1, 10);
         setReviews(data);
-      } catch (error: any) {
-        setErrorReviews(error?.response?.data?.message || "Failed to load reviews");
+      } catch (error: unknown) {
+        setErrorReviews(getErrorMessage(error, "Failed to load reviews"));
         console.error("Error loading reviews:", error);
       } finally {
         setLoadingReviews(false);
       }
     };
 
-    fetchReviews();
+    void fetchReviews();
   }, [finalUserId, finalSkillId]);
 
   const requestSkillId = finalSkillId;
@@ -201,57 +207,59 @@ const Explore = () => {
   }, [navigate, shouldRedirectToSearch]);
 
   return (
-    <div className="bg-white flex flex-col items-center">
+    <div className="bg-[#f9fafb] flex min-h-screen flex-col items-center">
       <Header activeTab="Explore" />
 
-      <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-8 xl:px-20 py-6 sm:py-8 flex flex-col gap-6 sm:gap-8">
-        <SkillInformationCard
-          data={displaySkillData}
-          loading={loadingSkill || loadingRecommended}
-          error={errorSkill}
-        />
+      <main className="w-full max-w-[1440px] flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-20">
+        <div className="mx-auto w-full max-w-[1280px] flex flex-col gap-8">
+          <SkillInformationCard
+            data={displaySkillData}
+            loading={loadingSkill || loadingRecommended}
+            error={errorSkill}
+          />
 
-        <SessionDetails
-          data={displaySkillData}
-          loading={loadingSkill || loadingRecommended}
-          error={errorSkill}
-        />
+          <SessionDetails
+            data={displaySkillData}
+            loading={loadingSkill || loadingRecommended}
+            error={errorSkill}
+          />
 
-        <ProviderCard
-          data={displaySkillData?.provider}
-          loading={loadingSkill || loadingRecommended}
-          error={errorSkill}
-          skillId={finalSkillId}
-        />
+          <ProviderCard
+            data={displaySkillData?.provider}
+            loading={loadingSkill || loadingRecommended}
+            error={errorSkill}
+            skillId={finalSkillId}
+          />
 
-        <Reviews
-          data={reviews}
-          loading={loadingReviews}
-          error={errorReviews}
-          userId={finalUserId}
-          skillId={finalSkillId}
-        />
+          <Reviews
+            data={reviews}
+            loading={loadingReviews}
+            error={errorReviews}
+            userId={finalUserId}
+            skillId={finalSkillId}
+          />
 
-        <div className="flex flex-col sm:flex-row justify-end gap-3">
-          <button
-            onClick={handleRequestSwap}
-            className="bg-primary text-white rounded-[10px] px-6 sm:px-8 py-2 sm:py-3 font-medium hover:opacity-90 transition w-full sm:w-auto"
-            disabled={loadingSkill || !canRequestSwap}
-          >
-            {canRequestSwap ? "Request Skill Swap" : "Provider data unavailable"}
-          </button>
+          <div className="flex justify-stretch sm:justify-end">
+            <button
+              onClick={handleRequestSwap}
+              className="h-12 w-full rounded-[10px] bg-[#3e8fcc] px-6 text-base font-medium text-white transition hover:opacity-90 sm:w-[345px]"
+              disabled={loadingSkill || !canRequestSwap}
+            >
+              {canRequestSwap ? "Request Skill Swap" : "Provider data unavailable"}
+            </button>
+          </div>
+
+          <SimilarSkills
+            data={similarUsers}
+            loading={loadingSimilar}
+            error={errorSimilar}
+            recommendedData={recommendedSkill}
+            recommendedLoading={loadingRecommended}
+            recommendedError={errorRecommended}
+          />
         </div>
+      </main>
 
-        <SimilarSkills
-          data={similarUser}
-          loading={loadingSimilar}
-          error={errorSimilar}
-          recommendedData={recommendedSkill}
-          recommendedLoading={loadingRecommended}
-          recommendedError={errorRecommended}
-        />
-      </div>
-      
       <Footer />
     </div>
   );
