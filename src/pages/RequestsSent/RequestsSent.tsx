@@ -14,6 +14,7 @@ import {
   useDeclineSwapMutation,
   useReceivedSwapsQuery,
   useSentSwapsQuery,
+  useSwapDetailsQuery,
 } from '../../features/swaps/swaps.queries';
 import type { SwapApiStatus, SwapRequest, SwapRequestStatus } from '../../features/swaps/swaps.types';
 
@@ -62,6 +63,28 @@ const formatRequestTime = (createdAt: string, prefix: 'Sent' | 'Received'): stri
 const getFallbackAvatar = (seed: string): string =>
   `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(seed)}`;
 
+const normalizeSwapMessage = (swap: SwapRequest): string | null => {
+  if (typeof swap.message === 'string') {
+    const trimmed = swap.message.trim();
+    if (trimmed.length > 0) return trimmed;
+  }
+
+  const fallbackCandidates = [
+    (swap as SwapRequest & { note?: unknown }).note,
+    (swap as SwapRequest & { requestMessage?: unknown }).requestMessage,
+    (swap as SwapRequest & { description?: unknown }).description,
+  ];
+
+  for (const candidate of fallbackCandidates) {
+    if (typeof candidate === 'string') {
+      const trimmed = candidate.trim();
+      if (trimmed.length > 0) return trimmed;
+    }
+  }
+
+  return null;
+};
+
 const mapSwapToCard = (swap: SwapRequest, tab: 'sent' | 'received'): SwapRequestCardItem => {
   const participant = tab === 'sent' ? swap.receiver : swap.requester;
   const fallbackSeed = participant?.userName ?? swap.id;
@@ -80,7 +103,7 @@ const mapSwapToCard = (swap: SwapRequest, tab: 'sent' | 'received'): SwapRequest
     status: mapApiStatusToCardStatus(swap.status),
     sessionType: swap.offeredUserSkill?.skill?.name ? 'skill-swap' : 'free-session',
     sentTime: formatRequestTime(swap.createdAt, tab === 'sent' ? 'Sent' : 'Received'),
-    message: swap.message ?? null,
+    message: normalizeSwapMessage(swap),
     startAt: swap.startAt,
     endAt: swap.endAt,
     timezone: swap.timezone,
@@ -157,6 +180,25 @@ export const RequestsSent: React.FC = () => {
   );
 
   const currentRequests = activeTab === 'sent' ? sentRequests : receivedRequests;
+  const selectedRequestId = selectedRequest?.id ?? '';
+  const selectedSwapDetailsQuery = useSwapDetailsQuery(selectedRequestId);
+
+  const detailedSelectedRequest = useMemo(() => {
+    if (!selectedRequest) return null;
+
+    const detailSwap = selectedSwapDetailsQuery.data?.data;
+    if (!detailSwap || detailSwap.id !== selectedRequest.id) {
+      return selectedRequest;
+    }
+
+    const mappedDetail = mapSwapToCard(detailSwap, activeTab);
+    return {
+      ...selectedRequest,
+      ...mappedDetail,
+      message: mappedDetail.message ?? selectedRequest.message,
+    };
+  }, [selectedRequest, selectedSwapDetailsQuery.data, activeTab]);
+
   const filteredRequests = useMemo(
     () => currentRequests.filter((request) => matchesActiveFilter(request, activeFilter)),
     [currentRequests, activeFilter]
@@ -285,10 +327,14 @@ export const RequestsSent: React.FC = () => {
           {selectedRequest && activeTab === 'sent' && (
             <div ref={detailsPanelRef} className="w-full xl:flex-1 min-w-0 animate-slideIn">
               <RequestDetailsPanel
-                request={selectedRequest}
+                request={detailedSelectedRequest}
                 isOpen={!!selectedRequest}
                 onClose={handleClosePanel}
-                onCancelRequest={() => handleCancelRequest(selectedRequest)}
+                onCancelRequest={() => {
+                  if (detailedSelectedRequest) {
+                    handleCancelRequest(detailedSelectedRequest);
+                  }
+                }}
                 onViewProfile={handleViewProfile}
                 isCanceling={cancelSwapMutation.isPending}
               />
@@ -298,11 +344,19 @@ export const RequestsSent: React.FC = () => {
           {selectedRequest && activeTab === 'received' && (
             <div ref={detailsPanelRef} className="w-full xl:flex-1 min-w-0 animate-slideIn">
               <ReceivedRequestDetailsPanel
-                request={selectedRequest}
+                request={detailedSelectedRequest}
                 isOpen={!!selectedRequest}
                 onClose={handleClosePanel}
-                onAcceptRequest={() => handleAcceptRequest(selectedRequest)}
-                onDeclineRequest={(_, metadata) => handleDeclineRequest(selectedRequest, metadata)}
+                onAcceptRequest={() => {
+                  if (detailedSelectedRequest) {
+                    handleAcceptRequest(detailedSelectedRequest);
+                  }
+                }}
+                onDeclineRequest={(_, metadata) => {
+                  if (detailedSelectedRequest) {
+                    handleDeclineRequest(detailedSelectedRequest, metadata);
+                  }
+                }}
                 onViewProfile={handleViewProfile}
                 isAccepting={acceptSwapMutation.isPending}
                 isDeclining={declineSwapMutation.isPending}
