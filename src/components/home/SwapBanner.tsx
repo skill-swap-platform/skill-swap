@@ -1,11 +1,14 @@
 import { MessageSquare, Send } from "lucide-react";
 import type { SwapBanner as SwapBannerType } from "@/types/home.types";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   item: SwapBannerType;
 };
 
 export default function SwapBanner({ item }: Props) {
+  const navigate = useNavigate();
+
   return (
     <div className="rounded-2xl bg-blue-600 p-4 text-white shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -23,6 +26,7 @@ export default function SwapBanner({ item }: Props) {
         <button
           type="button"
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-blue-600"
+          onClick={() => navigate("/messages")}
         >
           {item.ctaLabel}
           <Send className="h-4 w-4" />
