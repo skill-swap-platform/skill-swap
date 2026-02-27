@@ -13,11 +13,14 @@ import { userService } from '../../api/services/user.service';
 interface OfferedSkillOption {
   id: string;
   name: string;
+  skillId?: string;
+  userSkillId?: string;
 }
 
 interface RequestSkillNavigationState {
   receiverId?: string;
   requestedSkillId?: string;
+  requestedUserSkillId?: string;
   requestedSkillName?: string;
   newSkill?: OfferedSkillOption;
 }
@@ -67,6 +70,9 @@ const RequestSkill: React.FC = () => {
     const requestedSkillId = locationState?.requestedSkillId?.trim()
       || params.get('requestedSkillId')?.trim()
       || '';
+    const requestedUserSkillId = locationState?.requestedUserSkillId?.trim()
+      || params.get('requestedUserSkillId')?.trim()
+      || '';
     const requestedSkillName = locationState?.requestedSkillName?.trim()
       || params.get('requestedSkillName')?.trim()
       || '';
@@ -74,12 +80,14 @@ const RequestSkill: React.FC = () => {
     return {
       receiverId,
       requestedSkillId,
+      requestedUserSkillId,
       requestedSkillName,
     };
   }, [
     location.search,
     locationState?.receiverId,
     locationState?.requestedSkillId,
+    locationState?.requestedUserSkillId,
     locationState?.requestedSkillName,
   ]);
 
@@ -103,6 +111,7 @@ const RequestSkill: React.FC = () => {
   );
   const receiverId = requestContext.receiverId.trim();
   const requestedSkillId = requestContext.requestedSkillId.trim();
+  const requestedUserSkillId = requestContext.requestedUserSkillId.trim();
   const requestedSkillName = requestContext.requestedSkillName.trim();
 
   const timezones = [
@@ -139,13 +148,48 @@ const RequestSkill: React.FC = () => {
             : [];
 
         const mappedSkills: OfferedSkillOption[] = offeredSkills
-          .filter((skill: { id?: unknown; skill?: { name?: unknown } }) =>
-            typeof skill?.id === 'string' && typeof skill?.skill?.name === 'string'
-          )
-          .map((skill: { id: string; skill: { name: string } }) => ({
-            id: skill.id,
-            name: skill.skill.name,
-          }));
+          .map((skill: {
+            id?: unknown;
+            userSkillId?: unknown;
+            skillId?: unknown;
+            name?: unknown;
+            skill?: {
+              id?: unknown;
+              name?: unknown;
+            };
+          }) => {
+            const userSkillIdCandidate = typeof skill?.userSkillId === 'string'
+              ? skill.userSkillId
+              : typeof skill?.id === 'string'
+                ? skill.id
+                : '';
+            const skillIdCandidate = typeof skill?.skill?.id === 'string'
+              ? skill.skill.id
+              : typeof skill?.skillId === 'string'
+                ? skill.skillId
+                : '';
+            const nameCandidate = typeof skill?.skill?.name === 'string'
+              ? skill.skill.name
+              : typeof skill?.name === 'string'
+                ? skill.name
+                : '';
+            const idCandidate = userSkillIdCandidate || skillIdCandidate;
+
+            if (!idCandidate || !nameCandidate) {
+              return null;
+            }
+
+            return {
+              id: idCandidate,
+              name: nameCandidate,
+              skillId: skillIdCandidate || undefined,
+              userSkillId: userSkillIdCandidate || undefined,
+            } satisfies OfferedSkillOption;
+          })
+          .filter((skill): skill is OfferedSkillOption => skill !== null)
+          .filter((skill, index, allSkills) => (
+            index === allSkills.findIndex((candidate) => candidate.id === skill.id)
+          ));
 
         if (!isMounted) return;
 
@@ -188,12 +232,13 @@ const RequestSkill: React.FC = () => {
 
     navigate(`${location.pathname}${location.search}`, {
       replace: true,
-      state: {
-        receiverId: receiverId || undefined,
-        requestedSkillId: requestedSkillId || undefined,
-        requestedSkillName: requestedSkillName || undefined,
-      } satisfies RequestSkillNavigationState,
-    });
+        state: {
+          receiverId: receiverId || undefined,
+          requestedSkillId: requestedSkillId || undefined,
+          requestedUserSkillId: requestedUserSkillId || undefined,
+          requestedSkillName: requestedSkillName || undefined,
+        } satisfies RequestSkillNavigationState,
+      });
   }, [
     location.pathname,
     location.search,
@@ -201,6 +246,7 @@ const RequestSkill: React.FC = () => {
     navigate,
     receiverId,
     requestedSkillId,
+    requestedUserSkillId,
     requestedSkillName,
   ]);
 
@@ -213,6 +259,7 @@ const RequestSkill: React.FC = () => {
       state: {
         receiverId: receiverId || undefined,
         requestedSkillId: requestedSkillId || undefined,
+        requestedUserSkillId: requestedUserSkillId || undefined,
         requestedSkillName: requestedSkillName || undefined,
       } satisfies RequestSkillNavigationState,
     });
@@ -254,17 +301,74 @@ const RequestSkill: React.FC = () => {
       return;
     }
 
+    const selectedOfferedSkill = userSkills.find((skill) => skill.id === selectedSkillId);
+    if (!selectedOfferedSkill) {
+      setSubmitError('Please choose one of your offered skills.');
+      return;
+    }
+
+    const offeredSkillCandidates = Array.from(
+      new Set(
+        [
+          selectedOfferedSkill.skillId?.trim(),
+          selectedOfferedSkill.userSkillId?.trim(),
+        ].filter((value): value is string => Boolean(value))
+      )
+    );
+    const requestedSkillCandidates = Array.from(
+      new Set(
+        [
+          requestedSkillId,
+          requestedUserSkillId,
+        ].map((value) => value.trim()).filter((value) => value.length > 0)
+      )
+    );
+
+    if (offeredSkillCandidates.length === 0 || requestedSkillCandidates.length === 0) {
+      setSubmitError('Missing skill identifiers for request. Please reload and try again.');
+      return;
+    }
+
+    const attempts = offeredSkillCandidates.flatMap((offeredId) => (
+      requestedSkillCandidates.map((requestedId) => ({
+        offeredId,
+        requestedId,
+      }))
+    ));
+
     try {
-      await createSwapMutation.mutateAsync({
-        receiverId,
-        offeredSkillId: selectedSkillId,
-        requestedSkillId,
-        message: message.trim(),
-        date: selectedDate.format('YYYY-MM-DD'),
-        startAt,
-        endAt,
-        timezone,
-      });
+      let hasSucceeded = false;
+      let latestError: unknown = null;
+
+      for (let index = 0; index < attempts.length; index += 1) {
+        const attempt = attempts[index];
+
+        try {
+          await createSwapMutation.mutateAsync({
+            receiverId,
+            offeredSkillId: attempt.offeredId,
+            requestedSkillId: attempt.requestedId,
+            message: message.trim(),
+            date: selectedDate.format('YYYY-MM-DD'),
+            startAt,
+            endAt,
+            timezone,
+          });
+          hasSucceeded = true;
+          break;
+        } catch (error) {
+          latestError = error;
+          const statusCode = (error as { response?: { status?: number } })?.response?.status;
+          const canRetry = statusCode === 400 && index < attempts.length - 1;
+          if (!canRetry) {
+            throw latestError;
+          }
+        }
+      }
+
+      if (!hasSucceeded) {
+        throw latestError;
+      }
 
       setShowSuccessModal(true);
     } catch (error) {
