@@ -186,9 +186,9 @@ const RequestSkill: React.FC = () => {
               userSkillId: userSkillIdCandidate || undefined,
             } satisfies OfferedSkillOption;
           })
-          .filter((skill): skill is OfferedSkillOption => skill !== null)
-          .filter((skill, index, allSkills) => (
-            index === allSkills.findIndex((candidate) => candidate.id === skill.id)
+          .filter((skill: OfferedSkillOption | null): skill is OfferedSkillOption => skill !== null)
+          .filter((skill: OfferedSkillOption, index: number, allSkills: OfferedSkillOption[]) => (
+            index === allSkills.findIndex((candidate: OfferedSkillOption) => candidate.id === skill.id)
           ));
 
         if (!isMounted) return;

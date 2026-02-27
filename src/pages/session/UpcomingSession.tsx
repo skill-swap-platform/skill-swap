@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header/Header';
 import Footer from '@/components/Footer/Footer';
@@ -7,9 +7,17 @@ import { sessionService } from '@/api/services/session.service';
 import { userService } from '@/api/services/user.service';
 import { Loader2 } from 'lucide-react';
 
+interface UpcomingSessionViewModel {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  partnerName: string;
+}
+
 const UpcomingSession = () => {
   const navigate = useNavigate();
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<UpcomingSessionViewModel | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCompleting, setIsCompleting] = useState(false);
 
