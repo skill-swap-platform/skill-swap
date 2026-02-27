@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react'
 import { ThumbsUp, ThumbsDown, X, Loader2 } from 'lucide-react'
 import { Modal, RatingDisplay, Avatar } from '@/components/common'
-import type { Feedback } from '@/types/index'
 
 interface ViewFeedbackModalProps {
     isOpen: boolean
@@ -38,7 +37,7 @@ export const ViewFeedbackModal: React.FC<ViewFeedbackModalProps> = ({
 
     console.log('DEBUG: Derived Feedback Object:', feedback);
 
-    const parseRating = (val: any) => {
+    const parseRating = (val: unknown) => {
         if (!val) return 5;
         if (typeof val === 'number') return val;
         const map: Record<string, number> = { 'ONE': 1, 'TWO': 2, 'THREE': 3, 'FOUR': 4, 'FIVE': 5 };
@@ -130,7 +129,7 @@ export const ViewFeedbackModal: React.FC<ViewFeedbackModalProps> = ({
                                     feedback?.ratings?.[`${key}Rating`] ||
                                     feedback?.[`rating${key.charAt(0).toUpperCase() + key.slice(1)}`] ||
                                     feedback?.ratings?.[`rating${key.charAt(0).toUpperCase() + key.slice(1)}`] ||
-                                    (feedback?.ratings?.find?.((r: any) => r.type === key || r.metric === key)?.value) ||
+                                    (feedback?.ratings?.find?.((r: { type?: string; metric?: string; value?: unknown }) => r.type === key || r.metric === key)?.value) ||
                                     5;
 
                                 return (
