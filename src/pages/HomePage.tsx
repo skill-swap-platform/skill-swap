@@ -1,4 +1,3 @@
-import { TrendingUp } from "lucide-react";
 import HeroSection from "@/components/home/HeroSection";
 import QuickActionCard from "@/components/home/QuickActionCard";
 import StatCard from "@/components/home/StatCard";
@@ -126,6 +125,15 @@ function mapApiToDashboard(
   };
 }
 
+// Initial number of items shown per section
+const INITIAL_LIMITS = {
+  trending: 4,
+  interests: 4,
+  recommendations: 3,
+  upcomingSessions: 2,
+  testimonials: 3,
+};
+
 export default function DashboardPage() {
   // Get the logged-in user's name from localStorage
   const storedUser = localStorage.getItem("user");
@@ -137,6 +145,14 @@ export default function DashboardPage() {
     ...HomeDashboardMockData,
     userName,
   });
+
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const toggle = (section: string) =>
+    setExpanded((prev) => ({ ...prev, [section]: !prev[section] }));
+
+  const sliced = <T,>(items: T[], section: keyof typeof INITIAL_LIMITS): T[] =>
+    expanded[section] ? items : items.slice(0, INITIAL_LIMITS[section]);
 
   useEffect(() => {
     if (userId) {
@@ -178,15 +194,15 @@ export default function DashboardPage() {
 
         {/* Trending */}
         <section className="mt-10">
-          <div className="mb-4 flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-slate-700" />
-            <h2 className="text-2xl font-bold text-slate-900">
-              Trending This Week
-            </h2>
-          </div>
+          <SectionHeader
+            title="Trending This Week"
+            actionLabel="See all"
+            expanded={!!expanded.trending}
+            onActionClick={() => toggle("trending")}
+          />
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {data.trending.map((item) => (
+            {sliced(data.trending, "trending").map((item) => (
               <TrendingCard key={item.id} item={item} />
             ))}
           </div>
@@ -194,9 +210,14 @@ export default function DashboardPage() {
 
         {/* Interests */}
         <section className="mt-10">
-          <SectionHeader title="Your Interests" actionLabel="See all" />
+          <SectionHeader
+            title="Your Interests"
+            actionLabel="See all"
+            expanded={!!expanded.interests}
+            onActionClick={() => toggle("interests")}
+          />
           <div className="flex flex-wrap gap-3">
-            {data.interests.map((item) => (
+            {sliced(data.interests, "interests").map((item) => (
               <InterestChip key={item.id} item={item} />
             ))}
           </div>
@@ -204,9 +225,14 @@ export default function DashboardPage() {
 
         {/* Recommended */}
         <section className="mt-10">
-          <SectionHeader title="Recommended for you" actionLabel="See all" />
+          <SectionHeader
+            title="Recommended for you"
+            actionLabel="See all"
+            expanded={!!expanded.recommendations}
+            onActionClick={() => toggle("recommendations")}
+          />
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {data.recommendations.map((item) => (
+            {sliced(data.recommendations, "recommendations").map((item) => (
               <MentorCard key={item.id} item={item} />
             ))}
           </div>
@@ -214,9 +240,14 @@ export default function DashboardPage() {
 
         {/* Upcoming sessions */}
         <section className="mt-10">
-          <SectionHeader title="Upcoming Sessions" actionLabel="See all" />
+          <SectionHeader
+            title="Upcoming Sessions"
+            actionLabel="See all"
+            expanded={!!expanded.upcomingSessions}
+            onActionClick={() => toggle("upcomingSessions")}
+          />
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {data.upcomingSessions.map((item) => (
+            {sliced(data.upcomingSessions, "upcomingSessions").map((item) => (
               <SessionCard key={item.id} item={item} />
             ))}
           </div>
@@ -235,10 +266,22 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {data.testimonials.map((item) => (
+            {sliced(data.testimonials, "testimonials").map((item) => (
               <TestimonialCard key={item.id} item={item} />
             ))}
           </div>
+
+          {data.testimonials.length > INITIAL_LIMITS.testimonials && (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => toggle("testimonials")}
+                className="text-sm font-medium text-blue-500 hover:text-blue-600"
+              >
+                {expanded.testimonials ? "Show less" : "See all testimonials"}
+              </button>
+            </div>
+          )}
         </section>
       </div>
       <Footer />
