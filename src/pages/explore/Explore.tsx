@@ -182,6 +182,7 @@ const Explore = () => {
   }, [finalUserId, finalSkillId]);
 
   const requestSkillId = finalSkillId;
+  const requestUserSkillId = skillData?.userSkillId?.trim() || "";
   const requestReceiverId = finalUserId;
   const requestSkillName = displaySkillData?.skill?.name || "";
   const canRequestSwap = Boolean(requestSkillId && requestReceiverId);
@@ -196,6 +197,9 @@ const Explore = () => {
       requestedSkillId: requestSkillId,
       requestedSkillName: requestSkillName,
     });
+    if (requestUserSkillId) {
+      query.set("requestedUserSkillId", requestUserSkillId);
+    }
 
     navigate(`/request-skill?${query.toString()}`);
   };
