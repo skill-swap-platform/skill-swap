@@ -322,6 +322,10 @@ const normalizeOverviewSkill = (value: unknown): AdminUserOverviewSkill => {
     const row = (value ?? {}) as Record<string, unknown>
     const skillObject =
         row.skill && typeof row.skill === 'object' ? (row.skill as Record<string, unknown>) : null
+    const categoryObject =
+        skillObject?.category && typeof skillObject.category === 'object'
+            ? (skillObject.category as Record<string, unknown>)
+            : null
     const detailsObject =
         row.details && typeof row.details === 'object'
             ? (row.details as Record<string, unknown>)
@@ -392,6 +396,14 @@ const normalizeOverviewSkill = (value: unknown): AdminUserOverviewSkill => {
     return {
         id: toText(row.id ?? row._id ?? row.userSkillId ?? skillObject?.id ?? skillObject?._id),
         name: toText(row.name ?? row.skillName ?? row.title ?? skillObject?.name, 'Unnamed skill'),
+        icon: toText(
+            row.icon ??
+                row.skillIcon ??
+                skillObject?.icon ??
+                skillObject?.emoji ??
+                categoryObject?.icon ??
+                categoryObject?.emoji
+        ) || null,
         level: normalizeSkillLevel(row.level ?? skillObject?.level),
         durationMinutes,
         rating,
