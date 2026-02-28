@@ -187,3 +187,18 @@ export interface AdminUserSessionsData {
     data: AdminUserSessionItem[]
     pagination: AdminUserSessionsPagination
 }
+
+export interface AdminUserBadgeItem {
+    id: string
+    name: string
+    icon: string | null
+    progress: string
+    subtitle: string
+    unlockedAt: string
+    remainingSessions: number | null
+}
+
+export interface AdminUserBadgesData {
+    earned: AdminUserBadgeItem[]
+    locked: AdminUserBadgeItem[]
+}
