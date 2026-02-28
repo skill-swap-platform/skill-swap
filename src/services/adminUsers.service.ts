@@ -1,5 +1,10 @@
 import axiosInstance from '@/api/axiosInstance'
 import type {
+    AdminSwapStatus,
+    AdminUserSwapItem,
+    AdminUserSwapsData,
+    AdminUserSwapsPagination,
+    AdminUserSwapsQueryParams,
     AdminUserItem,
     AdminUserStatus,
     AdminUserOverviewData,
@@ -13,6 +18,7 @@ import type {
 } from '@/types/adminUsers.types'
 
 const DEFAULT_LIMIT = 12
+const DEFAULT_SWAPS_LIMIT = 10
 
 const toText = (value: unknown, fallback = ''): string => {
     if (typeof value === 'string') return value
@@ -543,6 +549,108 @@ const normalizeAdminUserOverviewData = (value: unknown): AdminUserOverviewData =
     }
 }
 
+const normalizeSwapStatus = (value: unknown): AdminSwapStatus => {
+    const normalized = toText(value).toUpperCase()
+    if (normalized === 'ACCEPTED') return 'ACCEPTED'
+    if (normalized === 'DECLINED') return 'DECLINED'
+    if (normalized === 'EXPIRED') return 'EXPIRED'
+    if (normalized === 'COMPLETED') return 'COMPLETED'
+    if (normalized === 'CANCELLED') return 'CANCELLED'
+    return 'PENDING'
+}
+
+const normalizeSwapSkill = (value: unknown) => {
+    if (!value || typeof value !== 'object') return null
+    const row = value as Record<string, unknown>
+
+    return {
+        id: toText(row.id ?? row._id),
+        name: toText(row.name ?? row.skillName, '--'),
+    }
+}
+
+const normalizeSwapParticipant = (value: unknown) => {
+    const row = (value ?? {}) as Record<string, unknown>
+    return {
+        id: toText(row.id ?? row._id),
+        userName: toText(row.userName ?? row.name, 'Unknown User'),
+        image: resolveImage(row),
+    }
+}
+
+const normalizeSwapItem = (value: unknown): AdminUserSwapItem => {
+    const row = (value ?? {}) as Record<string, unknown>
+    const participant =
+        row.user && typeof row.user === 'object'
+            ? (row.user as Record<string, unknown>)
+            : row.participant && typeof row.participant === 'object'
+              ? (row.participant as Record<string, unknown>)
+              : row.otherUser && typeof row.otherUser === 'object'
+                ? (row.otherUser as Record<string, unknown>)
+                : null
+
+    return {
+        id: toText(row.id ?? row._id),
+        user: normalizeSwapParticipant(participant),
+        requestType: toText(row.requestType ?? row.swapType ?? row.type, 'Skill Swap'),
+        requestedSkill: normalizeSwapSkill(row.requestedSkill),
+        offeredSkill: normalizeSwapSkill(row.offeredSkill),
+        status: normalizeSwapStatus(row.status),
+        dateTime: toText(row.dateTime ?? row.createdAt ?? row.updatedAt),
+    }
+}
+
+const normalizeSwapsPagination = (value: unknown): AdminUserSwapsPagination => {
+    const pagination = (value ?? {}) as Record<string, unknown>
+    const total = toNumber(pagination.total)
+    const page = toNumber(pagination.page, 1)
+    const limit = toNumber(pagination.limit, DEFAULT_SWAPS_LIMIT)
+    const totalPages = Math.max(1, toNumber(pagination.totalPages, Math.ceil(total / Math.max(1, limit))))
+    const nextPage = toNullableNumber(pagination.nextPage)
+    const prevPage = toNullableNumber(pagination.prevPage)
+
+    return {
+        total,
+        page,
+        limit,
+        totalPages,
+        nextPage,
+        prevPage,
+        hasNextPage: toBoolean(pagination.hasNextPage, nextPage !== null || page < totalPages),
+        hasPrevPage: toBoolean(pagination.hasPrevPage, prevPage !== null || page > 1),
+    }
+}
+
+const normalizeAdminUserSwapsData = (value: unknown): AdminUserSwapsData => {
+    const root = (value ?? {}) as Record<string, unknown>
+    const payload =
+        root.data && typeof root.data === 'object'
+            ? (root.data as Record<string, unknown>)
+            : root
+
+    const nestedData =
+        payload.data && typeof payload.data === 'object'
+            ? (payload.data as Record<string, unknown>)
+            : null
+
+    const swapsSource =
+        (Array.isArray(payload.data) && payload.data) ||
+        (Array.isArray(payload.items) && payload.items) ||
+        (nestedData && Array.isArray(nestedData.data) && nestedData.data) ||
+        (nestedData && Array.isArray(nestedData.items) && nestedData.items) ||
+        []
+
+    const paginationSource =
+        payload.pagination ||
+        payload.meta ||
+        (nestedData ? nestedData.pagination || nestedData.meta : undefined)
+
+    return {
+        data: swapsSource.map(normalizeSwapItem),
+        pagination: normalizeSwapsPagination(paginationSource),
+    }
+}
+
 const buildParams = (params: AdminUsersQueryParams): AdminUsersQueryParams => {
     const search = params.search?.trim()
 
@@ -552,6 +660,21 @@ const buildParams = (params: AdminUsersQueryParams): AdminUsersQueryParams => {
         sort: params.sort ?? 'newest',
         search: search && search.length > 0 ? search : undefined,
         status: params.status,
+    }
+}
+
+const buildSwapsParams = (params: AdminUserSwapsQueryParams): AdminUserSwapsQueryParams => {
+    const startDate = params.startDate?.trim()
+    const endDate = params.endDate?.trim()
+
+    return {
+        page: params.page ?? 1,
+        limit: params.limit ?? DEFAULT_SWAPS_LIMIT,
+        direction: params.direction,
+        sort: params.sort ?? 'newest',
+        status: params.status,
+        startDate: startDate && startDate.length > 0 ? startDate : undefined,
+        endDate: endDate && endDate.length > 0 ? endDate : undefined,
     }
 }
 
@@ -571,6 +694,22 @@ export const getAdminUserOverview = async (userId: string): Promise<AdminUserOve
 
     const response = await axiosInstance.get(`/api/v1/admin/${normalizedUserId}/overview`)
     return normalizeAdminUserOverviewData(response.data)
+}
+
+export const getAdminUserSwaps = async (
+    userId: string,
+    params: AdminUserSwapsQueryParams
+): Promise<AdminUserSwapsData> => {
+    const normalizedUserId = userId.trim()
+    if (!normalizedUserId) {
+        throw new Error('User id is required')
+    }
+
+    const response = await axiosInstance.get(`/api/v1/admin/${normalizedUserId}/swaps`, {
+        params: buildSwapsParams(params),
+    })
+
+    return normalizeAdminUserSwapsData(response.data)
 }
 
 export const addAdminUserNote = async (userId: string, externalNote: string): Promise<void> => {
