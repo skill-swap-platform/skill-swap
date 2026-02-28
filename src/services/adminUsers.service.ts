@@ -17,6 +17,8 @@ import type {
     AdminUserOverviewNote,
     AdminUserOverviewProfile,
     AdminUserOverviewSkill,
+    AdminUserBadgeItem,
+    AdminUserBadgesData,
     AdminUsersData,
     AdminUsersPagination,
     AdminUsersQueryParams,
@@ -878,6 +880,100 @@ const normalizeAdminUserSessionsData = (value: unknown): AdminUserSessionsData =
     }
 }
 
+const normalizeBadgeProgressText = (row: Record<string, unknown>): string => {
+    const rawProgress = toText(
+        row.progress ?? row.progressText ?? row.progressLabel ?? row.percentage ?? row.ratio
+    ).trim()
+    if (rawProgress) return rawProgress
+
+    const completed = toNullableNumber(
+        row.current ??
+            row.completed ??
+            row.completedSessions ??
+            row.earnedSessions ??
+            row.value ??
+            row.count
+    )
+    const required = toNullableNumber(
+        row.required ??
+            row.requiredSessions ??
+            row.target ??
+            row.targetSessions ??
+            row.goal ??
+            row.total
+    )
+
+    if (completed !== null && required !== null && required > 0) {
+        return `${Math.round(completed)}/${Math.round(required)}`
+    }
+
+    if (completed !== null) return `${Math.round(completed)}`
+    return ''
+}
+
+const normalizeBadgeItem = (value: unknown): AdminUserBadgeItem => {
+    const row = (value ?? {}) as Record<string, unknown>
+
+    return {
+        id: toText(row.id ?? row._id ?? row.badgeId),
+        name: toText(row.name ?? row.badgeName ?? row.title, 'Badge'),
+        icon: toText(row.icon ?? row.image ?? row.badgeIcon ?? row.iconUrl) || null,
+        progress: normalizeBadgeProgressText(row),
+        subtitle: toText(
+            row.subtitle ??
+                row.requirement ??
+                row.condition ??
+                row.requirements ??
+                row.criteria ??
+                row.sessionLabel
+        ),
+        unlockedAt: toText(row.unlockedAt ?? row.earnedAt ?? row.awardedAt ?? row.createdAt),
+        remainingSessions: toNullableNumber(
+            row.remainingSessions ??
+                row.remaining ??
+                row.sessionsRemaining ??
+                row.remainingCount ??
+                row.left
+        ),
+    }
+}
+
+const normalizeAdminUserBadgesData = (value: unknown): AdminUserBadgesData => {
+    const root = (value ?? {}) as Record<string, unknown>
+    const payload =
+        root.data && typeof root.data === 'object' && !Array.isArray(root.data)
+            ? (root.data as Record<string, unknown>)
+            : root
+
+    const nestedData =
+        payload.data && typeof payload.data === 'object' && !Array.isArray(payload.data)
+            ? (payload.data as Record<string, unknown>)
+            : null
+
+    const earnedSource =
+        (Array.isArray(payload.earned) && payload.earned) ||
+        (Array.isArray(payload.unlocked) && payload.unlocked) ||
+        (Array.isArray(payload.earnedBadges) && payload.earnedBadges) ||
+        (nestedData && Array.isArray(nestedData.earned) && nestedData.earned) ||
+        (nestedData && Array.isArray(nestedData.unlocked) && nestedData.unlocked) ||
+        (nestedData && Array.isArray(nestedData.earnedBadges) && nestedData.earnedBadges) ||
+        []
+
+    const lockedSource =
+        (Array.isArray(payload.locked) && payload.locked) ||
+        (Array.isArray(payload.pending) && payload.pending) ||
+        (Array.isArray(payload.lockedBadges) && payload.lockedBadges) ||
+        (nestedData && Array.isArray(nestedData.locked) && nestedData.locked) ||
+        (nestedData && Array.isArray(nestedData.pending) && nestedData.pending) ||
+        (nestedData && Array.isArray(nestedData.lockedBadges) && nestedData.lockedBadges) ||
+        []
+
+    return {
+        earned: earnedSource.map(normalizeBadgeItem),
+        locked: lockedSource.map(normalizeBadgeItem),
+    }
+}
+
 const buildParams = (params: AdminUsersQueryParams): AdminUsersQueryParams => {
     const search = params.search?.trim()
 
@@ -971,6 +1067,16 @@ export const getAdminUserSessions = async (
     })
 
     return normalizeAdminUserSessionsData(response.data)
+}
+
+export const getAdminUserBadges = async (userId: string): Promise<AdminUserBadgesData> => {
+    const normalizedUserId = userId.trim()
+    if (!normalizedUserId) {
+        throw new Error('User id is required')
+    }
+
+    const response = await axiosInstance.get(`/api/v1/admin/badge/${normalizedUserId}`)
+    return normalizeAdminUserBadgesData(response.data)
 }
 
 export const addAdminUserNote = async (userId: string, externalNote: string): Promise<void> => {
