@@ -1,10 +1,16 @@
 import axiosInstance from '@/api/axiosInstance'
 import type {
+    AdminSessionStatus,
     AdminSwapStatus,
     AdminUserSwapItem,
     AdminUserSwapsData,
     AdminUserSwapsPagination,
     AdminUserSwapsQueryParams,
+    AdminUserSessionItem,
+    AdminUserSessionProfile,
+    AdminUserSessionsData,
+    AdminUserSessionsPagination,
+    AdminUserSessionsQueryParams,
     AdminUserItem,
     AdminUserStatus,
     AdminUserOverviewData,
@@ -19,6 +25,7 @@ import type {
 
 const DEFAULT_LIMIT = 12
 const DEFAULT_SWAPS_LIMIT = 10
+const DEFAULT_SESSIONS_LIMIT = 12
 
 const toText = (value: unknown, fallback = ''): string => {
     if (typeof value === 'string') return value
@@ -731,6 +738,146 @@ const normalizeAdminUserSwapsData = (
     }
 }
 
+const normalizeSessionStatus = (value: unknown): AdminSessionStatus => {
+    const normalized = toText(value).toUpperCase()
+    if (normalized === 'COMPLETED') return 'COMPLETED'
+    if (normalized === 'RESCHEDULED') return 'RESCHEDULED'
+    if (normalized === 'CANCELLED' || normalized === 'CANCELED') return 'CANCELLED'
+    return 'SCHEDULED'
+}
+
+const normalizeSessionProfile = (value: unknown): AdminUserSessionProfile => {
+    const row = (value ?? {}) as Record<string, unknown>
+    const userObject = resolveUserObject(row)
+
+    return {
+        id: toText(row.id ?? row._id ?? row.userId ?? userObject?.id ?? userObject?._id),
+        userName: toText(
+            row.userName ?? row.username ?? row.name ?? userObject?.userName ?? userObject?.name,
+            'Unknown User'
+        ),
+        email: toText(row.email ?? userObject?.email),
+        image: resolveImage(row),
+    }
+}
+
+const resolveSessionPartnerObject = (row: Record<string, unknown>): Record<string, unknown> | null => {
+    const keys = [
+        'partner',
+        'partnerUser',
+        'participant',
+        'otherUser',
+        'counterpart',
+        'matchedUser',
+        'peer',
+        'user',
+        'partnerId',
+    ]
+
+    for (const key of keys) {
+        const candidate = row[key]
+        if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) continue
+        return candidate as Record<string, unknown>
+    }
+
+    return null
+}
+
+const normalizeSessionItem = (value: unknown): AdminUserSessionItem => {
+    const row = (value ?? {}) as Record<string, unknown>
+    const partnerObject = resolveSessionPartnerObject(row)
+    const skillObject =
+        row.skill && typeof row.skill === 'object' && !Array.isArray(row.skill)
+            ? (row.skill as Record<string, unknown>)
+            : null
+
+    return {
+        id: toText(row.id ?? row._id),
+        scheduledAt: toText(
+            row.scheduledAt ??
+                row.startAt ??
+                row.startDate ??
+                row.dateTime ??
+                row.sessionDate ??
+                row.createdAt
+        ),
+        endsAt: toText(row.endsAt ?? row.endAt ?? row.endDate ?? row.finishAt ?? row.completedAt),
+        status: normalizeSessionStatus(row.status),
+        duration: toNullableNumber(
+            row.duration ?? row.durationMinutes ?? row.sessionDuration ?? row.lengthMinutes
+        ),
+        skillName: toText(
+            row.skillName ??
+                row.skill_name ??
+                row.topic ??
+                row.title ??
+                skillObject?.name ??
+                skillObject?.title,
+            '--'
+        ),
+        partner: normalizeSwapParticipant(partnerObject, row),
+    }
+}
+
+const normalizeSessionsPagination = (value: unknown): AdminUserSessionsPagination => {
+    const pagination = (value ?? {}) as Record<string, unknown>
+    const total = toNumber(pagination.total)
+    const page = toNumber(pagination.page, 1)
+    const limit = toNumber(pagination.limit, DEFAULT_SESSIONS_LIMIT)
+    const totalPages = Math.max(1, toNumber(pagination.totalPages, Math.ceil(total / Math.max(1, limit))))
+    const nextPage = toNullableNumber(pagination.nextPage)
+    const prevPage = toNullableNumber(pagination.prevPage)
+
+    return {
+        total,
+        page,
+        limit,
+        totalPages,
+        nextPage,
+        prevPage,
+        hasNextPage: toBoolean(pagination.hasNextPage, nextPage !== null || page < totalPages),
+        hasPrevPage: toBoolean(pagination.hasPrevPage, prevPage !== null || page > 1),
+    }
+}
+
+const normalizeAdminUserSessionsData = (value: unknown): AdminUserSessionsData => {
+    const root = (value ?? {}) as Record<string, unknown>
+    const payload =
+        root.data && typeof root.data === 'object' && !Array.isArray(root.data)
+            ? (root.data as Record<string, unknown>)
+            : root
+
+    const nestedData =
+        payload.data && typeof payload.data === 'object' && !Array.isArray(payload.data)
+            ? (payload.data as Record<string, unknown>)
+            : null
+
+    const sessionsSource =
+        (Array.isArray(payload.data) && payload.data) ||
+        (Array.isArray(payload.sessions) && payload.sessions) ||
+        (Array.isArray(payload.items) && payload.items) ||
+        (nestedData && Array.isArray(nestedData.data) && nestedData.data) ||
+        (nestedData && Array.isArray(nestedData.sessions) && nestedData.sessions) ||
+        (nestedData && Array.isArray(nestedData.items) && nestedData.items) ||
+        []
+
+    const userSource =
+        payload.user ||
+        payload.profile ||
+        (nestedData ? nestedData.user || nestedData.profile : undefined)
+
+    const paginationSource =
+        payload.pagination ||
+        payload.meta ||
+        (nestedData ? nestedData.pagination || nestedData.meta : undefined)
+
+    return {
+        user: userSource ? normalizeSessionProfile(userSource) : null,
+        data: sessionsSource.map(normalizeSessionItem),
+        pagination: normalizeSessionsPagination(paginationSource),
+    }
+}
+
 const buildParams = (params: AdminUsersQueryParams): AdminUsersQueryParams => {
     const search = params.search?.trim()
 
@@ -753,6 +900,24 @@ const buildSwapsParams = (params: AdminUserSwapsQueryParams): AdminUserSwapsQuer
         direction: params.direction,
         sort: params.sort ?? 'newest',
         status: params.status,
+        startDate: startDate && startDate.length > 0 ? startDate : undefined,
+        endDate: endDate && endDate.length > 0 ? endDate : undefined,
+    }
+}
+
+const buildSessionsParams = (
+    params: AdminUserSessionsQueryParams
+): AdminUserSessionsQueryParams => {
+    const search = params.search?.trim()
+    const startDate = params.startDate?.trim()
+    const endDate = params.endDate?.trim()
+
+    return {
+        page: params.page ?? 1,
+        limit: params.limit ?? DEFAULT_SESSIONS_LIMIT,
+        sort: params.sort ?? 'newest',
+        status: params.status,
+        search: search && search.length > 0 ? search : undefined,
         startDate: startDate && startDate.length > 0 ? startDate : undefined,
         endDate: endDate && endDate.length > 0 ? endDate : undefined,
     }
@@ -790,6 +955,22 @@ export const getAdminUserSwaps = async (
     })
 
     return normalizeAdminUserSwapsData(response.data, params.direction)
+}
+
+export const getAdminUserSessions = async (
+    userId: string,
+    params: AdminUserSessionsQueryParams
+): Promise<AdminUserSessionsData> => {
+    const normalizedUserId = userId.trim()
+    if (!normalizedUserId) {
+        throw new Error('User id is required')
+    }
+
+    const response = await axiosInstance.get(`/api/v1/admin/${normalizedUserId}/sessions`, {
+        params: buildSessionsParams(params),
+    })
+
+    return normalizeAdminUserSessionsData(response.data)
 }
 
 export const addAdminUserNote = async (userId: string, externalNote: string): Promise<void> => {

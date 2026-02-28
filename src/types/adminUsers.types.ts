@@ -133,3 +133,57 @@ export interface AdminUserSwapsData {
     data: AdminUserSwapItem[]
     pagination: AdminUserSwapsPagination
 }
+
+export type AdminSessionStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'RESCHEDULED'
+
+export type AdminUserSessionsSort = 'newest' | 'oldest'
+
+export interface AdminUserSessionsQueryParams {
+    page?: number
+    limit?: number
+    search?: string
+    status?: AdminSessionStatus
+    sort?: AdminUserSessionsSort
+    startDate?: string
+    endDate?: string
+}
+
+export interface AdminUserSessionProfile {
+    id: string
+    userName: string
+    email: string
+    image: string | null
+}
+
+export interface AdminUserSessionPartner {
+    id: string
+    userName: string
+    image: string | null
+}
+
+export interface AdminUserSessionItem {
+    id: string
+    scheduledAt: string
+    endsAt: string
+    status: AdminSessionStatus
+    duration: number | null
+    skillName: string
+    partner: AdminUserSessionPartner
+}
+
+export interface AdminUserSessionsPagination {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+    nextPage: number | null
+    prevPage: number | null
+    hasNextPage: boolean
+    hasPrevPage: boolean
+}
+
+export interface AdminUserSessionsData {
+    user: AdminUserSessionProfile | null
+    data: AdminUserSessionItem[]
+    pagination: AdminUserSessionsPagination
+}
