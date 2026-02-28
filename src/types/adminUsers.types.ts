@@ -74,3 +74,62 @@ export interface AdminUserOverviewData {
     profile: AdminUserOverviewProfile
     adminNotes: AdminUserOverviewNote[]
 }
+
+export type AdminSwapStatus =
+    | 'PENDING'
+    | 'ACCEPTED'
+    | 'DECLINED'
+    | 'EXPIRED'
+    | 'COMPLETED'
+    | 'CANCELLED'
+
+export type AdminSwapDirection = 'SENT' | 'RECEIVED'
+
+export type AdminUserSwapsSort = 'newest' | 'oldest'
+
+export interface AdminUserSwapsQueryParams {
+    page?: number
+    limit?: number
+    status?: AdminSwapStatus
+    sort?: AdminUserSwapsSort
+    startDate?: string
+    endDate?: string
+    direction: AdminSwapDirection
+}
+
+export interface AdminUserSwapSkill {
+    id: string
+    name: string
+}
+
+export interface AdminUserSwapParticipant {
+    id: string
+    userName: string
+    image: string | null
+}
+
+export interface AdminUserSwapItem {
+    id: string
+    user: AdminUserSwapParticipant
+    requestType: string
+    requestedSkill: AdminUserSwapSkill | null
+    offeredSkill: AdminUserSwapSkill | null
+    status: AdminSwapStatus
+    dateTime: string
+}
+
+export interface AdminUserSwapsPagination {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+    nextPage: number | null
+    prevPage: number | null
+    hasNextPage: boolean
+    hasPrevPage: boolean
+}
+
+export interface AdminUserSwapsData {
+    data: AdminUserSwapItem[]
+    pagination: AdminUserSwapsPagination
+}
