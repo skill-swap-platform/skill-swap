@@ -16,6 +16,7 @@ import { userService } from '@/api/services/user.service'
 import { useAdminUsers } from '@/hooks/useAdminUsers'
 import { useAdminUserImages } from '@/hooks/useAdminUserImages'
 import type {
+    AdminUserItem,
     AdminUserStatus,
     AdminUsersSort,
     AdminUsersStatusFilter,
@@ -276,6 +277,7 @@ export const AdminUsersList: React.FC = () => {
     const [search, setSearch] = useState('')
     const [status, setStatus] = useState<AdminUsersStatusFilter>('ALL')
     const [sort, setSort] = useState<AdminUsersSort>('newest')
+    const [activeActionUserId, setActiveActionUserId] = useState<string | null>(null)
     const [page, setPage] = useState(1)
     const [selectedUserIds, setSelectedUserIds] = useState<string[]>([])
     const tableScrollRef = useRef<HTMLDivElement>(null)
@@ -360,6 +362,10 @@ export const AdminUsersList: React.FC = () => {
             }
             if (sortMenuRef.current && !sortMenuRef.current.contains(target)) {
                 setSortMenuOpen(false)
+            }
+            const targetElement = event.target as Element | null
+            if (!targetElement?.closest('[data-user-actions-root]')) {
+                setActiveActionUserId(null)
             }
         }
 
@@ -479,6 +485,13 @@ export const AdminUsersList: React.FC = () => {
     const logout = async () => {
         await authService.logout()
         navigate('/auth/login')
+    }
+
+    const openUserDetails = (user: AdminUserItem) => {
+        setActiveActionUserId(null)
+        navigate(`/admin/users/${user.id}`, {
+            state: { userSnapshot: user },
+        })
     }
 
     const usersErrorMessage = usersQuery.error
@@ -814,13 +827,32 @@ export const AdminUsersList: React.FC = () => {
                                                         {renderBadges(user.badges)}
                                                     </td>
                                                     <td className="h-[62px] border-b border-[#F3F4F6] px-4 text-right">
-                                                        <button
-                                                            type="button"
-                                                            className="rounded-md p-1 text-[#0C0D0F] hover:bg-[#F3F4F6]"
-                                                            aria-label={`Actions for ${user.name}`}
-                                                        >
-                                                            <MoreVertical className="ml-auto h-5 w-5" />
-                                                        </button>
+                                                        <div className="relative inline-flex" data-user-actions-root>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    setActiveActionUserId((previousId) =>
+                                                                        previousId === user.id ? null : user.id
+                                                                    )
+                                                                }
+                                                                className="rounded-md p-1 text-[#0C0D0F] hover:bg-[#F3F4F6]"
+                                                                aria-label={`Actions for ${user.name}`}
+                                                            >
+                                                                <MoreVertical className="ml-auto h-5 w-5" />
+                                                            </button>
+
+                                                            {activeActionUserId === user.id && (
+                                                                <div className="absolute right-0 top-10 z-20 w-[148px] rounded-lg border border-[#E5E7EB] bg-white p-2 shadow-[0px_0px_4.7px_0px_rgba(0,0,0,0.25)]">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => openUserDetails(user)}
+                                                                        className="w-full rounded-[4px] bg-[#E5E7EB] px-2 py-2 text-left text-sm text-[#0C0D0F]"
+                                                                    >
+                                                                        View Details
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             )
