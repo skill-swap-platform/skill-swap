@@ -44,6 +44,7 @@ export interface AdminUsersResponse {
 export interface AdminUserOverviewSkill {
     id: string
     name: string
+    icon: string | null
     level: string
     durationMinutes: number | null
     rating: number | null

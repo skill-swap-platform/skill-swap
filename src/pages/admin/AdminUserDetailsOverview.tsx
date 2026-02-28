@@ -485,7 +485,22 @@ export const AdminUserDetailsOverview: React.FC = () => {
                                             >
                                                 <div className="flex min-w-0 flex-1 items-center gap-2">
                                                     <div className="flex h-10 w-10 items-center justify-center rounded-[6px] bg-[rgba(62,143,204,0.2)]">
-                                                        <PenTool className="h-5 w-5 text-[#3272A3]" />
+                                                        {skill.icon ? (
+                                                            /^https?:\/\//i.test(skill.icon) ||
+                                                            /^data:image\//i.test(skill.icon) ? (
+                                                                <img
+                                                                    src={skill.icon}
+                                                                    alt={`${skill.name} icon`}
+                                                                    className="h-5 w-5 object-contain"
+                                                                />
+                                                            ) : (
+                                                                <span className="text-base leading-none text-[#3272A3]">
+                                                                    {skill.icon}
+                                                                </span>
+                                                            )
+                                                        ) : (
+                                                            <PenTool className="h-5 w-5 text-[#3272A3]" />
+                                                        )}
                                                     </div>
                                                     <div className="min-w-0">
                                                         <p className="truncate text-[18px] font-semibold text-[#3272A3]">
