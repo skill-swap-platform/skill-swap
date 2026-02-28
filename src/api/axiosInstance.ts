@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = 'https://skill-swap-platform-api.onrender.com';
+const API_BASE_URL = 'https://gsg-project-group-6-j49y.onrender.com';
 
 /** Paths that should never trigger a token refresh attempt */
 const AUTH_PATHS = ['/api/v1/auth/login', '/api/v1/auth/register', '/api/v1/auth/refresh', '/api/v1/auth/verify-otp', '/api/v1/auth/resend-otp'];
