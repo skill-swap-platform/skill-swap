@@ -562,39 +562,116 @@ const normalizeSwapStatus = (value: unknown): AdminSwapStatus => {
 const normalizeSwapSkill = (value: unknown) => {
     if (!value || typeof value !== 'object') return null
     const row = value as Record<string, unknown>
+    const skillObject =
+        row.skill && typeof row.skill === 'object' ? (row.skill as Record<string, unknown>) : null
 
     return {
-        id: toText(row.id ?? row._id),
-        name: toText(row.name ?? row.skillName, '--'),
+        id: toText(row.id ?? row._id ?? skillObject?.id ?? skillObject?._id),
+        name: toText(row.name ?? row.skillName ?? skillObject?.name, '--'),
     }
 }
 
-const normalizeSwapParticipant = (value: unknown) => {
-    const row = (value ?? {}) as Record<string, unknown>
+const normalizeSwapParticipant = (value: unknown, fallback?: Record<string, unknown>) => {
+    const row = (value ?? fallback ?? {}) as Record<string, unknown>
+    const nestedUser = resolveUserObject(row)
+    const firstName = toText(row.firstName ?? nestedUser?.firstName).trim()
+    const lastName = toText(row.lastName ?? nestedUser?.lastName).trim()
+    const fullName = `${firstName} ${lastName}`.trim()
+    const rawName = toText(
+        row.userName ??
+            row.username ??
+            row.name ??
+            row.fullName ??
+            nestedUser?.userName ??
+            nestedUser?.username ??
+            nestedUser?.name ??
+            nestedUser?.fullName ??
+            fallback?.userName ??
+            fallback?.name ??
+            fallback?.senderName ??
+            fallback?.receiverName
+    ).trim()
+
     return {
-        id: toText(row.id ?? row._id),
-        userName: toText(row.userName ?? row.name, 'Unknown User'),
-        image: resolveImage(row),
+        id: toText(row.id ?? row._id ?? row.userId ?? nestedUser?.id ?? nestedUser?._id),
+        userName: rawName || fullName || 'Unknown User',
+        image: resolveImage(row) || (fallback ? resolveImage(fallback) : null),
     }
 }
 
-const normalizeSwapItem = (value: unknown): AdminUserSwapItem => {
+const resolveSwapParticipantObject = (
+    row: Record<string, unknown>,
+    direction: 'SENT' | 'RECEIVED'
+): Record<string, unknown> | null => {
+    const candidateKeysByDirection =
+        direction === 'SENT'
+            ? [
+                  'user',
+                  'receiver',
+                  'reciever',
+                  'toUser',
+                  'targetUser',
+                  'requestedTo',
+                  'userTo',
+                  'receiverId',
+                  'participant',
+                  'otherUser',
+                  'counterpart',
+              ]
+            : [
+                  'user',
+                  'sender',
+                  'requester',
+                  'fromUser',
+                  'sourceUser',
+                  'requestedBy',
+                  'userFrom',
+                  'senderId',
+                  'participant',
+                  'otherUser',
+                  'counterpart',
+              ]
+
+    const genericKeys = [
+        'user',
+        'participant',
+        'otherUser',
+        'counterpart',
+        'sender',
+        'requester',
+        'receiver',
+        'reciever',
+        'fromUser',
+        'toUser',
+        'sourceUser',
+        'targetUser',
+        'requestedBy',
+        'requestedTo',
+        'senderId',
+        'receiverId',
+    ]
+
+    const keys = [...candidateKeysByDirection, ...genericKeys]
+
+    for (const key of keys) {
+        const candidate = row[key]
+        if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) continue
+        return candidate as Record<string, unknown>
+    }
+
+    return null
+}
+
+const normalizeSwapItem = (value: unknown, direction: 'SENT' | 'RECEIVED'): AdminUserSwapItem => {
     const row = (value ?? {}) as Record<string, unknown>
-    const participant =
-        row.user && typeof row.user === 'object'
-            ? (row.user as Record<string, unknown>)
-            : row.participant && typeof row.participant === 'object'
-              ? (row.participant as Record<string, unknown>)
-              : row.otherUser && typeof row.otherUser === 'object'
-                ? (row.otherUser as Record<string, unknown>)
-                : null
+    const participant = resolveSwapParticipantObject(row, direction)
 
     return {
         id: toText(row.id ?? row._id),
-        user: normalizeSwapParticipant(participant),
+        user: normalizeSwapParticipant(participant, row),
         requestType: toText(row.requestType ?? row.swapType ?? row.type, 'Skill Swap'),
-        requestedSkill: normalizeSwapSkill(row.requestedSkill),
-        offeredSkill: normalizeSwapSkill(row.offeredSkill),
+        requestedSkill: normalizeSwapSkill(row.requestedSkill ?? row.requested_skill),
+        offeredSkill: normalizeSwapSkill(row.offeredSkill ?? row.offered_skill),
         status: normalizeSwapStatus(row.status),
         dateTime: toText(row.dateTime ?? row.createdAt ?? row.updatedAt),
     }
@@ -621,7 +698,10 @@ const normalizeSwapsPagination = (value: unknown): AdminUserSwapsPagination => {
     }
 }
 
-const normalizeAdminUserSwapsData = (value: unknown): AdminUserSwapsData => {
+const normalizeAdminUserSwapsData = (
+    value: unknown,
+    direction: 'SENT' | 'RECEIVED'
+): AdminUserSwapsData => {
     const root = (value ?? {}) as Record<string, unknown>
     const payload =
         root.data && typeof root.data === 'object'
@@ -646,7 +726,7 @@ const normalizeAdminUserSwapsData = (value: unknown): AdminUserSwapsData => {
         (nestedData ? nestedData.pagination || nestedData.meta : undefined)
 
     return {
-        data: swapsSource.map(normalizeSwapItem),
+        data: swapsSource.map((entry) => normalizeSwapItem(entry, direction)),
         pagination: normalizeSwapsPagination(paginationSource),
     }
 }
@@ -709,7 +789,7 @@ export const getAdminUserSwaps = async (
         params: buildSwapsParams(params),
     })
 
-    return normalizeAdminUserSwapsData(response.data)
+    return normalizeAdminUserSwapsData(response.data, params.direction)
 }
 
 export const addAdminUserNote = async (userId: string, externalNote: string): Promise<void> => {
