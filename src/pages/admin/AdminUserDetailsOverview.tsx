@@ -16,6 +16,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import Avatar from '@/components/Avatar/Avatar'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import AdminUserSwapsTable from '@/components/admin-users/AdminUserSwapsTable'
+import AdminUserSessionsTable from '@/components/admin-users/AdminUserSessionsTable'
 import { authService } from '@/api/services/auth.service'
 import { userService } from '@/api/services/user.service'
 import { useAdminUserOverview } from '@/hooks/useAdminUserOverview'
@@ -144,6 +145,7 @@ export const AdminUserDetailsOverview: React.FC = () => {
 
     const notes = overviewQuery.data?.adminNotes ?? []
     const isOverviewTab = activeTab === 'Overview'
+    const isSessionsTab = activeTab === 'Sessions'
     const swapsDirection: 'SENT' | 'RECEIVED' | null =
         activeTab === 'Sent Swap Requests'
             ? 'SENT'
@@ -611,7 +613,9 @@ export const AdminUserDetailsOverview: React.FC = () => {
 
                     {swapsDirection && <AdminUserSwapsTable userId={userId} direction={swapsDirection} />}
 
-                    {!isOverviewTab && !swapsDirection && (
+                    {isSessionsTab && <AdminUserSessionsTable userId={userId} />}
+
+                    {!isOverviewTab && !swapsDirection && !isSessionsTab && (
                         <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 text-center text-sm text-[#666666]">
                             This section is coming soon.
                         </section>
