@@ -15,6 +15,7 @@ import {
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import Avatar from '@/components/Avatar/Avatar'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
+import AdminUserSwapsTable from '@/components/admin-users/AdminUserSwapsTable'
 import { authService } from '@/api/services/auth.service'
 import { userService } from '@/api/services/user.service'
 import { useAdminUserOverview } from '@/hooks/useAdminUserOverview'
@@ -33,6 +34,7 @@ const overviewTabs = [
     'Activity log',
     'Disputes',
 ] as const
+type OverviewTab = (typeof overviewTabs)[number]
 
 const statusPillClassName: Record<AdminUserStatus, string> = {
     ACTIVE: 'bg-[rgba(22,163,74,0.2)] text-[#16A34A]',
@@ -108,6 +110,7 @@ export const AdminUserDetailsOverview: React.FC = () => {
 
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
     const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+    const [activeTab, setActiveTab] = useState<OverviewTab>('Overview')
     const [noteInput, setNoteInput] = useState('')
     const profileMenuRef = useRef<HTMLDivElement>(null)
     const queryClient = useQueryClient()
@@ -140,6 +143,13 @@ export const AdminUserDetailsOverview: React.FC = () => {
     const profileImage = rawProfileImage || (profileId ? imageByUserId[profileId] : null)
 
     const notes = overviewQuery.data?.adminNotes ?? []
+    const isOverviewTab = activeTab === 'Overview'
+    const swapsDirection: 'SENT' | 'RECEIVED' | null =
+        activeTab === 'Sent Swap Requests'
+            ? 'SENT'
+            : activeTab === 'Received Swap Requests'
+              ? 'RECEIVED'
+              : null
 
     useEffect(() => {
         if (!isMobileSidebarOpen) {
@@ -393,11 +403,12 @@ export const AdminUserDetailsOverview: React.FC = () => {
                     <section className="overflow-x-auto border-b border-[#E5E7EB]">
                         <div className="flex min-w-max items-center gap-7">
                             {overviewTabs.map((tab) => {
-                                const active = tab === 'Overview'
+                                const active = tab === activeTab
                                 return (
                                     <button
                                         key={tab}
                                         type="button"
+                                        onClick={() => setActiveTab(tab)}
                                         className={`border-b-[1.5px] py-4 text-[16px] ${
                                             active
                                                 ? 'border-[#3272A3] text-[#3272A3]'
@@ -411,13 +422,13 @@ export const AdminUserDetailsOverview: React.FC = () => {
                         </div>
                     </section>
 
-                    {overviewQuery.isLoading && (
+                    {isOverviewTab && overviewQuery.isLoading && (
                         <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 text-center text-sm text-[#666666]">
                             Loading user overview...
                         </section>
                     )}
 
-                    {usersErrorMessage && !overviewQuery.isLoading && (
+                    {isOverviewTab && usersErrorMessage && !overviewQuery.isLoading && (
                         <section className="rounded-xl border border-[#FECACA] bg-[#FEF2F2] p-4">
                             <p className="text-sm text-[#B91C1C]">{usersErrorMessage}</p>
                             <button
@@ -430,7 +441,7 @@ export const AdminUserDetailsOverview: React.FC = () => {
                         </section>
                     )}
 
-                    {!overviewQuery.isLoading && !usersErrorMessage && (
+                    {isOverviewTab && !overviewQuery.isLoading && !usersErrorMessage && (
                         <section className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
                             <div className="space-y-4">
                                 <article className="rounded-[12px] bg-[#F7FAFF] p-6">
@@ -598,7 +609,15 @@ export const AdminUserDetailsOverview: React.FC = () => {
                         </section>
                     )}
 
-                    {overviewQuery.isFetching && !overviewQuery.isLoading && (
+                    {swapsDirection && <AdminUserSwapsTable userId={userId} direction={swapsDirection} />}
+
+                    {!isOverviewTab && !swapsDirection && (
+                        <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 text-center text-sm text-[#666666]">
+                            This section is coming soon.
+                        </section>
+                    )}
+
+                    {isOverviewTab && overviewQuery.isFetching && !overviewQuery.isLoading && (
                         <p className="text-xs text-[#666666]">Updating user overview...</p>
                     )}
                 </main>
