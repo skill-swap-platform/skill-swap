@@ -1,6 +1,6 @@
 import axios, { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'https://skill-swap-platform-api.onrender.com/api',
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'https://gsg-project-group-6-j49y.onrender.com',
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
