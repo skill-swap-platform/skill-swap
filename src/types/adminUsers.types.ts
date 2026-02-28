@@ -40,3 +40,36 @@ export interface AdminUsersResponse {
     success: boolean
     data: AdminUsersData
 }
+
+export interface AdminUserOverviewSkill {
+    id: string
+    name: string
+    level: string
+    durationMinutes: number | null
+    rating: number | null
+}
+
+export interface AdminUserOverviewNote {
+    adminId: string
+    externalNote: string
+    createdAt: string
+}
+
+export interface AdminUserOverviewProfile {
+    id: string
+    userName: string
+    email: string
+    status: AdminUserStatus
+    createdAt: string
+    image: string | null
+    points: number | null
+    location: string
+    country: string
+    bio: string
+    skills: AdminUserOverviewSkill[]
+}
+
+export interface AdminUserOverviewData {
+    profile: AdminUserOverviewProfile
+    adminNotes: AdminUserOverviewNote[]
+}
