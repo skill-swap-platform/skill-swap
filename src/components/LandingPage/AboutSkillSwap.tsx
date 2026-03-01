@@ -1,5 +1,4 @@
 import { Box, Grid } from "@mui/material";
-import rafiki from "../../assets/landingPage/rafiki.png";
 
 const AboutSkillSwap = () => {
   return (
@@ -29,7 +28,7 @@ const AboutSkillSwap = () => {
               justifyContent: "center",
             }}
           >
-            <img src={rafiki} alt="rafiki" className="object-fill" />
+            <img src="/assets/landingPage/rafiki.png" alt="rafiki" className="object-fill" />
           </Box>
         </Grid>
 

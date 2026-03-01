@@ -1,6 +1,6 @@
 import { DEFAULT_STEPS } from "@/constants/landingPage";
 import type { HowItWorksProps } from "@/types/landingPage.types";
-import image from "@/assets/landingPage/pana.png";
+
 export function HowItWorks({
   title = "How Skill Swap works",
   steps = DEFAULT_STEPS,
@@ -45,7 +45,7 @@ export function HowItWorks({
           {/* Right */}
           <div className="flex justify-center md:justify-end">
             <img
-              src={image}
+              src="/assets/landingPage/pana.png"
               alt={"How it works illustration"}
               className="object-contain h-full"
               loading="lazy"

@@ -1,8 +1,3 @@
-import docIcon from "../../assets/session/doc.svg";
-import calendarIcon from "../../assets/session/calendar.svg";
-import clockIcon from "../../assets/session/clock.svg";
-import closeIcon from "../../assets/close-circle.svg";
-
 /* =======================
    Types
 ======================= */
@@ -107,14 +102,14 @@ export function UpcomingSessionCard({
           className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60"
           aria-label="Close"
         >
-        <img src={closeIcon} alt="close-circle"/>
+        <img src="/assets/close-circle.svg" alt="close-circle"/>
         </button>
       </div>
 
       {/* Info Rows */}
       <div className="px-5">
         <InfoRow
-          iconSrc={docIcon}
+          iconSrc="/assets/session/doc.svg"
           iconAlt="session title"
           label="Session Title"
           value={sessionTitle}
@@ -122,7 +117,7 @@ export function UpcomingSessionCard({
 
         <div className="mt-3">
           <InfoRow
-            iconSrc={calendarIcon}
+            iconSrc="/assets/session/calendar.svg"
             iconAlt="calendar"
             label="Date"
             value={dateLabel}
@@ -131,7 +126,7 @@ export function UpcomingSessionCard({
 
         <div className="mt-3">
           <InfoRow
-            iconSrc={clockIcon}
+            iconSrc="/assets/session/clock.svg"
             iconAlt="clock"
             label="Time"
             value={timeLabel}
