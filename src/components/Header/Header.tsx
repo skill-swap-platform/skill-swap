@@ -114,6 +114,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Default" }) => {
     "User Name";
   const userDisplayEmail = currentUser?.email || "user@example.com";
   const userAvatarSrc = currentUser?.image?.trim() || DEFAULT_AVATAR_URL;
+  const isAdmin = currentUser?.role?.toUpperCase() === "ADMIN";
 
   const getNavClass = (tab: HeaderProps["activeTab"], mobile = false) => {
     const base = mobile
@@ -230,6 +231,32 @@ const Header: React.FC<HeaderProps> = ({ activeTab = "Default" }) => {
                 </div>
 
                 <div className="py-1">
+                  {isAdmin && (
+                    <Link
+                      to="/admin/dashboard"
+                      onClick={() => setProfileMenuOpen(false)}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-dark no-underline transition-colors hover:bg-gray-50"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M9 22H15C20 22 22 20 22 15V9C22 4 20 2 15 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22Z"
+                          stroke="#6B7280"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M7.33008 14.4902L10.2301 11.5902L12.2301 13.5902L16.6701 9.15015"
+                          stroke="#6B7280"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      Admin Dashboard
+                    </Link>
+                  )}
+
                   <Link
                     to="/profile"
                     onClick={() => setProfileMenuOpen(false)}
