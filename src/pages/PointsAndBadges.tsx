@@ -1,16 +1,13 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronDown, Menu } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import Avatar from '@/components/Avatar/Avatar'
+import { AdminHeader } from '@/components/layout/AdminHeader'
 import {
     ADMIN_EARNED_BADGE_PRESETS,
     getAdminEarnedBadgePreset,
     type AdminEarnedBadgePreset,
 } from '@/components/admin-users/adminBadgeOptionPresets'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
-import { authService } from '@/api/services/auth.service'
 import { userService } from '@/api/services/user.service'
 import { adminService, type AdminBadgeManagementItem } from '@/api/services/admin.service'
 import type { UserAuthDto } from '@/types/api.types'
@@ -192,19 +189,15 @@ const BadgeVisual: React.FC<{ entry: BadgeViewModel; size: 'card' | 'modal' }> =
 }
 
 export const PointsAndBadges: React.FC = () => {
-    const navigate = useNavigate()
     const queryClient = useQueryClient()
 
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
-    const [profileMenuOpen, setProfileMenuOpen] = useState(false)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [selectedBadgeId, setSelectedBadgeId] = useState<string | null>(null)
     const [requiredSessions, setRequiredSessions] = useState(1)
     const [modalError, setModalError] = useState<string | null>(null)
     const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null)
     const [currentUser, setCurrentUser] = useState<UserAuthDto | null>(() => getStoredUser())
-
-    const profileMenuRef = useRef<HTMLDivElement>(null)
 
     const badgesQuery = useQuery({
         queryKey: BADGES_QUERY_KEY,
@@ -295,18 +288,6 @@ export const PointsAndBadges: React.FC = () => {
     }, [isEditModalOpen])
 
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            const target = event.target as Node
-            if (profileMenuRef.current && !profileMenuRef.current.contains(target)) {
-                setProfileMenuOpen(false)
-            }
-        }
-
-        document.addEventListener('mousedown', handleClickOutside)
-        return () => document.removeEventListener('mousedown', handleClickOutside)
-    }, [])
-
-    useEffect(() => {
         let mounted = true
 
         const loadCurrentUser = async () => {
@@ -379,12 +360,6 @@ export const PointsAndBadges: React.FC = () => {
         })
     }
 
-    const handleLogout = async () => {
-        setProfileMenuOpen(false)
-        await authService.logout()
-        navigate('/auth/login')
-    }
-
     const userDisplayName = currentUser?.userName?.trim() || currentUser?.email?.split('@')[0] || 'User Name'
     const userAvatar = currentUser?.image?.trim() || DEFAULT_AVATAR_URL
     const userRole = currentUser?.role ? currentUser.role.toLowerCase() : 'admin'
@@ -394,45 +369,13 @@ export const PointsAndBadges: React.FC = () => {
             <AdminSidebar mobileOpen={isMobileSidebarOpen} onMobileClose={() => setIsMobileSidebarOpen(false)} />
 
             <div className="md:ml-[236px]">
-                <header className="flex h-[80px] items-center justify-between border-b border-[#F3F4F6] bg-white px-4 md:justify-end md:px-6">
-                    <div className="flex items-center gap-3 md:hidden">
-                        <button type="button" onClick={() => setIsMobileSidebarOpen(true)} className="rounded-lg p-2 text-[#1C1C1C] hover:bg-[#F3F4F6]" aria-label="Open menu">
-                            <Menu className="h-5 w-5" />
-                        </button>
-                        <div className="text-lg font-poppins font-bold">
-                            <span className="text-[#F59E0B]">Skill</span>
-                            <span className="text-[#3E8FCC]">Swap</span>
-                            <span className="text-[#F59E0B]">.</span>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 md:gap-6">
-                        <button type="button" className="rounded-full p-2 text-[#1C1C1C] hover:bg-[#F3F4F6]">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path fillRule="evenodd" clipRule="evenodd" d="M12 17.8476C17.6392 17.8476 20.2481 17.1242 20.5 14.2205C20.5 11.3188 18.6812 11.5054 18.6812 7.94511C18.6812 5.16414 16.0452 2 12 2C7.95477 2 5.31885 5.16414 5.31885 7.94511C5.31885 11.5054 3.5 11.3188 3.5 14.2205C3.75295 17.1352 6.36177 17.8476 12 17.8476Z" stroke="#0C0D0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M14.3887 20.8572C13.0246 22.372 10.8966 22.3899 9.51941 20.8572" stroke="#0C0D0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </button>
-
-                        <div className="relative" ref={profileMenuRef}>
-                            <button type="button" onClick={() => setProfileMenuOpen((previous) => !previous)} className="flex items-center gap-2">
-                                <Avatar src={userAvatar} name={userDisplayName} size={40} />
-                                <div className="hidden text-left sm:block">
-                                    <p className="text-sm text-[#0C0D0F]">{userDisplayName}</p>
-                                    <p className="text-xs capitalize text-[#666666]">{userRole}</p>
-                                </div>
-                                <ChevronDown className={`h-4 w-4 text-[#666666] transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`} />
-                            </button>
-                            {profileMenuOpen && (
-                                <div className="absolute right-0 top-full z-20 mt-2 w-44 rounded-xl border border-[#E8E8E8] bg-white py-1 shadow-lg">
-                                    <button type="button" onClick={handleLogout} className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50">
-                                        Logout
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </header>
+                <AdminHeader
+                    onOpenMobileMenu={() => setIsMobileSidebarOpen(true)}
+                    userName={userDisplayName}
+                    userEmail={currentUser?.email}
+                    userRole={userRole}
+                    userAvatar={userAvatar}
+                />
 
                 <main className="space-y-4 px-6 py-4">
                     <div className="flex items-center gap-2">
@@ -626,3 +569,5 @@ export const PointsAndBadges: React.FC = () => {
         </div>
     )
 }
+
+
