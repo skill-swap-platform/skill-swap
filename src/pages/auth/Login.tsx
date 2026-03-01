@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import type { AxiosError } from "axios";
 
-import rightImage from "@/assets/auth/right-container.png";
 import Brand from "@/components/Auth/Brand";
 import { authService } from "@/api/services/auth.service";
 import type { LoginDto } from "@/types/api.types";
@@ -315,7 +314,7 @@ export default function LoginPage() {
         {/* RIGHT */}
         <aside className="relative hidden lg:block">
           <img
-            src={rightImage}
+            src="/assets/auth/right-container.png"
             alt="SkillSwap collage"
             className="h-full w-full object-cover"
           />
