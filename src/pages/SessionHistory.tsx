@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ChevronRight, Search, Filter } from 'lucide-react'
+import { ChevronRight, Filter, ChevronDown } from 'lucide-react'
 import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
 import { SessionHistoryList } from '@/components/feedback/index'
@@ -8,6 +8,22 @@ import { ViewFeedbackModal } from '@/components/feedback/index'
 import { SessionHistorySidebar } from '@/components/feedback/SessionHistorySidebar'
 import { sessionService } from '@/api/services/session.service'
 import { userService } from '@/api/services/user.service'
+
+type StatusFilter = 'ALL' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED'
+
+const STATUS_OPTIONS: { label: string; value: StatusFilter }[] = [
+    { label: 'All', value: 'ALL' },
+    { label: 'Upcoming', value: 'SCHEDULED' },
+    { label: 'Completed', value: 'COMPLETED' },
+    { label: 'Cancelled', value: 'CANCELLED' },
+]
+
+const parseOverallRating = (val: string | number | undefined): number => {
+    if (!val) return 0;
+    if (typeof val === 'number') return val;
+    const map: Record<string, number> = { 'ONE': 1, 'TWO': 2, 'THREE': 3, 'FOUR': 4, 'FIVE': 5 };
+    return map[val.toString().toUpperCase()] || 0;
+};
 
 export const SessionHistory: React.FC = () => {
     const navigate = useNavigate()
@@ -23,6 +39,26 @@ export const SessionHistory: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
     const [pageSize] = useState(10)
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
+    const [filterOpen, setFilterOpen] = useState(false)
+    const filterRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+                setFilterOpen(false)
+            }
+        }
+        if (filterOpen) document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [filterOpen])
+
+    const filteredSessions = statusFilter === 'ALL'
+        ? sessions
+        : sessions.filter(s => {
+            if (statusFilter === 'SCHEDULED') return s.status === 'SCHEDULED' || s.status === 'RESCHEDULED'
+            return s.status === statusFilter
+        })
 
     useEffect(() => {
         const fetchSessions = async () => {
@@ -34,12 +70,22 @@ export const SessionHistory: React.FC = () => {
                     setCurrentUser(userRes.data)
                 }
 
-                const response = await sessionService.getHistory({ page: currentPage, limit: pageSize })
+                const [response, reviewsRes] = await Promise.all([
+                    sessionService.getHistory({ page: currentPage, limit: pageSize }),
+                    sessionService.getReceivedReviews(1, 100)
+                ])
                 if (response.success && userRes.success) {
                     const rawSessions = response.data.data || []
                     const currentUserId = userRes.data.id
+                    const reviewMap: Record<string, number> = {}
+                    if (reviewsRes.success && reviewsRes.data?.reviews) {
+                        reviewsRes.data.reviews.forEach((r: any) => {
+                            if (r.swapRequestId) {
+                                reviewMap[r.swapRequestId] = parseOverallRating(r.overallRating)
+                            }
+                        })
+                    }
 
-                    // Backend returns totalPages or we calculate it
                     setTotalPages(response.data.totalPages || Math.ceil((response.data.total || 0) / pageSize) || 1)
 
                     const transformed = rawSessions.map((s: any) => {
@@ -54,6 +100,8 @@ export const SessionHistory: React.FC = () => {
                             skillName: s.skill?.name || s.title,
                             role: isHost ? 'provider' : 'seeker',
                             status: s.status,
+                            duration: s.duration,
+                            rating: s.swapRequest?.id ? (reviewMap[s.swapRequest.id] || 0) : 0,
                             _raw: s,
                             _partner: partner,
                         }
@@ -173,18 +221,32 @@ export const SessionHistory: React.FC = () => {
                         <div className="space-y-6">
 
                             <div className="flex items-center justify-between">
-                                <div className="flex gap-3">
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-                                        <input
-                                            type="text"
-                                            placeholder="Search sessions..."
-                                            className="pl-10 pr-4 py-2.5 rounded-xl border border-[#E5E7EB] bg-white text-xs w-64 outline-none focus:ring-1 focus:ring-[#3E8FCC] transition-all"
-                                        />
-                                    </div>
-                                    <button className="p-2.5 rounded-xl bg-white border border-[#E5E7EB] hover:bg-gray-50 transition-colors">
+                                <div className="flex gap-3 relative" ref={filterRef}>
+                                    <button
+                                        onClick={() => setFilterOpen(prev => !prev)}
+                                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#E5E7EB] hover:bg-gray-50 transition-colors text-xs font-medium text-[#666666]"
+                                    >
                                         <Filter className="w-4 h-4 text-[#666666]" />
+                                        {statusFilter === 'ALL' ? 'Filter' : STATUS_OPTIONS.find(o => o.value === statusFilter)?.label}
+                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${filterOpen ? 'rotate-180' : ''}`} />
                                     </button>
+
+                                    {filterOpen && (
+                                        <div className="absolute top-full left-0 mt-2 w-44 bg-white border border-[#E5E7EB] rounded-xl shadow-lg py-1 z-50">
+                                            {STATUS_OPTIONS.map(opt => (
+                                                <button
+                                                    key={opt.value}
+                                                    onClick={() => { setStatusFilter(opt.value); setFilterOpen(false); setCurrentPage(1) }}
+                                                    className={`w-full text-left px-4 py-2.5 text-xs font-medium transition-colors ${statusFilter === opt.value
+                                                        ? 'bg-[#EBF5FF] text-[#3E8FCC]'
+                                                        : 'text-[#374151] hover:bg-[#F9FAFB]'
+                                                        }`}
+                                                >
+                                                    {opt.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -211,7 +273,7 @@ export const SessionHistory: React.FC = () => {
                                 </div>
                             ) : (
                                 <SessionHistoryList
-                                    sessions={sessions}
+                                    sessions={filteredSessions}
                                     onViewFeedback={handleViewFeedback}
                                     currentPage={currentPage}
                                     totalPages={totalPages}
@@ -247,7 +309,7 @@ export const SessionHistory: React.FC = () => {
                             selectedSession.feedbacks?.find((f: any) => f.role === 'teaching' || f.type === 'TEACHING') ||
                             receivedReview)
                         : undefined,
-                    mutualRating: receivedReview?.overallRating || selectedSession.swapRequest?.rating || 5,
+                    mutualRating: parseOverallRating(receivedReview?.overallRating) || selectedSession.swapRequest?.rating || 0,
                 } : {
                     sessionId: selectedSessionId || '',
                     isComplete: true,

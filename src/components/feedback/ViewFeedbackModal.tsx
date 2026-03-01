@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { ThumbsUp, ThumbsDown, X, Loader2 } from 'lucide-react'
+import { ThumbsUp, ThumbsDown, X, Loader2, Star } from 'lucide-react'
 import { Modal, RatingDisplay, Avatar } from '@/components/common'
 
 interface ViewFeedbackModalProps {
@@ -102,9 +102,21 @@ export const ViewFeedbackModal: React.FC<ViewFeedbackModalProps> = ({
                         </div>
 
                         {skillName && (
-                            <div className="mb-8 flex items-center gap-2">
+                            <div className="mb-4 flex items-center gap-2">
                                 <span className="text-[13px] font-bold text-[#0C0D0F]">Session Subject:</span>
                                 <span className="text-[13px] font-bold text-[#3E8FCC]">{skillName}</span>
+                            </div>
+                        )}
+
+                        {!!sessionFeedback.mutualRating && sessionFeedback.mutualRating > 0 && (
+                            <div className="mb-8 flex items-center gap-3">
+                                <span className="text-[13px] font-bold text-[#0C0D0F]">Overall Rating:</span>
+                                <div className="flex gap-0.5">
+                                    {[1, 2, 3, 4, 5].map(s => (
+                                        <Star key={s} className={`w-4 h-4 ${s <= sessionFeedback.mutualRating! ? 'fill-current text-[#F59E0B]' : 'text-[#E5E7EB]'}`} />
+                                    ))}
+                                </div>
+                                <span className="text-[13px] font-bold text-[#F59E0B]">{sessionFeedback.mutualRating}/5</span>
                             </div>
                         )}
 

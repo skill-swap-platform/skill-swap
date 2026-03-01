@@ -23,7 +23,7 @@ export const sessionService = {
         return response.data;
     },
 
-    submitReview: async (reviewData: { swapRequestId: string; comment: string; isPublic: boolean }): Promise<ApiResponse<any>> => {
+    submitReview: async (reviewData: { swapRequestId: string; comment: string; isPublic: boolean; overallRating?: string }): Promise<ApiResponse<any>> => {
         const response = await axiosInstance.post('/api/v1/reviews', reviewData);
         return response.data;
     },
