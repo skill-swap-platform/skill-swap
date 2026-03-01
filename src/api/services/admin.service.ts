@@ -111,6 +111,27 @@ export interface AdminBadgeManagementItem {
     icon: string | null
 }
 
+export interface GetAdminAuditLogsParams {
+    page: number
+    limit: number
+}
+
+export interface AdminAuditLogItem {
+    id: string
+    timestamp: string
+    action: string
+    entity: string
+    details: string
+    status: string
+}
+
+export interface AdminAuditLogsResponse {
+    data: AdminAuditLogItem[]
+    total: number
+    page: number
+    limit: number
+}
+
 const toNumber = (value: unknown, fallback = 0): number => {
     const normalized = Number(value)
     return Number.isFinite(normalized) ? normalized : fallback
@@ -255,6 +276,42 @@ const normalizeAdminBadgesResponse = (value: unknown): AdminBadgeManagementItem[
     return source.map(normalizeAdminBadge).filter((badge) => badge.id.length > 0)
 }
 
+const normalizeAuditLogItem = (value: unknown): AdminAuditLogItem => {
+    const row = (value ?? {}) as Record<string, unknown>
+
+    return {
+        id: toText(row.id ?? row._id),
+        timestamp: toText(row.timestamp ?? row.createdAt ?? row.time),
+        action: toText(row.action),
+        entity: toText(row.entity),
+        details: toText(row.details ?? row.description ?? row.message),
+        status: toText(row.status, 'UNKNOWN'),
+    }
+}
+
+const normalizeAuditLogsResponse = (value: unknown): AdminAuditLogsResponse => {
+    const root = (value ?? {}) as Record<string, unknown>
+    const payload =
+        root.data && typeof root.data === 'object' && !Array.isArray(root.data)
+            ? (root.data as Record<string, unknown>)
+            : root
+
+    const source =
+        (Array.isArray(value) && value) ||
+        (Array.isArray(payload.data) && payload.data) ||
+        (Array.isArray(payload.logs) && payload.logs) ||
+        []
+
+    const rows = source.map(normalizeAuditLogItem)
+
+    return {
+        data: rows,
+        total: toNumber(payload.total, rows.length),
+        page: toNumber(payload.page, 1),
+        limit: toNumber(payload.limit, rows.length || 1),
+    }
+}
+
 export const adminService = {
     getDashboard: async (params: AdminDashboardPeriod): Promise<AdminDashboardData> => {
         const response = await axiosInstance.get('/api/v1/admin/dashboard', { params })
@@ -284,5 +341,10 @@ export const adminService = {
         await axiosInstance.patch(`/api/v1/admin/${badgeId}/requirement`, {
             requirement: String(requirement),
         })
+    },
+
+    getAuditLogs: async (params: GetAdminAuditLogsParams): Promise<AdminAuditLogsResponse> => {
+        const response = await axiosInstance.get('/api/v1/admin/audit', { params })
+        return normalizeAuditLogsResponse(response.data)
     },
 }
