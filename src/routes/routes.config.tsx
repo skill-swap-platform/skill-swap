@@ -16,6 +16,7 @@ import { AdminDashboard } from "@/pages/admin/AdminDashboard";
 import { AdminSkillsManagement } from "@/pages/admin/AdminSkillsManagement";
 import { AdminUsersList } from "@/pages/admin/AdminUsersList";
 import AdminUserDetailsOverview from "@/pages/admin/AdminUserDetailsOverview";
+import { AdminBadgesManagement } from "@/pages/admin/AdminBadgesManagement";
 import { PointsAndBadges } from "@/pages/PointsAndBadges";
 import { SessionHistory } from "@/pages/SessionHistory";
 import { SessionFeedback } from "@/pages/SessionFeedback";
@@ -156,6 +157,14 @@ export const routesConfig: RouteConfig[] = [
     element: (
       <ProtectedRoute allowedRoles={["ADMIN"]}>
         <AdminUserDetailsOverview />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/badges",
+    element: (
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
+        <AdminBadgesManagement />
       </ProtectedRoute>
     ),
   },
