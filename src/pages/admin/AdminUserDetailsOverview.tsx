@@ -18,6 +18,7 @@ import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import AdminUserSwapsTable from '@/components/admin-users/AdminUserSwapsTable'
 import AdminUserSessionsTable from '@/components/admin-users/AdminUserSessionsTable'
 import AdminUserBadgesPanel from '@/components/admin-users/AdminUserBadgesPanel'
+import AdminUserActivityLogPanel from '@/components/admin-users/AdminUserActivityLogPanel'
 import { authService } from '@/api/services/auth.service'
 import { userService } from '@/api/services/user.service'
 import { useAdminUserOverview } from '@/hooks/useAdminUserOverview'
@@ -148,6 +149,7 @@ export const AdminUserDetailsOverview: React.FC = () => {
     const isOverviewTab = activeTab === 'Overview'
     const isSessionsTab = activeTab === 'Sessions'
     const isBadgesTab = activeTab === 'Badges'
+    const isActivityLogTab = activeTab === 'Activity log'
     const swapsDirection: 'SENT' | 'RECEIVED' | null =
         activeTab === 'Sent Swap Requests'
             ? 'SENT'
@@ -619,7 +621,13 @@ export const AdminUserDetailsOverview: React.FC = () => {
 
                     {isBadgesTab && <AdminUserBadgesPanel userId={userId} />}
 
-                    {!isOverviewTab && !swapsDirection && !isSessionsTab && !isBadgesTab && (
+                    {isActivityLogTab && <AdminUserActivityLogPanel userId={userId} />}
+
+                    {!isOverviewTab &&
+                        !swapsDirection &&
+                        !isSessionsTab &&
+                        !isBadgesTab &&
+                        !isActivityLogTab && (
                         <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 text-center text-sm text-[#666666]">
                             This section is coming soon.
                         </section>

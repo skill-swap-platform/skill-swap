@@ -17,6 +17,7 @@ import type {
     AdminUserOverviewNote,
     AdminUserOverviewProfile,
     AdminUserOverviewSkill,
+    AdminUserActivityLogItem,
     AdminUserBadgeItem,
     AdminUserBadgesData,
     AdminUsersData,
@@ -558,6 +559,67 @@ const normalizeAdminUserOverviewData = (value: unknown): AdminUserOverviewData =
     }
 }
 
+const normalizeActivityMetadata = (value: unknown): Record<string, unknown> | null => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+    return value as Record<string, unknown>
+}
+
+const normalizeActivityLogItem = (value: unknown, index: number): AdminUserActivityLogItem => {
+    const row = (value ?? {}) as Record<string, unknown>
+    const adminObject =
+        row.admin && typeof row.admin === 'object' ? (row.admin as Record<string, unknown>) : null
+    const metadata = normalizeActivityMetadata(row.metadata)
+    const createdAt = toText(
+        row.createdAt ?? row.updatedAt ?? row.loggedAt ?? row.date ?? row.timestamp ?? ''
+    )
+    const fallbackId = `${toText(row.type, 'activity')}-${createdAt || index}`
+
+    return {
+        id: toText(row.id ?? row._id ?? row.activityId ?? row.logId, fallbackId),
+        entity: toText(row.entity, 'Activity'),
+        type: toText(row.type, 'UNKNOWN'),
+        adminId: toText(row.adminId ?? row.admin_id ?? adminObject?.id ?? adminObject?._id),
+        adminName: toText(
+            row.adminName ??
+                row.admin_name ??
+                row.actorName ??
+                row.performedBy ??
+                adminObject?.userName ??
+                adminObject?.name
+        ),
+        adminEmail: toText(row.adminEmail ?? row.admin_email ?? adminObject?.email),
+        externalNote: toText(row.externalNote ?? row.note ?? row.message ?? row.content),
+        reason: toText(row.reason),
+        metadata,
+        endAt: toText(row.endAt ?? row.endsAt ?? row.expireAt ?? row.expiresAt),
+        createdAt,
+    }
+}
+
+const normalizeAdminUserActivityLogs = (value: unknown): AdminUserActivityLogItem[] => {
+    const root = (value ?? {}) as Record<string, unknown>
+    const payload =
+        root.data && typeof root.data === 'object' ? (root.data as Record<string, unknown>) : root
+    const nestedData =
+        payload.data && typeof payload.data === 'object'
+            ? (payload.data as Record<string, unknown>)
+            : null
+
+    const logsSource =
+        (Array.isArray(value) && value) ||
+        (Array.isArray(root.data) && root.data) ||
+        (Array.isArray(payload.data) && payload.data) ||
+        (Array.isArray(payload.items) && payload.items) ||
+        (Array.isArray(payload.logs) && payload.logs) ||
+        (Array.isArray(payload.activityLogs) && payload.activityLogs) ||
+        (nestedData && Array.isArray(nestedData.data) && nestedData.data) ||
+        (nestedData && Array.isArray(nestedData.items) && nestedData.items) ||
+        (nestedData && Array.isArray(nestedData.logs) && nestedData.logs) ||
+        []
+
+    return logsSource.map(normalizeActivityLogItem)
+}
+
 const normalizeSwapStatus = (value: unknown): AdminSwapStatus => {
     const normalized = toText(value).toUpperCase()
     if (normalized === 'ACCEPTED') return 'ACCEPTED'
@@ -1035,6 +1097,18 @@ export const getAdminUserOverview = async (userId: string): Promise<AdminUserOve
 
     const response = await axiosInstance.get(`/api/v1/admin/${normalizedUserId}/overview`)
     return normalizeAdminUserOverviewData(response.data)
+}
+
+export const getAdminUserActivityLog = async (
+    userId: string
+): Promise<AdminUserActivityLogItem[]> => {
+    const normalizedUserId = userId.trim()
+    if (!normalizedUserId) {
+        throw new Error('User id is required')
+    }
+
+    const response = await axiosInstance.get(`/api/v1/admin/users/${normalizedUserId}/activity-log`)
+    return normalizeAdminUserActivityLogs(response.data)
 }
 
 export const getAdminUserSwaps = async (
