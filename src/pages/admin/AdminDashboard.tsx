@@ -68,7 +68,51 @@ const getStoredUser = (): UserAuthDto | null => {
     }
 }
 
+const normalizeNumberString = (value: string): string => {
+    const cleaned = value.trim().replace(/[^\d.,-]/g, '')
+    if (!cleaned) return ''
+
+    const thousandsPattern = /^-?\d{1,3}([.,]\d{3})+$/
+    if (thousandsPattern.test(cleaned)) {
+        return cleaned.replace(/[.,]/g, '')
+    }
+
+    const hasDot = cleaned.includes('.')
+    const hasComma = cleaned.includes(',')
+
+    if (hasDot && hasComma) {
+        const lastDot = cleaned.lastIndexOf('.')
+        const lastComma = cleaned.lastIndexOf(',')
+        const decimalSeparator = lastDot > lastComma ? '.' : ','
+        const thousandsSeparator = decimalSeparator === '.' ? ',' : '.'
+        const withoutThousands = cleaned.split(thousandsSeparator).join('')
+        return decimalSeparator === ',' ? withoutThousands.replace(',', '.') : withoutThousands
+    }
+
+    if (hasComma && !hasDot) {
+        const commaParts = cleaned.split(',')
+        if (commaParts.length === 2 && commaParts[1].length !== 3) {
+            return cleaned.replace(',', '.')
+        }
+        return cleaned.replace(/,/g, '')
+    }
+
+    return cleaned
+}
+
 const toNumber = (value: unknown, fallback = 0): number => {
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : fallback
+    }
+
+    if (typeof value === 'string') {
+        const normalized = normalizeNumberString(value)
+        if (!normalized) return fallback
+
+        const numericValue = Number(normalized)
+        return Number.isFinite(numericValue) ? numericValue : fallback
+    }
+
     const numericValue = Number(value)
     return Number.isFinite(numericValue) ? numericValue : fallback
 }
@@ -77,6 +121,32 @@ const clampPercentage = (value: number): number => {
     if (value < 0) return 0
     if (value > 100) return 100
     return value
+}
+
+const normalizePercentage = (value: unknown): number => {
+    const numericValue = toNumber(value)
+    const normalizedValue =
+        Number.isFinite(numericValue) && numericValue > 0 && numericValue < 1
+            ? numericValue * 100
+            : numericValue
+    return clampPercentage(normalizedValue)
+}
+
+const pickFirstValue = (source: Record<string, unknown>, keys: string[]): unknown => {
+    for (const key of keys) {
+        if (source[key] !== undefined && source[key] !== null) return source[key]
+    }
+    return undefined
+}
+
+const normalizeMonth = (value: unknown, fallback: number): number => {
+    const parsed = Math.round(toNumber(value, fallback))
+    return parsed >= 1 && parsed <= 12 ? parsed : fallback
+}
+
+const normalizeYear = (value: unknown, fallback: number): number => {
+    const parsed = Math.round(toNumber(value, fallback))
+    return parsed >= 1970 ? parsed : fallback
 }
 
 const getCurrentPeriod = (): AdminDashboardPeriod => ({
@@ -106,6 +176,9 @@ const normalizeDashboardData = (
     const summary = rawData.summary ?? DEFAULT_DASHBOARD_DATA.summary
     const userOverview = rawData.userOverview ?? DEFAULT_DASHBOARD_DATA.userOverview
     const period = rawData.period ?? DEFAULT_DASHBOARD_DATA.period
+    const summaryRecord = summary as Record<string, unknown>
+    const userOverviewRecord = userOverview as Record<string, unknown>
+    const periodRecord = period as Record<string, unknown>
 
     const completedSessionsChart = Array.isArray(rawData.completedSessionsChart)
         ? rawData.completedSessionsChart
@@ -121,7 +194,7 @@ const normalizeDashboardData = (
         ? rawData.topSkills.map((item) => ({
             skillName: (item as TopSkillItem).skillName || 'Unknown',
             swaps: toNumber((item as TopSkillItem).swaps),
-            percentage: clampPercentage(toNumber((item as TopSkillItem).percentage)),
+            percentage: normalizePercentage((item as TopSkillItem).percentage),
         }))
         : []
 
@@ -146,38 +219,100 @@ const normalizeDashboardData = (
 
     return {
         summary: {
-            completedSessionsThisWeek: toNumber(summary.completedSessionsThisWeek),
-            activeUsers: toNumber(summary.activeUsers),
-            totalSwapThisWeek: toNumber(summary.totalSwapThisWeek),
-            weeklyReports: toNumber(summary.weeklyReports),
+            completedSessionsThisWeek: toNumber(
+                pickFirstValue(summaryRecord, [
+                    'completedSessionsThisWeek',
+                    'completedSessionThisWeek',
+                    'completed_sessions_this_week',
+                ])
+            ),
+            activeUsers: toNumber(
+                pickFirstValue(summaryRecord, ['activeUsers', 'activeUser', 'active_users'])
+            ),
+            totalSwapThisWeek: toNumber(
+                pickFirstValue(summaryRecord, [
+                    'totalSwapThisWeek',
+                    'totalSwapsThisWeek',
+                    'total_swap_this_week',
+                ])
+            ),
+            weeklyReports: toNumber(
+                pickFirstValue(summaryRecord, ['weeklyReports', 'weeklyReport', 'weekly_reports'])
+            ),
         },
         completedSessionsChart,
         topSkills,
         mostActiveUsers,
         requestsVsSessions,
         userOverview: {
-            newUsers: toNumber(userOverview.newUsers),
-            newUsersPercentage: clampPercentage(toNumber(userOverview.newUsersPercentage)),
-            usersRatedAbove3: toNumber(userOverview.usersRatedAbove3),
-            usersRatedAbove3Percentage: clampPercentage(
-                toNumber(userOverview.usersRatedAbove3Percentage)
+            newUsers: toNumber(
+                pickFirstValue(userOverviewRecord, ['newUsers', 'new_users', 'newUser'])
             ),
-            usersRatedBelow3: toNumber(userOverview.usersRatedBelow3),
-            usersRatedBelow3Percentage: clampPercentage(
-                toNumber(userOverview.usersRatedBelow3Percentage)
+            newUsersPercentage: normalizePercentage(
+                pickFirstValue(userOverviewRecord, [
+                    'newUsersPercentage',
+                    'newUsersPercent',
+                    'new_users_percentage',
+                ])
             ),
-            usersWithMultipleCancellations: toNumber(userOverview.usersWithMultipleCancellations),
-            usersWithMultipleCancellationsPercentage: clampPercentage(
-                toNumber(userOverview.usersWithMultipleCancellationsPercentage)
+            usersRatedAbove3: toNumber(
+                pickFirstValue(userOverviewRecord, [
+                    'usersRatedAbove3',
+                    'usersRatedAboveThree',
+                    'users_rated_above_3',
+                ])
             ),
-            flaggedUsersThisMonth: toNumber(userOverview.flaggedUsersThisMonth),
-            flaggedUsersThisMonthPercentage: clampPercentage(
-                toNumber(userOverview.flaggedUsersThisMonthPercentage)
+            usersRatedAbove3Percentage: normalizePercentage(
+                pickFirstValue(userOverviewRecord, [
+                    'usersRatedAbove3Percentage',
+                    'usersRatedAboveThreePercentage',
+                    'users_rated_above_3_percentage',
+                ])
+            ),
+            usersRatedBelow3: toNumber(
+                pickFirstValue(userOverviewRecord, [
+                    'usersRatedBelow3',
+                    'usersRatedBelowThree',
+                    'users_rated_below_3',
+                ])
+            ),
+            usersRatedBelow3Percentage: normalizePercentage(
+                pickFirstValue(userOverviewRecord, [
+                    'usersRatedBelow3Percentage',
+                    'usersRatedBelowThreePercentage',
+                    'users_rated_below_3_percentage',
+                ])
+            ),
+            usersWithMultipleCancellations: toNumber(
+                pickFirstValue(userOverviewRecord, [
+                    'usersWithMultipleCancellations',
+                    'users_multiple_cancellations',
+                ])
+            ),
+            usersWithMultipleCancellationsPercentage: normalizePercentage(
+                pickFirstValue(userOverviewRecord, [
+                    'usersWithMultipleCancellationsPercentage',
+                    'users_multiple_cancellations_percentage',
+                ])
+            ),
+            flaggedUsersThisMonth: toNumber(
+                pickFirstValue(userOverviewRecord, [
+                    'flaggedUsersThisMonth',
+                    'flaggedUsers',
+                    'flagged_users_this_month',
+                ])
+            ),
+            flaggedUsersThisMonthPercentage: normalizePercentage(
+                pickFirstValue(userOverviewRecord, [
+                    'flaggedUsersThisMonthPercentage',
+                    'flaggedUsersPercentage',
+                    'flagged_users_this_month_percentage',
+                ])
             ),
         },
         period: {
-            month: toNumber(period.month, DEFAULT_DASHBOARD_DATA.period.month),
-            year: toNumber(period.year, DEFAULT_DASHBOARD_DATA.period.year),
+            month: normalizeMonth(periodRecord.month, DEFAULT_DASHBOARD_DATA.period.month),
+            year: normalizeYear(periodRecord.year, DEFAULT_DASHBOARD_DATA.period.year),
         },
     }
 }
@@ -338,7 +473,7 @@ export const AdminDashboard: React.FC = () => {
                 percentage: data.userOverview.usersWithMultipleCancellationsPercentage,
             },
             {
-                label: 'Flagged users this week',
+                label: 'Flagged users this month',
                 count: data.userOverview.flaggedUsersThisMonth,
                 percentage: data.userOverview.flaggedUsersThisMonthPercentage,
             },
