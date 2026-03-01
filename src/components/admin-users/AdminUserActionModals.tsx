@@ -269,6 +269,7 @@ export type AdminUserActionModalType =
 export type AdminUserActionModalState = {
     type: AdminUserActionModalType
     user: AdminUserItem
+    targetUserIds?: string[]
 }
 
 export type WarnModalPayload = {
@@ -327,6 +328,8 @@ export const AdminUserActionModals: React.FC<AdminUserActionModalsProps> = ({
 }) => {
     const modalType = state?.type ?? null
     const user = state?.user ?? null
+    const targetUserIds = state?.targetUserIds ?? (user ? [user.id] : [])
+    const targetUsersCount = targetUserIds.length
     const isOpen = modalType !== null && user !== null
 
     const [warnReason, setWarnReason] = useState(restrictionReasons[0])
@@ -440,6 +443,12 @@ export const AdminUserActionModals: React.FC<AdminUserActionModalsProps> = ({
 
                     <UserSummaryCard user={user} />
 
+                    {targetUsersCount > 1 ? (
+                        <p className="text-[13px] text-[#3272A3]">
+                            This warning will be sent to {targetUsersCount} selected users.
+                        </p>
+                    ) : null}
+
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <FieldLabel title="Reason for warning" required />
@@ -513,6 +522,12 @@ export const AdminUserActionModals: React.FC<AdminUserActionModalsProps> = ({
                     </div>
 
                     <UserSummaryCard user={user} />
+
+                    {targetUsersCount > 1 ? (
+                        <p className="text-[13px] text-[#3272A3]">
+                            This suspension will be applied to {targetUsersCount} selected users.
+                        </p>
+                    ) : null}
 
                     <div className="space-y-4">
                         <div className="space-y-2">
