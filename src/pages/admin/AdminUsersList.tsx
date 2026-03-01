@@ -11,6 +11,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import Avatar from '@/components/Avatar/Avatar'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
+import { SortOrderIcon } from '@/components/admin-users/SortOrderIcon'
 import { authService } from '@/api/services/auth.service'
 import { userService } from '@/api/services/user.service'
 import { useAdminUsers } from '@/hooks/useAdminUsers'
@@ -677,11 +678,7 @@ export const AdminUsersList: React.FC = () => {
                                         className="flex h-12 min-w-[110px] items-center justify-between rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm text-[#0C0D0F]"
                                     >
                                         {selectedSortLabel}
-                                        <ChevronDown
-                                            className={`h-4 w-4 text-[#0C0D0F] transition-transform ${
-                                                sortMenuOpen ? 'rotate-180' : ''
-                                            }`}
-                                        />
+                                        <SortOrderIcon sort={sort} />
                                     </button>
 
                                     {sortMenuOpen && (
