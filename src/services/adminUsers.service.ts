@@ -22,6 +22,8 @@ import type {
     AdminUserBadgesData,
     AdminUsersData,
     AdminUsersPagination,
+    AdminUserRestrictionPayload,
+    AdminUserAdjustPointsPayload,
     AdminUsersQueryParams,
     AdminUsersResponse,
 } from '@/types/adminUsers.types'
@@ -1167,4 +1169,114 @@ export const addAdminUserNote = async (userId: string, externalNote: string): Pr
     await axiosInstance.post(`/api/v1/admin/${normalizedUserId}/note`, {
         externalNote: normalizedNote,
     })
+}
+
+const normalizeRestrictionPayload = (
+    payload: AdminUserRestrictionPayload,
+    fallbackType: string
+): AdminUserRestrictionPayload => {
+    const normalizedType = payload.type?.trim() || fallbackType
+    const normalizedReason = payload.reason?.trim() ?? ''
+    const normalizedExternalNote = payload.externalNote?.trim() ?? ''
+    const normalizedEndAt = payload.endAt?.trim()
+
+    if (!normalizedReason) {
+        throw new Error('Reason is required')
+    }
+
+    if (!normalizedExternalNote) {
+        throw new Error('Message is required')
+    }
+
+    return {
+        type: normalizedType,
+        reason: normalizedReason,
+        externalNote: normalizedExternalNote,
+        endAt: normalizedEndAt && normalizedEndAt.length > 0 ? normalizedEndAt : undefined,
+    }
+}
+
+const normalizePointsPayload = (
+    payload: AdminUserAdjustPointsPayload
+): { actionType: 'ADD' | 'DEDUCT'; points: number; reason: string } => {
+    const normalizedReason = payload.reason?.trim() ?? ''
+    if (!normalizedReason) {
+        throw new Error('Adjustment reason is required')
+    }
+
+    const normalizedPoints = Number(payload.points)
+    if (!Number.isFinite(normalizedPoints) || normalizedPoints <= 0) {
+        throw new Error('Points amount must be greater than zero')
+    }
+
+    return {
+        actionType: payload.actionType === 'DEDUCT' ? 'DEDUCT' : 'ADD',
+        points: normalizedPoints,
+        reason: normalizedReason,
+    }
+}
+
+export const warnAdminUser = async (
+    userId: string,
+    payload: AdminUserRestrictionPayload
+): Promise<void> => {
+    const normalizedUserId = userId.trim()
+    if (!normalizedUserId) {
+        throw new Error('User id is required')
+    }
+
+    const normalizedPayload = normalizeRestrictionPayload(payload, 'WARNING')
+    await axiosInstance.post(`/api/v1/admin/${normalizedUserId}/warn`, normalizedPayload)
+}
+
+export const suspendAdminUser = async (
+    userId: string,
+    payload: AdminUserRestrictionPayload
+): Promise<void> => {
+    const normalizedUserId = userId.trim()
+    if (!normalizedUserId) {
+        throw new Error('User id is required')
+    }
+
+    const normalizedPayload = normalizeRestrictionPayload(payload, 'SUSPENSION')
+    if (!normalizedPayload.endAt) {
+        throw new Error('Suspension end date is required')
+    }
+
+    await axiosInstance.post(`/api/v1/admin/${normalizedUserId}/suspend`, normalizedPayload)
+}
+
+export const banAdminUser = async (
+    userId: string,
+    payload: AdminUserRestrictionPayload
+): Promise<void> => {
+    const normalizedUserId = userId.trim()
+    if (!normalizedUserId) {
+        throw new Error('User id is required')
+    }
+
+    const normalizedPayload = normalizeRestrictionPayload(payload, 'BAN')
+    await axiosInstance.post(`/api/v1/admin/${normalizedUserId}/ban`, normalizedPayload)
+}
+
+export const unbanAdminUser = async (userId: string): Promise<void> => {
+    const normalizedUserId = userId.trim()
+    if (!normalizedUserId) {
+        throw new Error('User id is required')
+    }
+
+    await axiosInstance.post(`/api/v1/admin/${normalizedUserId}/unban`)
+}
+
+export const adjustAdminUserPoints = async (
+    userId: string,
+    payload: AdminUserAdjustPointsPayload
+): Promise<void> => {
+    const normalizedUserId = userId.trim()
+    if (!normalizedUserId) {
+        throw new Error('User id is required')
+    }
+
+    const normalizedPayload = normalizePointsPayload(payload)
+    await axiosInstance.post(`/api/v1/admin/${normalizedUserId}/points`, normalizedPayload)
 }
