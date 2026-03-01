@@ -390,7 +390,7 @@ export const PointsAndBadges: React.FC = () => {
     const userRole = currentUser?.role ? currentUser.role.toLowerCase() : 'admin'
 
     return (
-        <div className="min-h-screen bg-[#F9F9F9]">
+        <div className="min-h-screen bg-white">
             <AdminSidebar mobileOpen={isMobileSidebarOpen} onMobileClose={() => setIsMobileSidebarOpen(false)} />
 
             <div className="md:ml-[236px]">
