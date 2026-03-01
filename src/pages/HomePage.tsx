@@ -164,7 +164,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-100">
-        <Header />
+        <Header activeTab="Home" />
         <div className="flex items-center justify-center py-32">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
         </div>
@@ -176,7 +176,7 @@ export default function DashboardPage() {
   if (!data) {
     return (
       <main className="min-h-screen bg-slate-100">
-        <Header />
+        <Header activeTab="Home" />
         <div className="flex flex-col items-center justify-center py-32 text-slate-500">
           <p className="text-lg">Unable to load dashboard data.</p>
           <button
@@ -194,7 +194,7 @@ export default function DashboardPage() {
 
   return (
     <main className="min-h-screen bg-slate-100">
-      <Header />
+      <Header activeTab="Home" />
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <HeroSection userName={data.userName} subtitle={data.heroSubtitle} />
