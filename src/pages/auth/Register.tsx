@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import rightImage from "@/assets/auth/right-container.png";
 import { authService } from "@/api/services/auth.service";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -183,7 +182,7 @@ export default function SignUpPage() {
 
                 {/* RIGHT */}
                 <aside className="relative hidden lg:block">
-                    <img src={rightImage} alt="SkillSwap collage" className="h-full w-full object-cover" />
+                    <img src="/assets/auth/right-container.png" alt="SkillSwap collage" className="h-full w-full object-cover" />
                 </aside>
             </div>
         </main>

@@ -9,11 +9,6 @@ import {
     getAdminEarnedBadgePreset,
     type AdminEarnedBadgePreset,
 } from '@/components/admin-users/adminBadgeOptionPresets'
-import firstExchangeIcon from '@/assets/badges/first-exchange.svg'
-import activeMemberIcon from '@/assets/badges/active-member.svg'
-import skillExchangerIcon from '@/assets/badges/skill-exchanger.svg'
-import experiencedIcon from '@/assets/badges/experienced.svg'
-import coreContributorIcon from '@/assets/badges/core-contributor.svg'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import { authService } from '@/api/services/auth.service'
 import { userService } from '@/api/services/user.service'
@@ -38,31 +33,31 @@ const badgeDesignByKey: Record<
     }
 > = {
     firstexchange: {
-        mainIcon: firstExchangeIcon,
+        mainIcon: '/assets/badges/first-exchange.svg',
         iconCircleClassName: 'bg-[rgba(62,143,204,0.1)]',
         lineAsset: 'https://www.figma.com/api/mcp/asset/a3f6e66f-dbb5-4818-b14d-d191228bb021',
         editIcon: 'https://www.figma.com/api/mcp/asset/54813953-3c1e-4e35-9807-f14be1b82ec0',
     },
     activemember: {
-        mainIcon: activeMemberIcon,
+        mainIcon: '/assets/badges/active-member.svg',
         iconCircleClassName: 'bg-[rgba(52,199,89,0.1)]',
         lineAsset: 'https://www.figma.com/api/mcp/asset/f00d5aa7-06ea-4d3a-9ff9-accb3dbbbd47',
         editIcon: 'https://www.figma.com/api/mcp/asset/b676a790-562d-4d29-a831-736dd78046d8',
     },
     skillexchanger: {
-        mainIcon: skillExchangerIcon,
+        mainIcon: '/assets/badges/skill-exchanger.svg',
         iconCircleClassName: 'bg-[rgba(0,199,190,0.1)]',
         lineAsset: 'https://www.figma.com/api/mcp/asset/73628c8c-e35c-465f-9264-3d8fea7e37f4',
         editIcon: 'https://www.figma.com/api/mcp/asset/2c7b404f-3afd-475a-a56d-7de849869f5f',
     },
     experienced: {
-        mainIcon: experiencedIcon,
+        mainIcon: '/assets/badges/experienced.svg',
         iconCircleClassName: 'bg-[rgba(88,86,214,0.1)]',
         lineAsset: 'https://www.figma.com/api/mcp/asset/87e6ba86-4649-48ab-8396-60e581583b85',
         editIcon: 'https://www.figma.com/api/mcp/asset/96dc7240-d246-459d-9952-6185362a1907',
     },
     corecontributor: {
-        mainIcon: coreContributorIcon,
+        mainIcon: '/assets/badges/core-contributor.svg',
         iconCircleClassName: 'bg-[rgba(255,204,0,0.1)]',
         lineAsset: 'https://www.figma.com/api/mcp/asset/421b72f8-dd69-4130-bc1d-afc001ff6636',
         editIcon: 'https://www.figma.com/api/mcp/asset/04673e88-bcc2-455b-99a6-ae812dbee96b',
