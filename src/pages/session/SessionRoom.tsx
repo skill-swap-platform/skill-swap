@@ -1,16 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header/Header';
+import { sessionService } from '@/api/services/session.service';
 import { Video, VideoOff, Mic, MicOff, Monitor, LogOut, Clock, X } from 'lucide-react';
 
 const SessionRoom: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const sessionId: string | undefined = (location.state as any)?.sessionId;
     const [isCamOn, setIsCamOn] = useState(true);
     const [isMicOn, setIsMicOn] = useState(true);
     const [isSharing, setIsSharing] = useState(false);
     const [hasJoined, setHasJoined] = useState(false);
     const [timeElapsed, setTimeElapsed] = useState(0);
     const [showWarning, setShowWarning] = useState(false);
+    const [isLeaving, setIsLeaving] = useState(false);
+
+    const handleLeave = async () => {
+        if (isLeaving) return;
+        setIsLeaving(true);
+        try {
+            if (sessionId) {
+                await sessionService.completeSession(sessionId, 'Session completed from session room');
+                navigate(`/session-feedback/${sessionId}`);
+            } else {
+                navigate('/session-history');
+            }
+        } catch {
+            navigate('/session-history');
+        } finally {
+            setIsLeaving(false);
+        }
+    };
 
     useEffect(() => {
         let timer: any;
@@ -156,8 +177,9 @@ const SessionRoom: React.FC = () => {
 
                     <div className="flex flex-col items-center gap-2">
                         <button
-                            onClick={() => navigate('/session-history')}
-                            className="w-[60px] h-[60px] bg-[#E74C3C] hover:bg-[#C0392B] text-white rounded-[18px] flex items-center justify-center shadow-lg transition-all active:scale-95 group"
+                            onClick={handleLeave}
+                            disabled={isLeaving}
+                            className="w-[60px] h-[60px] bg-[#E74C3C] hover:bg-[#C0392B] text-white rounded-[18px] flex items-center justify-center shadow-lg transition-all active:scale-95 group disabled:opacity-70"
                         >
                             <LogOut className="w-6 h-6 transform rotate-180 transition-transform group-hover:-translate-x-1" />
                         </button>

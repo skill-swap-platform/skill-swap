@@ -25,7 +25,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { label: "Home", to: "/home", tab: "Home" },
   { label: "Requests", to: "/requests-sent", tab: "Requests" },
-  { label: "Sessions", to: "/sessions", tab: "Sessions" },
+  { label: "Sessions", to: "/session-history", tab: "Sessions" },
   { label: "Explore", to: "/explore", tab: "Explore" },
 ];
 

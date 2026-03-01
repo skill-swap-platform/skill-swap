@@ -14,6 +14,8 @@ interface SessionHistoryListProps {
         role: 'provider' | 'seeker'
         feedback?: Feedback
         status?: string
+        duration?: number
+        rating?: number
     }>
     onViewFeedback?: (sessionId: string, action?: 'view' | 'complete') => void
     emptyMessage?: string
@@ -31,6 +33,25 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
     onPageChange,
 }) => {
     const [filter] = useState<'all' | 'provider' | 'seeker'>('all')
+    const [selectAll, setSelectAll] = useState(false)
+    const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
+
+    const handleSelectAll = (checked: boolean) => {
+        setSelectAll(checked)
+        if (checked) {
+            setSelectedRows(new Set(filteredSessions.map(s => s.id)))
+        } else {
+            setSelectedRows(new Set())
+        }
+    }
+
+    const handleRowSelect = (id: string, checked: boolean) => {
+        const next = new Set(selectedRows)
+        if (checked) next.add(id)
+        else next.delete(id)
+        setSelectedRows(next)
+        setSelectAll(next.size === filteredSessions.length)
+    }
 
     const filteredSessions = useMemo(() => {
         return sessions.filter((session) => {
@@ -69,7 +90,12 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
             <div className="hidden md:block bg-white rounded-xl border border-[#E5E7EB] overflow-hidden shadow-sm">
                 <div className="grid grid-cols-[50px_2fr_1.5fr_1.2fr_1.2fr_120px_40px] gap-4 px-6 py-5 text-[11px] font-bold text-[#666666] border-b border-[#F3F4F6] bg-white">
                     <div className="flex items-center">
-                        <input type="checkbox" className="w-4 h-4 rounded border-[#E5E7EB] text-[#3E8FCC] focus:ring-[#3E8FCC]" />
+                        <input
+                            type="checkbox"
+                            checked={selectAll}
+                            onChange={(e) => handleSelectAll(e.target.checked)}
+                            className="w-4 h-4 rounded border-[#E5E7EB] text-[#3E8FCC] focus:ring-[#3E8FCC] cursor-pointer"
+                        />
                     </div>
                     <div>Skill & Partner</div>
                     <div>Date & Time</div>
@@ -87,7 +113,12 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                                 className="grid grid-cols-[50px_2fr_1.5fr_1.2fr_1.2fr_120px_40px] gap-4 px-6 py-4 items-center hover:bg-[#F9FAFB] transition-all group"
                             >
                                 <div className="flex items-center">
-                                    <input type="checkbox" className="w-4 h-4 rounded border-[#E5E7EB] text-[#3E8FCC] focus:ring-[#3E8FCC]" />
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedRows.has(session.id)}
+                                        onChange={(e) => handleRowSelect(session.id, e.target.checked)}
+                                        className="w-4 h-4 rounded border-[#E5E7EB] text-[#3E8FCC] focus:ring-[#3E8FCC] cursor-pointer"
+                                    />
                                 </div>
                                 <div className="flex items-center gap-4 min-w-0">
                                     <Avatar src={session.partnerAvatar} name={session.partnerName} size="md" />
@@ -98,13 +129,14 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                                 </div>
                                 <div className="text-[11px] text-[#0C0D0F]">
                                     <div className="font-bold">{formatDate(session.date, 'MMM dd, yyyy')}</div>
-                                    <div className="text-[#9CA3AF] mt-0.5">1 hour</div>
+                                    <div className="text-[#9CA3AF] mt-0.5">{session.duration ? `${session.duration} min` : '—'}</div>
                                 </div>
                                 <div className="flex justify-center">
                                     {(status === 'Completed' || status === 'In Progress') ? (
-                                        <div className="flex gap-0.5 text-[#F59E0B]">
-                                            {[1, 2, 3, 4].map(s => <Star key={s} className="w-3.5 h-3.5 fill-current" />)}
-                                            <Star className="w-3.5 h-3.5 text-[#E5E7EB]" />
+                                        <div className="flex gap-0.5">
+                                            {[1, 2, 3, 4, 5].map(s => (
+                                                <Star key={s} className={`w-3.5 h-3.5 ${s <= (session.rating || 0) ? 'fill-current text-[#F59E0B]' : 'text-[#E5E7EB]'}`} />
+                                            ))}
                                         </div>
                                     ) : (
                                         <div className="flex gap-1">
@@ -118,19 +150,26 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                                     </span>
                                 </div>
                                 <div className="flex justify-center">
-                                    {status === 'Completed' || status === 'In Progress' || status === 'Canceled' ? (
+                                    {status === 'Completed' || status === 'In Progress' ? (
                                         <button
                                             onClick={() => onViewFeedback?.(session.id)}
                                             className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-white text-[10px] font-bold text-[#3E8FCC] hover:bg-gray-50 transition-colors"
                                         >
                                             View
                                         </button>
+                                    ) : status === 'Canceled' ? (
+                                        <button
+                                            disabled
+                                            className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-white text-[10px] font-bold text-[#9CA3AF] cursor-not-allowed opacity-60"
+                                        >
+                                            View
+                                        </button>
                                     ) : (
                                         <button
-                                            onClick={() => (onViewFeedback as any)?.(session.id, 'complete')}
-                                            className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-[#3E8FCC] text-[10px] font-bold text-white hover:bg-[#357db3] transition-colors"
+                                            disabled
+                                            className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-[#3E8FCC] text-[10px] font-bold text-white cursor-not-allowed opacity-60"
                                         >
-                                            Complete
+                                            Enroll
                                         </button>
                                     )}
                                 </div>
@@ -164,11 +203,13 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
 
                             <div className="flex items-center justify-between">
                                 <div className="text-[11px] text-[#666666]">
-                                    {formatDate(session.date, 'MMM dd, yyyy')} · 1 hour
+                                    {formatDate(session.date, 'MMM dd, yyyy')} · {session.duration ? `${session.duration} min` : '—'}
                                 </div>
-                                <div className="flex gap-0.5 text-[#F59E0B]">
+                                <div className="flex gap-0.5">
                                     {(status === 'Completed' || status === 'In Progress') ? (
-                                        [1, 2, 3, 4].map(s => <Star key={s} className="w-3 h-3 fill-current" />)
+                                        [1, 2, 3, 4, 5].map(s => (
+                                            <Star key={s} className={`w-3 h-3 ${s <= (session.rating || 0) ? 'fill-current text-[#F59E0B]' : 'text-[#E5E7EB]'}`} />
+                                        ))
                                     ) : (
                                         [1, 2, 3, 4, 5].map(s => <div key={s} className="w-3 h-3 border border-[#E5E7EB] rounded-full" />)
                                     )}
@@ -176,19 +217,26 @@ export const SessionHistoryList: React.FC<SessionHistoryListProps> = ({
                             </div>
 
                             <div className="mt-3 flex justify-end">
-                                {status === 'Completed' || status === 'In Progress' || status === 'Canceled' ? (
+                                {status === 'Completed' || status === 'In Progress' ? (
                                     <button
                                         onClick={() => onViewFeedback?.(session.id)}
                                         className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-white text-[10px] font-bold text-[#3E8FCC] hover:bg-gray-50 transition-colors"
                                     >
                                         View
                                     </button>
+                                ) : status === 'Canceled' ? (
+                                    <button
+                                        disabled
+                                        className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-white text-[10px] font-bold text-[#9CA3AF] cursor-not-allowed opacity-60"
+                                    >
+                                        View
+                                    </button>
                                 ) : (
                                     <button
-                                        onClick={() => (onViewFeedback as any)?.(session.id, 'complete')}
-                                        className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-[#3E8FCC] text-[10px] font-bold text-white hover:bg-[#357db3] transition-colors"
+                                        disabled
+                                        className="px-4 py-1.5 rounded-lg border border-[#E5E7EB] bg-[#3E8FCC] text-[10px] font-bold text-white cursor-not-allowed opacity-60"
                                     >
-                                        Complete
+                                        Enroll
                                     </button>
                                 )}
                             </div>

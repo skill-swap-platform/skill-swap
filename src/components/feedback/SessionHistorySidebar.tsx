@@ -11,6 +11,7 @@ interface SessionItem {
     skillName: string
     role: 'provider' | 'seeker'
     status?: string
+    duration?: number
 }
 
 interface SessionHistorySidebarProps {
@@ -68,11 +69,11 @@ export const SessionHistorySidebar: React.FC<SessionHistorySidebarProps> = ({ se
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <Clock className="w-3 h-3" />
-                                        1 hour
+                                        {session.duration ? `${session.duration} min` : '—'}
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => navigate(`/session-room/${session.id}`)}
+                                    onClick={() => navigate('/sessions')}
                                     className="w-full mt-4 py-2 bg-[#3E8FCC] text-white text-xs font-bold rounded-lg hover:bg-[#2F71A3] transition-colors"
                                 >
                                     View Details

@@ -19,7 +19,6 @@ const UpcomingSession = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<UpcomingSessionViewModel | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isCompleting, setIsCompleting] = useState(false);
 
   useEffect(() => {
     const fetchFirstUpcoming = async () => {
@@ -35,11 +34,16 @@ const UpcomingSession = () => {
             const s = raw[0];
             const isHost = s.host?.id === userRes.data.id;
             const partner = isHost ? s.attendee : s.host;
+            const startTime = new Date(s.scheduledAt);
+            const endTime = s.duration ? new Date(startTime.getTime() + s.duration * 60000) : null;
+            const timeStr = endTime
+              ? `${startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`
+              : startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
             setSession({
               id: s.id,
               title: s.skill?.name || s.title || 'Skill Session',
               date: new Date(s.scheduledAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
-              time: new Date(s.scheduledAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+              time: timeStr,
               partnerName: partner?.userName || 'Partner',
             });
           }
@@ -53,18 +57,6 @@ const UpcomingSession = () => {
     fetchFirstUpcoming();
   }, []);
 
-  const handleMarkComplete = async () => {
-    if (!session?.id) return;
-    setIsCompleting(true);
-    try {
-      await sessionService.completeSession(session.id, 'Completed from Upcoming Sessions');
-      navigate(`/session-feedback/${session.id}`);
-    } catch {
-      navigate(`/session-feedback/${session.id}`);
-    } finally {
-      setIsCompleting(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
@@ -84,27 +76,9 @@ const UpcomingSession = () => {
                 dateLabel={session?.date}
                 timeLabel={session?.time}
                 partnerName={session?.partnerName}
-                onJoin={() => navigate('/session-room')}
+                onJoin={() => navigate('/session-room', { state: { sessionId: session?.id } })}
               />
 
-              {session?.id && (
-                <div className="mt-2 w-full max-w-sm">
-                  <button
-                    onClick={handleMarkComplete}
-                    disabled={isCompleting}
-                    className="w-full h-11 rounded-xl border-2 border-[#3E8FCC] bg-white text-[#3E8FCC] hover:bg-blue-50 text-[14px] font-bold transition-all shadow-sm flex items-center justify-center gap-2 group"
-                  >
-                    {isCompleting ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
-                    ) : (
-                      <>✓ Mark as Completed</>
-                    )}
-                  </button>
-                  <p className="mt-3 text-[11px] text-gray-400 text-center px-4">
-                    Once completed, you'll be redirected to provide feedback and unlock potential badges.
-                  </p>
-                </div>
-              )}
             </div>
           )}
         </div>
