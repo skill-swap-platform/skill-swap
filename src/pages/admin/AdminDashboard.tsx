@@ -176,9 +176,9 @@ const normalizeDashboardData = (
     const summary = rawData.summary ?? DEFAULT_DASHBOARD_DATA.summary
     const userOverview = rawData.userOverview ?? DEFAULT_DASHBOARD_DATA.userOverview
     const period = rawData.period ?? DEFAULT_DASHBOARD_DATA.period
-    const summaryRecord = summary as Record<string, unknown>
-    const userOverviewRecord = userOverview as Record<string, unknown>
-    const periodRecord = period as Record<string, unknown>
+    const summaryRecord = summary as unknown as Record<string, unknown>
+    const userOverviewRecord = userOverview as unknown as Record<string, unknown>
+    const periodRecord = period as unknown as Record<string, unknown>
 
     const completedSessionsChart = Array.isArray(rawData.completedSessionsChart)
         ? rawData.completedSessionsChart
