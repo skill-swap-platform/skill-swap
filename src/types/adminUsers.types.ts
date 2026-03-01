@@ -220,3 +220,16 @@ export interface AdminUserBadgesData {
     earned: AdminUserBadgeItem[]
     locked: AdminUserBadgeItem[]
 }
+
+export interface AdminUserRestrictionPayload {
+    type: string
+    reason: string
+    externalNote: string
+    endAt?: string
+}
+
+export interface AdminUserAdjustPointsPayload {
+    actionType: 'ADD' | 'DEDUCT'
+    points: number
+    reason: string
+}
