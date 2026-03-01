@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
-import { CalendarDays, Check, ChevronDown, Search, SlidersHorizontal } from 'lucide-react'
+import { CalendarDays, Check, ChevronDown, Search } from 'lucide-react'
+import { SortOrderIcon } from '@/components/admin-users/SortOrderIcon'
 import { useAdminUserActivityLog } from '@/hooks/useAdminUserActivityLog'
 import type { AdminUserActivityLogItem } from '@/types/adminUsers.types'
 
@@ -304,7 +305,7 @@ export const AdminUserActivityLogPanel: React.FC<AdminUserActivityLogPanelProps>
                             className="inline-flex h-12 items-center gap-1 rounded-[12px] border border-[#E5E7EB] bg-white px-4 text-[16px] text-[#0C0D0F]"
                         >
                             {sort === 'newest' ? 'Newest' : 'Oldest'}
-                            <SlidersHorizontal className="h-5 w-5 text-[#0C0D0F]" />
+                            <SortOrderIcon sort={sort} />
                         </button>
 
                         {sortMenuOpen && (

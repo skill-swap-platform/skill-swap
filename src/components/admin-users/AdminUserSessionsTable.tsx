@@ -7,8 +7,8 @@ import {
     ChevronRight,
     Download,
     Search,
-    SlidersHorizontal,
 } from 'lucide-react'
+import { SortOrderIcon } from '@/components/admin-users/SortOrderIcon'
 import { useAdminUserSessions } from '@/hooks/useAdminUserSessions'
 import type {
     AdminSessionStatus,
@@ -419,7 +419,7 @@ export const AdminUserSessionsTable: React.FC<AdminUserSessionsTableProps> = ({ 
                                 className="inline-flex h-12 items-center gap-1 rounded-[12px] border border-[#E5E7EB] bg-white px-4 text-[16px] text-[#0C0D0F]"
                             >
                                 {sortLabel}
-                                <SlidersHorizontal className="h-5 w-5 text-[#0C0D0F]" />
+                                <SortOrderIcon sort={sort} />
                             </button>
 
                             {sortMenuOpen && (

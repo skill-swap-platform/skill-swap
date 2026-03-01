@@ -7,8 +7,8 @@ import {
     ChevronRight,
     Download,
     Search,
-    SlidersHorizontal,
 } from 'lucide-react'
+import { SortOrderIcon } from '@/components/admin-users/SortOrderIcon'
 import { useAdminUserSwaps } from '@/hooks/useAdminUserSwaps'
 import type {
     AdminSwapDirection,
@@ -394,7 +394,7 @@ export const AdminUserSwapsTable: React.FC<AdminUserSwapsTableProps> = ({ userId
                                 className="inline-flex h-10 items-center gap-2 rounded-[12px] border border-[#E5E7EB] bg-white px-3 text-[16px] text-[#1C1C1C]"
                             >
                                 {sortLabel}
-                                <SlidersHorizontal className="h-4 w-4 text-[#0C0D0F]" />
+                                <SortOrderIcon sort={sort} />
                             </button>
 
                             {sortMenuOpen && (
