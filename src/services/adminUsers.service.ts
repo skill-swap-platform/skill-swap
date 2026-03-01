@@ -22,6 +22,8 @@ import type {
     AdminUserBadgesData,
     AdminUsersData,
     AdminUsersPagination,
+    AdminUserRestrictionPayload,
+    AdminUserAdjustPointsPayload,
     AdminUsersQueryParams,
     AdminUsersResponse,
 } from '@/types/adminUsers.types'
@@ -191,7 +193,18 @@ const firstResolvedNumberShallow = (
 
 const toBoolean = (value: unknown, fallback = false): boolean => {
     if (typeof value === 'boolean') return value
+    if (typeof value === 'number') return value !== 0
+    if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase()
+        if (normalized === 'true' || normalized === '1') return true
+        if (normalized === 'false' || normalized === '0') return false
+    }
     return fallback
+}
+
+const toRecord = (value: unknown): Record<string, unknown> | null => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+    return value as Record<string, unknown>
 }
 
 const imageUrlFromUnknown = (value: unknown): string | null => {
@@ -247,10 +260,221 @@ const resolveUserObject = (row: Record<string, unknown>): Record<string, unknown
     return null
 }
 
-const normalizeStatus = (value: unknown): AdminUserStatus => {
-    const normalized = toText(value).toUpperCase()
-    if (normalized === 'SUSPENDED') return 'SUSPENDED'
-    if (normalized === 'BANNED') return 'BANNED'
+const parseStatusToken = (value: unknown): AdminUserStatus | null => {
+    const normalized = toText(value)
+        .trim()
+        .toUpperCase()
+        .replace(/[\s-]+/g, '_')
+    if (!normalized) return null
+
+    if (normalized === 'ACTIVE') return 'ACTIVE'
+    if (
+        normalized === 'BANNED' ||
+        normalized === 'BAN' ||
+        normalized === 'BLOCKED' ||
+        normalized === 'BLACKLISTED' ||
+        normalized === 'PERMANENT_BAN' ||
+        normalized === 'PERM_BAN' ||
+        normalized.startsWith('BAN_') ||
+        normalized.endsWith('_BANNED')
+    ) {
+        return 'BANNED'
+    }
+    if (
+        normalized === 'SUSPENDED' ||
+        normalized === 'SUSPENSION' ||
+        normalized === 'SUSPEND' ||
+        normalized === 'INACTIVE' ||
+        normalized === 'NOT_ACTIVE' ||
+        normalized === 'DISABLED' ||
+        normalized === 'DEACTIVATED' ||
+        normalized.startsWith('SUSPEND_') ||
+        normalized.startsWith('SUSPENS_') ||
+        normalized.endsWith('_SUSPENSION') ||
+        normalized.endsWith('_SUSPENDED')
+    ) {
+        return 'SUSPENDED'
+    }
+
+    return null
+}
+
+const parseRestrictionType = (value: unknown): 'BAN' | 'SUSPENSION' | null => {
+    const normalized = toText(value)
+        .trim()
+        .toUpperCase()
+        .replace(/[\s-]+/g, '_')
+    if (!normalized) return null
+
+    if (
+        normalized === 'BAN' ||
+        normalized === 'BANNED' ||
+        normalized === 'PERMANENT_BAN' ||
+        normalized === 'PERM_BAN' ||
+        normalized.startsWith('BAN_') ||
+        normalized.endsWith('_BAN')
+    ) {
+        return 'BAN'
+    }
+
+    if (
+        normalized === 'SUSPENSION' ||
+        normalized === 'SUSPENDED' ||
+        normalized === 'SUSPEND' ||
+        normalized.startsWith('SUSPEND_') ||
+        normalized.endsWith('_SUSPEND') ||
+        normalized.endsWith('_SUSPENSION')
+    ) {
+        return 'SUSPENSION'
+    }
+
+    return null
+}
+
+const isRestrictionInactiveByStatus = (value: unknown): boolean => {
+    const normalized = toText(value)
+        .trim()
+        .toUpperCase()
+        .replace(/[\s-]+/g, '_')
+    if (!normalized) return false
+
+    return (
+        normalized === 'EXPIRED' ||
+        normalized === 'INACTIVE' ||
+        normalized === 'LIFTED' ||
+        normalized === 'REVOKED' ||
+        normalized === 'REMOVED' ||
+        normalized === 'CANCELLED' ||
+        normalized === 'CANCELED' ||
+        normalized === 'ENDED'
+    )
+}
+
+const isRestrictionActive = (
+    type: 'BAN' | 'SUSPENSION',
+    restriction: Record<string, unknown>
+): boolean => {
+    if (toBoolean(restriction.isActive) || toBoolean(restriction.active)) return true
+    if (
+        toBoolean(restriction.isRemoved) ||
+        toBoolean(restriction.removed) ||
+        toBoolean(restriction.isRevoked) ||
+        toBoolean(restriction.revoked)
+    ) {
+        return false
+    }
+
+    if (
+        isRestrictionInactiveByStatus(restriction.status) ||
+        isRestrictionInactiveByStatus(restriction.state)
+    ) {
+        return false
+    }
+
+    const endAt = toText(
+        restriction.endAt ?? restriction.endsAt ?? restriction.expireAt ?? restriction.expiresAt
+    )
+    if (endAt) {
+        const parsedEndAt = new Date(endAt).getTime()
+        if (!Number.isNaN(parsedEndAt) && parsedEndAt <= Date.now()) return false
+    }
+
+    if (type === 'BAN') return true
+    if (endAt) return true
+    return toBoolean(restriction.isSuspended, false)
+}
+
+const resolveRestrictionStatusFromSource = (
+    source: Record<string, unknown> | null | undefined
+): AdminUserStatus | null => {
+    if (!source) return null
+
+    const restrictionCandidates: unknown[] = []
+    const singleRestrictionKeys = [
+        'restriction',
+        'userRestriction',
+        'activeRestriction',
+        'currentRestriction',
+        'latestRestriction',
+        'latestUserRestriction',
+        'suspension',
+        'ban',
+    ]
+    const listRestrictionKeys = [
+        'restrictions',
+        'userRestrictions',
+        'activeRestrictions',
+        'restrictionHistory',
+        'userRestrictionHistory',
+    ]
+
+    singleRestrictionKeys.forEach((key) => {
+        if (key in source) restrictionCandidates.push(source[key])
+    })
+    listRestrictionKeys.forEach((key) => {
+        const listValue = source[key]
+        if (Array.isArray(listValue)) {
+            restrictionCandidates.push(...listValue)
+        }
+    })
+
+    let hasActiveSuspension = false
+
+    for (const candidate of restrictionCandidates) {
+        const restriction = toRecord(candidate)
+        if (!restriction) continue
+
+        const restrictionType =
+            parseRestrictionType(
+                restriction.type ??
+                    restriction.restrictionType ??
+                    restriction.actionType ??
+                    restriction.kind ??
+                    restriction.name
+            ) ??
+            (toBoolean(restriction.isBanned) ? 'BAN' : null) ??
+            (toBoolean(restriction.isSuspended) ? 'SUSPENSION' : null)
+
+        if (!restrictionType) continue
+        if (!isRestrictionActive(restrictionType, restriction)) continue
+
+        if (restrictionType === 'BAN') return 'BANNED'
+        if (restrictionType === 'SUSPENSION') hasActiveSuspension = true
+    }
+
+    return hasActiveSuspension ? 'SUSPENDED' : null
+}
+
+const resolveStatus = (
+    statusValue: unknown,
+    row?: Record<string, unknown> | null,
+    userObject?: Record<string, unknown> | null
+): AdminUserStatus => {
+    const parsedStatus = parseStatusToken(statusValue)
+    if (parsedStatus) return parsedStatus
+
+    const restrictionStatus =
+        resolveRestrictionStatusFromSource(row) ?? resolveRestrictionStatusFromSource(userObject)
+    if (restrictionStatus) return restrictionStatus
+
+    const isBanned =
+        toBoolean(row?.isBanned) ||
+        toBoolean(row?.banned) ||
+        toBoolean(row?.isBlocked) ||
+        toBoolean(userObject?.isBanned) ||
+        toBoolean(userObject?.banned) ||
+        toBoolean(userObject?.isBlocked)
+    if (isBanned) return 'BANNED'
+
+    const isSuspended =
+        toBoolean(row?.isSuspended) ||
+        toBoolean(row?.suspended) ||
+        toBoolean(userObject?.isSuspended) ||
+        toBoolean(userObject?.suspended)
+    if (isSuspended) return 'SUSPENDED'
+
+    if (row?.isActive === false || userObject?.isActive === false) return 'SUSPENDED'
+
     return 'ACTIVE'
 }
 
@@ -266,7 +490,7 @@ const normalizeAdminUser = (value: unknown): AdminUserItem => {
         name: toText(rawName, 'Unknown User'),
         email: toText(rawEmail),
         image: resolveImage(row),
-        status: normalizeStatus(row.status),
+        status: resolveStatus(row.status, row, userObject),
         points: toNumber(row.points),
         badges: Array.isArray(row.badges) ? row.badges : [],
     }
@@ -454,10 +678,7 @@ const normalizeOverviewProfile = (value: unknown): AdminUserOverviewProfile => {
     const pointsObject =
         row.points && typeof row.points === 'object' ? (row.points as Record<string, unknown>) : null
 
-    const rawStatus =
-        row.status ??
-        userObject?.status ??
-        (row.isActive === false || userObject?.isActive === false ? 'SUSPENDED' : 'ACTIVE')
+    const rawStatus = row.status ?? userObject?.status
 
     const rawSkills =
         (Array.isArray(row.userSkills) && row.userSkills) ||
@@ -516,7 +737,7 @@ const normalizeOverviewProfile = (value: unknown): AdminUserOverviewProfile => {
             'User name'
         ),
         email: toText(row.email ?? userObject?.email),
-        status: normalizeStatus(rawStatus),
+        status: resolveStatus(rawStatus, row, userObject),
         createdAt: toText(row.createdAt ?? row.joinedAt ?? userObject?.createdAt ?? ''),
         image: resolveImage(row),
         points,
@@ -1167,4 +1388,114 @@ export const addAdminUserNote = async (userId: string, externalNote: string): Pr
     await axiosInstance.post(`/api/v1/admin/${normalizedUserId}/note`, {
         externalNote: normalizedNote,
     })
+}
+
+const normalizeRestrictionPayload = (
+    payload: AdminUserRestrictionPayload,
+    fallbackType: string
+): AdminUserRestrictionPayload => {
+    const normalizedType = payload.type?.trim() || fallbackType
+    const normalizedReason = payload.reason?.trim() ?? ''
+    const normalizedExternalNote = payload.externalNote?.trim() ?? ''
+    const normalizedEndAt = payload.endAt?.trim()
+
+    if (!normalizedReason) {
+        throw new Error('Reason is required')
+    }
+
+    if (!normalizedExternalNote) {
+        throw new Error('Message is required')
+    }
+
+    return {
+        type: normalizedType,
+        reason: normalizedReason,
+        externalNote: normalizedExternalNote,
+        endAt: normalizedEndAt && normalizedEndAt.length > 0 ? normalizedEndAt : undefined,
+    }
+}
+
+const normalizePointsPayload = (
+    payload: AdminUserAdjustPointsPayload
+): { actionType: 'ADD' | 'DEDUCT'; points: number; reason: string } => {
+    const normalizedReason = payload.reason?.trim() ?? ''
+    if (!normalizedReason) {
+        throw new Error('Adjustment reason is required')
+    }
+
+    const normalizedPoints = Number(payload.points)
+    if (!Number.isFinite(normalizedPoints) || normalizedPoints <= 0) {
+        throw new Error('Points amount must be greater than zero')
+    }
+
+    return {
+        actionType: payload.actionType === 'DEDUCT' ? 'DEDUCT' : 'ADD',
+        points: normalizedPoints,
+        reason: normalizedReason,
+    }
+}
+
+export const warnAdminUser = async (
+    userId: string,
+    payload: AdminUserRestrictionPayload
+): Promise<void> => {
+    const normalizedUserId = userId.trim()
+    if (!normalizedUserId) {
+        throw new Error('User id is required')
+    }
+
+    const normalizedPayload = normalizeRestrictionPayload(payload, 'WARNING')
+    await axiosInstance.post(`/api/v1/admin/${normalizedUserId}/warn`, normalizedPayload)
+}
+
+export const suspendAdminUser = async (
+    userId: string,
+    payload: AdminUserRestrictionPayload
+): Promise<void> => {
+    const normalizedUserId = userId.trim()
+    if (!normalizedUserId) {
+        throw new Error('User id is required')
+    }
+
+    const normalizedPayload = normalizeRestrictionPayload(payload, 'SUSPENSION')
+    if (!normalizedPayload.endAt) {
+        throw new Error('Suspension end date is required')
+    }
+
+    await axiosInstance.post(`/api/v1/admin/${normalizedUserId}/suspend`, normalizedPayload)
+}
+
+export const banAdminUser = async (
+    userId: string,
+    payload: AdminUserRestrictionPayload
+): Promise<void> => {
+    const normalizedUserId = userId.trim()
+    if (!normalizedUserId) {
+        throw new Error('User id is required')
+    }
+
+    const normalizedPayload = normalizeRestrictionPayload(payload, 'BAN')
+    await axiosInstance.post(`/api/v1/admin/${normalizedUserId}/ban`, normalizedPayload)
+}
+
+export const unbanAdminUser = async (userId: string): Promise<void> => {
+    const normalizedUserId = userId.trim()
+    if (!normalizedUserId) {
+        throw new Error('User id is required')
+    }
+
+    await axiosInstance.post(`/api/v1/admin/${normalizedUserId}/unban`)
+}
+
+export const adjustAdminUserPoints = async (
+    userId: string,
+    payload: AdminUserAdjustPointsPayload
+): Promise<void> => {
+    const normalizedUserId = userId.trim()
+    if (!normalizedUserId) {
+        throw new Error('User id is required')
+    }
+
+    const normalizedPayload = normalizePointsPayload(payload)
+    await axiosInstance.post(`/api/v1/admin/${normalizedUserId}/points`, normalizedPayload)
 }

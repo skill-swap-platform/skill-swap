@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -15,6 +15,10 @@ import {
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import Avatar from '@/components/Avatar/Avatar'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
+import AdminUserActionModals, {
+    type AdminUserActionModalState,
+    type AdminUserActionModalType,
+} from '@/components/admin-users/AdminUserActionModals'
 import AdminUserSwapsTable from '@/components/admin-users/AdminUserSwapsTable'
 import AdminUserSessionsTable from '@/components/admin-users/AdminUserSessionsTable'
 import AdminUserBadgesPanel from '@/components/admin-users/AdminUserBadgesPanel'
@@ -23,8 +27,22 @@ import { authService } from '@/api/services/auth.service'
 import { userService } from '@/api/services/user.service'
 import { useAdminUserOverview } from '@/hooks/useAdminUserOverview'
 import { useAdminUserImages } from '@/hooks/useAdminUserImages'
-import { addAdminUserNote } from '@/services/adminUsers.service'
-import type { AdminUserItem, AdminUserStatus } from '@/types/adminUsers.types'
+import { useAdminUserActivityLog } from '@/hooks/useAdminUserActivityLog'
+import {
+    addAdminUserNote,
+    adjustAdminUserPoints,
+    banAdminUser,
+    suspendAdminUser,
+    unbanAdminUser,
+    warnAdminUser,
+} from '@/services/adminUsers.service'
+import type {
+    AdminUserActivityLogItem,
+    AdminUserAdjustPointsPayload,
+    AdminUserItem,
+    AdminUserRestrictionPayload,
+    AdminUserStatus,
+} from '@/types/adminUsers.types'
 import type { UserAuthDto } from '@/types/api.types'
 
 const DEFAULT_AVATAR_URL = 'https://api.dicebear.com/7.x/notionists/svg?seed=currentuser'
@@ -104,6 +122,67 @@ const idSuffix = (id: string): string => {
     return id.slice(-8)
 }
 
+const parseStatusToken = (value: unknown): AdminUserStatus | null => {
+    const normalized = String(value ?? '')
+        .trim()
+        .toUpperCase()
+        .replace(/[\s-]+/g, '_')
+    if (!normalized) return null
+    if (normalized === 'ACTIVE' || normalized.includes('UNBAN') || normalized.includes('UNSUSPEND')) {
+        return 'ACTIVE'
+    }
+    if (normalized.includes('BAN')) return 'BANNED'
+    if (normalized.includes('SUSPEND') || normalized.includes('SUSPENS') || normalized === 'INACTIVE') {
+        return 'SUSPENDED'
+    }
+    return null
+}
+
+const getTimeValue = (value: string): number => {
+    const timestamp = new Date(value).getTime()
+    return Number.isNaN(timestamp) ? 0 : timestamp
+}
+
+const deriveStatusFromActivityLog = (logs: AdminUserActivityLogItem[]): AdminUserStatus | null => {
+    if (!logs.length) return null
+
+    const sortedLogs = [...logs].sort((first, second) => getTimeValue(second.createdAt) - getTimeValue(first.createdAt))
+
+    for (const entry of sortedLogs) {
+        const entity = String(entry.entity ?? '').toUpperCase()
+        const type = String(entry.type ?? '').toUpperCase()
+        if (
+            entity !== 'USERRESTRICTION' &&
+            !type.includes('BAN') &&
+            !type.includes('SUSPEND') &&
+            !type.includes('SUSPENS')
+        ) {
+            continue
+        }
+
+        const metadata = entry.metadata ?? {}
+        const statusFromMetadata = parseStatusToken((metadata as Record<string, unknown>).newStatus)
+        if (statusFromMetadata) return statusFromMetadata
+
+        const statusFromType = parseStatusToken(type)
+        if (statusFromType === 'SUSPENDED') {
+            const endAtTimestamp = getTimeValue(entry.endAt)
+            if (endAtTimestamp > 0 && endAtTimestamp <= Date.now()) continue
+        }
+        if (statusFromType) return statusFromType
+    }
+
+    return null
+}
+
+const actionSuccessMessage: Record<AdminUserActionModalType, string> = {
+    warn: 'Warning sent successfully.',
+    suspend: 'User suspended successfully.',
+    ban: 'User banned successfully.',
+    'adjust-points': 'User points updated successfully.',
+    'internal-note': 'Internal note added successfully.',
+}
+
 export const AdminUserDetailsOverview: React.FC = () => {
     const navigate = useNavigate()
     const { userId } = useParams<{ userId: string }>()
@@ -113,20 +192,35 @@ export const AdminUserDetailsOverview: React.FC = () => {
 
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
     const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+    const [actionMenuOpen, setActionMenuOpen] = useState(false)
     const [activeTab, setActiveTab] = useState<OverviewTab>('Overview')
     const [noteInput, setNoteInput] = useState('')
+    const [actionModalState, setActionModalState] = useState<AdminUserActionModalState | null>(null)
+    const [pendingActionType, setPendingActionType] = useState<AdminUserActionModalType | null>(null)
+    const [actionErrorMessage, setActionErrorMessage] = useState<string | null>(null)
+    const [actionFeedbackMessage, setActionFeedbackMessage] = useState<string | null>(null)
     const profileMenuRef = useRef<HTMLDivElement>(null)
+    const actionMenuRef = useRef<HTMLDivElement>(null)
     const queryClient = useQueryClient()
 
     const [currentUser, setCurrentUser] = useState<UserAuthDto | null>(() => getStoredUser())
 
     const overviewQuery = useAdminUserOverview(userId)
+    const activityStatusQuery = useAdminUserActivityLog(userId)
     const profile = overviewQuery.data?.profile
 
     const profileId = profile?.id || userSnapshot?.id || userId || ''
     const profileName = profile?.userName?.trim() || userSnapshot?.name || 'User name'
     const profileEmail = profile?.email?.trim() || userSnapshot?.email || '--'
-    const profileStatus: AdminUserStatus = profile?.status ?? userSnapshot?.status ?? 'ACTIVE'
+    const statusFromActivityLog = useMemo(
+        () => deriveStatusFromActivityLog(activityStatusQuery.data ?? []),
+        [activityStatusQuery.data]
+    )
+    const baseProfileStatus: AdminUserStatus = profile?.status ?? userSnapshot?.status ?? 'ACTIVE'
+    const profileStatus: AdminUserStatus =
+        baseProfileStatus === 'ACTIVE' && statusFromActivityLog
+            ? statusFromActivityLog
+            : baseProfileStatus
     const snapshotPoints = userSnapshot?.points
     const fetchedPoints = profile?.points
     const profilePoints =
@@ -172,6 +266,9 @@ export const AdminUserDetailsOverview: React.FC = () => {
             const target = event.target as Node
             if (profileMenuRef.current && !profileMenuRef.current.contains(target)) {
                 setProfileMenuOpen(false)
+            }
+            if (actionMenuRef.current && !actionMenuRef.current.contains(target)) {
+                setActionMenuOpen(false)
             }
         }
 
@@ -222,7 +319,66 @@ export const AdminUserDetailsOverview: React.FC = () => {
         ? getErrorMessage(overviewQuery.error, 'Failed to load user overview.')
         : null
 
-    const addNoteMutation = useMutation({
+    const actionTargetUser = useMemo<AdminUserItem | null>(() => {
+        const resolvedId = profileId || userId || ''
+        if (!resolvedId) return null
+
+        return {
+            id: resolvedId,
+            name: profileName,
+            email: profileEmail === '--' ? '' : profileEmail,
+            image: profileImage,
+            status: profileStatus,
+            points: profilePoints,
+            badges: [],
+        }
+    }, [profileId, userId, profileName, profileEmail, profileImage, profileStatus, profilePoints])
+
+    const warnMutation = useMutation({
+        mutationFn: async ({
+            targetUserId,
+            payload,
+        }: {
+            targetUserId: string
+            payload: AdminUserRestrictionPayload
+        }) => warnAdminUser(targetUserId, payload),
+    })
+
+    const suspendMutation = useMutation({
+        mutationFn: async ({
+            targetUserId,
+            payload,
+        }: {
+            targetUserId: string
+            payload: AdminUserRestrictionPayload
+        }) => suspendAdminUser(targetUserId, payload),
+    })
+
+    const banMutation = useMutation({
+        mutationFn: async ({
+            targetUserId,
+            payload,
+        }: {
+            targetUserId: string
+            payload: AdminUserRestrictionPayload
+        }) => banAdminUser(targetUserId, payload),
+    })
+
+    const unbanMutation = useMutation({
+        mutationFn: async (targetUserId: string) => unbanAdminUser(targetUserId),
+    })
+
+    const adjustPointsMutation = useMutation({
+        mutationFn: async ({
+            targetUserId,
+            payload,
+        }: {
+            targetUserId: string
+            payload: AdminUserAdjustPointsPayload
+        }) => adjustAdminUserPoints(targetUserId, payload),
+    })
+
+    const addInlineNoteMutation = useMutation({
         mutationFn: async (externalNote: string) => {
             if (!userId) throw new Error('User id is required')
             await addAdminUserNote(userId, externalNote)
@@ -233,14 +389,166 @@ export const AdminUserDetailsOverview: React.FC = () => {
         },
     })
 
-    const addNoteErrorMessage = addNoteMutation.error
-        ? getErrorMessage(addNoteMutation.error, 'Failed to add admin note.')
+    const addNoteErrorMessage = addInlineNoteMutation.error
+        ? getErrorMessage(addInlineNoteMutation.error, 'Failed to add admin note.')
         : null
 
     const submitNote = () => {
         const trimmed = noteInput.trim()
-        if (!trimmed || addNoteMutation.isPending) return
-        addNoteMutation.mutate(trimmed)
+        if (!trimmed || addInlineNoteMutation.isPending) return
+        addInlineNoteMutation.mutate(trimmed)
+    }
+
+    const clearActionMessages = () => {
+        setActionErrorMessage(null)
+        setActionFeedbackMessage(null)
+    }
+
+    const closeActionModal = () => {
+        setActionModalState(null)
+        setPendingActionType(null)
+        setActionErrorMessage(null)
+    }
+
+    const openActionModal = (type: AdminUserActionModalType) => {
+        clearActionMessages()
+        setActionMenuOpen(false)
+        if (!actionTargetUser) return
+        setActionModalState({
+            type,
+            user: actionTargetUser,
+        })
+    }
+
+    const invalidateUserCaches = async (targetUserId: string) => {
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+            queryClient.invalidateQueries({ queryKey: ['admin-user-overview', targetUserId] }),
+            queryClient.invalidateQueries({ queryKey: ['admin-user-activity-log', targetUserId] }),
+        ])
+    }
+
+    const updateOverviewStatusCache = (targetUserId: string, nextStatus: AdminUserStatus) => {
+        queryClient.setQueryData(
+            ['admin-user-overview', targetUserId],
+            (previous: unknown) => {
+                if (!previous || typeof previous !== 'object') return previous
+                const cached = previous as { profile?: Record<string, unknown> } & Record<string, unknown>
+                if (!cached.profile || typeof cached.profile !== 'object') return previous
+
+                return {
+                    ...cached,
+                    profile: {
+                        ...cached.profile,
+                        status: nextStatus,
+                    },
+                }
+            }
+        )
+    }
+
+    const runActionMutation = async (
+        actionType: AdminUserActionModalType,
+        targetUserId: string,
+        run: () => Promise<void>,
+        nextStatus?: AdminUserStatus
+    ) => {
+        setPendingActionType(actionType)
+        setActionErrorMessage(null)
+        setActionFeedbackMessage(null)
+
+        try {
+            await run()
+            if (nextStatus) updateOverviewStatusCache(targetUserId, nextStatus)
+            await invalidateUserCaches(targetUserId)
+            setActionFeedbackMessage(actionSuccessMessage[actionType])
+            closeActionModal()
+        } catch (error) {
+            setActionErrorMessage(getErrorMessage(error, 'Failed to update user action.'))
+            setPendingActionType(null)
+        }
+    }
+
+    const submitWarnUser = async (payload: AdminUserRestrictionPayload) => {
+        if (!actionModalState?.user.id) return
+        await runActionMutation(
+            'warn',
+            actionModalState.user.id,
+            () =>
+                warnMutation.mutateAsync({
+                    targetUserId: actionModalState.user.id,
+                    payload,
+                }),
+            undefined
+        )
+    }
+
+    const submitSuspendUser = async (payload: AdminUserRestrictionPayload) => {
+        if (!actionModalState?.user.id) return
+        await runActionMutation(
+            'suspend',
+            actionModalState.user.id,
+            () =>
+                suspendMutation.mutateAsync({
+                    targetUserId: actionModalState.user.id,
+                    payload,
+                }),
+            'SUSPENDED'
+        )
+    }
+
+    const submitBanUser = async (payload: AdminUserRestrictionPayload) => {
+        if (!actionModalState?.user.id) return
+        await runActionMutation(
+            'ban',
+            actionModalState.user.id,
+            () =>
+                banMutation.mutateAsync({
+                    targetUserId: actionModalState.user.id,
+                    payload,
+                }),
+            'BANNED'
+        )
+    }
+
+    const submitAdjustPoints = async (payload: AdminUserAdjustPointsPayload) => {
+        if (!actionModalState?.user.id) return
+        await runActionMutation(
+            'adjust-points',
+            actionModalState.user.id,
+            () =>
+                adjustPointsMutation.mutateAsync({
+                    targetUserId: actionModalState.user.id,
+                    payload,
+                }),
+            undefined
+        )
+    }
+
+    const submitInternalNote = async (payload: { externalNote: string }) => {
+        if (!actionModalState?.user.id) return
+        await runActionMutation(
+            'internal-note',
+            actionModalState.user.id,
+            () => addAdminUserNote(actionModalState.user.id, payload.externalNote),
+            undefined
+        )
+    }
+
+    const handleUnban = async () => {
+        if (!actionTargetUser?.id) return
+        clearActionMessages()
+        setPendingActionType(null)
+
+        try {
+            await unbanMutation.mutateAsync(actionTargetUser.id)
+            updateOverviewStatusCache(actionTargetUser.id, 'ACTIVE')
+            await invalidateUserCaches(actionTargetUser.id)
+            setActionFeedbackMessage('User unbanned successfully.')
+            setActionMenuOpen(false)
+        } catch (error) {
+            setActionErrorMessage(getErrorMessage(error, 'Failed to unban user.'))
+        }
     }
 
     const logout = async () => {
@@ -366,9 +674,11 @@ export const AdminUserDetailsOverview: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="relative flex items-center gap-2" ref={actionMenuRef}>
                                 <button
                                     type="button"
+                                    onClick={() => openActionModal('warn')}
+                                    disabled={!actionTargetUser || pendingActionType !== null}
                                     className="inline-flex h-10 items-center gap-1 rounded-[30px] border border-[#DC2626] bg-white px-4 text-sm text-[#DC2626]"
                                 >
                                     Warn
@@ -376,6 +686,8 @@ export const AdminUserDetailsOverview: React.FC = () => {
                                 </button>
                                 <button
                                     type="button"
+                                    onClick={() => openActionModal('suspend')}
+                                    disabled={!actionTargetUser || pendingActionType !== null}
                                     className="inline-flex h-10 items-center gap-1 rounded-[30px] border border-[#FFA412] bg-white px-4 text-sm text-[#FFA412]"
                                 >
                                     Suspend
@@ -397,14 +709,62 @@ export const AdminUserDetailsOverview: React.FC = () => {
                                 </button>
                                 <button
                                     type="button"
+                                    onClick={() => setActionMenuOpen((previous) => !previous)}
                                     className="rounded-md p-1 text-[#0C0D0F] hover:bg-[#F3F4F6]"
                                     aria-label="More actions"
                                 >
                                     <MoreVertical className="h-5 w-5" />
                                 </button>
+                                {actionMenuOpen && (
+                                    <div className="absolute right-0 top-12 z-20 w-[206px] rounded-lg border border-[#E5E7EB] bg-white p-2 shadow-[0px_0px_4.7px_0px_rgba(0,0,0,0.25)]">
+                                        {profileStatus === 'BANNED' ? (
+                                            <button
+                                                type="button"
+                                                onClick={handleUnban}
+                                                className="w-full rounded-[4px] px-2 py-2 text-left text-sm text-[#16A34A] transition-colors hover:bg-[rgba(22,163,74,0.1)]"
+                                            >
+                                                Unban User
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={() => openActionModal('ban')}
+                                                className="w-full rounded-[4px] px-2 py-2 text-left text-sm text-[#DC2626] transition-colors hover:bg-[rgba(220,38,38,0.08)]"
+                                            >
+                                                Ban User
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => openActionModal('adjust-points')}
+                                            className="mt-1 w-full rounded-[4px] px-2 py-2 text-left text-sm text-[#3272A3] transition-colors hover:bg-[rgba(62,143,204,0.12)]"
+                                        >
+                                            Adjust Points
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => openActionModal('internal-note')}
+                                            className="mt-1 w-full rounded-[4px] px-2 py-2 text-left text-sm text-[#3272A3] transition-colors hover:bg-[rgba(62,143,204,0.12)]"
+                                        >
+                                            Add Internal Note
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </section>
+
+                    {actionFeedbackMessage ? (
+                        <div className="rounded-[10px] border border-[rgba(22,163,74,0.3)] bg-[rgba(22,163,74,0.08)] px-4 py-3">
+                            <p className="text-sm text-[#166534]">{actionFeedbackMessage}</p>
+                        </div>
+                    ) : null}
+
+                    {actionErrorMessage && !actionModalState ? (
+                        <div className="rounded-[10px] border border-[rgba(220,38,38,0.3)] bg-[rgba(220,38,38,0.08)] px-4 py-3">
+                            <p className="text-sm text-[#B91C1C]">{actionErrorMessage}</p>
+                        </div>
+                    ) : null}
 
                     <section className="overflow-x-auto border-b border-[#E5E7EB]">
                         <div className="flex min-w-max items-center gap-7">
@@ -587,14 +947,14 @@ export const AdminUserDetailsOverview: React.FC = () => {
                                             }
                                         }}
                                         placeholder="Type A  Note"
-                                        disabled={addNoteMutation.isPending || !userId}
+                                        disabled={addInlineNoteMutation.isPending || !userId}
                                         className="min-w-0 flex-1 bg-transparent text-[16px] text-[#0C0D0F] placeholder:text-[#9CA3AF] outline-none"
                                     />
                                     <button
                                         type="button"
                                         onClick={submitNote}
                                         disabled={
-                                            addNoteMutation.isPending ||
+                                            addInlineNoteMutation.isPending ||
                                             noteInput.trim().length === 0 ||
                                             !userId
                                         }
@@ -636,6 +996,20 @@ export const AdminUserDetailsOverview: React.FC = () => {
                     {isOverviewTab && overviewQuery.isFetching && !overviewQuery.isLoading && (
                         <p className="text-xs text-[#666666]">Updating user overview...</p>
                     )}
+
+                    <AdminUserActionModals
+                        key={`${actionModalState?.type ?? 'none'}-${actionModalState?.user.id ?? 'none'}`}
+                        state={actionModalState}
+                        pendingType={pendingActionType}
+                        errorMessage={actionErrorMessage}
+                        adminName={userDisplayName}
+                        onClose={closeActionModal}
+                        onWarnSubmit={submitWarnUser}
+                        onSuspendSubmit={submitSuspendUser}
+                        onBanSubmit={submitBanUser}
+                        onAdjustPointsSubmit={submitAdjustPoints}
+                        onInternalNoteSubmit={submitInternalNote}
+                    />
                 </main>
             </div>
         </div>

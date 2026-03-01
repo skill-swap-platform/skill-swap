@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
     Check,
     ChevronDown,
@@ -12,13 +13,27 @@ import { useNavigate } from 'react-router-dom'
 import Avatar from '@/components/Avatar/Avatar'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import { SortOrderIcon } from '@/components/admin-users/SortOrderIcon'
+import AdminUserActionModals, {
+    type AdminUserActionModalState,
+    type AdminUserActionModalType,
+} from '@/components/admin-users/AdminUserActionModals'
 import { authService } from '@/api/services/auth.service'
 import { userService } from '@/api/services/user.service'
+import {
+    addAdminUserNote,
+    adjustAdminUserPoints,
+    banAdminUser,
+    suspendAdminUser,
+    unbanAdminUser,
+    warnAdminUser,
+} from '@/services/adminUsers.service'
 import { useAdminUsers } from '@/hooks/useAdminUsers'
 import { useAdminUserImages } from '@/hooks/useAdminUserImages'
 import type {
     AdminUserItem,
     AdminUserStatus,
+    AdminUserAdjustPointsPayload,
+    AdminUserRestrictionPayload,
     AdminUsersSort,
     AdminUsersStatusFilter,
 } from '@/types/adminUsers.types'
@@ -75,6 +90,28 @@ const displayStatus = (status: AdminUserStatus): string => {
     if (status === 'BANNED') return 'Banned'
     return 'Active'
 }
+
+const actionSuccessMessage: Record<AdminUserActionModalType, string> = {
+    warn: 'Warning sent successfully.',
+    suspend: 'User suspended successfully.',
+    ban: 'User banned successfully.',
+    'adjust-points': 'User points updated successfully.',
+    'internal-note': 'Internal note added successfully.',
+}
+
+const getBulkActionSuccessMessage = (
+    actionType: Extract<AdminUserActionModalType, 'warn' | 'suspend'>,
+    successfulUsersCount: number
+): string => {
+    if (actionType === 'warn') {
+        return `Warnings sent to ${successfulUsersCount} user${successfulUsersCount === 1 ? '' : 's'}.`
+    }
+
+    return `Suspensions applied to ${successfulUsersCount} user${successfulUsersCount === 1 ? '' : 's'}.`
+}
+
+const normalizeUserIds = (userIds: string[]): string[] =>
+    Array.from(new Set(userIds.map((id) => id.trim()).filter((id) => id.length > 0)))
 
 const pageCount = (totalPages: number): number => Math.max(1, totalPages)
 
@@ -281,11 +318,16 @@ export const AdminUsersList: React.FC = () => {
     const [activeActionUserId, setActiveActionUserId] = useState<string | null>(null)
     const [page, setPage] = useState(1)
     const [selectedUserIds, setSelectedUserIds] = useState<string[]>([])
+    const [actionModalState, setActionModalState] = useState<AdminUserActionModalState | null>(null)
+    const [pendingActionType, setPendingActionType] = useState<AdminUserActionModalType | null>(null)
+    const [actionErrorMessage, setActionErrorMessage] = useState<string | null>(null)
+    const [actionFeedbackMessage, setActionFeedbackMessage] = useState<string | null>(null)
     const tableScrollRef = useRef<HTMLDivElement>(null)
     const [isTableScrollable, setIsTableScrollable] = useState(false)
     const [canScrollTableRight, setCanScrollTableRight] = useState(false)
 
     const [currentUser, setCurrentUser] = useState<UserAuthDto | null>(() => getStoredUser())
+    const queryClient = useQueryClient()
 
     const usersQuery = useAdminUsers({
         page,
@@ -452,6 +494,204 @@ export const AdminUsersList: React.FC = () => {
         currentUser?.userName?.trim() || currentUser?.email?.split('@')[0] || 'User Name'
     const userAvatar = currentUser?.image?.trim() || DEFAULT_AVATAR_URL
     const userRole = currentUser?.role ? currentUser.role.toLowerCase() : 'admin'
+    const adminActorName = currentUser?.userName?.trim() || 'Admin'
+
+    const warnMutation = useMutation({
+        mutationFn: async ({
+            userId,
+            payload,
+        }: {
+            userId: string
+            payload: AdminUserRestrictionPayload
+        }) => warnAdminUser(userId, payload),
+    })
+
+    const suspendMutation = useMutation({
+        mutationFn: async ({
+            userId,
+            payload,
+        }: {
+            userId: string
+            payload: AdminUserRestrictionPayload
+        }) => suspendAdminUser(userId, payload),
+    })
+
+    const banMutation = useMutation({
+        mutationFn: async ({
+            userId,
+            payload,
+        }: {
+            userId: string
+            payload: AdminUserRestrictionPayload
+        }) => banAdminUser(userId, payload),
+    })
+
+    const unbanMutation = useMutation({
+        mutationFn: async ({ userId }: { userId: string }) => unbanAdminUser(userId),
+    })
+
+    const adjustPointsMutation = useMutation({
+        mutationFn: async ({
+            userId,
+            payload,
+        }: {
+            userId: string
+            payload: AdminUserAdjustPointsPayload
+        }) => adjustAdminUserPoints(userId, payload),
+    })
+
+    const addNoteMutation = useMutation({
+        mutationFn: async ({
+            userId,
+            externalNote,
+        }: {
+            userId: string
+            externalNote: string
+        }) => addAdminUserNote(userId, externalNote),
+    })
+
+    const clearActionMessages = () => {
+        setActionErrorMessage(null)
+        setActionFeedbackMessage(null)
+    }
+
+    const closeActionModal = () => {
+        setActionModalState(null)
+        setPendingActionType(null)
+        setActionErrorMessage(null)
+    }
+
+    const withResolvedImage = (user: AdminUserItem): AdminUserItem => {
+        const resolvedImage = user.image || imageByUserId[user.id] || null
+        if (resolvedImage === user.image) return user
+        return {
+            ...user,
+            image: resolvedImage,
+        }
+    }
+
+    const openActionModal = (
+        type: AdminUserActionModalType,
+        user: AdminUserItem,
+        targetUserIds?: string[]
+    ) => {
+        setActiveActionUserId(null)
+        setActionFeedbackMessage(null)
+        setActionErrorMessage(null)
+        const normalizedTargetUserIds = targetUserIds ? normalizeUserIds(targetUserIds) : undefined
+        setActionModalState({
+            type,
+            user: withResolvedImage(user),
+            targetUserIds: normalizedTargetUserIds && normalizedTargetUserIds.length > 0 ? normalizedTargetUserIds : undefined,
+        })
+    }
+
+    const invalidateAdminCaches = async (userIds: string | string[]) => {
+        const normalizedUserIds = normalizeUserIds(Array.isArray(userIds) ? userIds : [userIds])
+        const invalidations: Promise<void>[] = [
+            queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+        ]
+
+        normalizedUserIds.forEach((userId) => {
+            invalidations.push(
+                queryClient.invalidateQueries({ queryKey: ['admin-user-overview', userId] }),
+                queryClient.invalidateQueries({ queryKey: ['admin-user-activity-log', userId] })
+            )
+        })
+
+        await Promise.all(invalidations)
+    }
+
+    const runActionMutation = async (
+        actionType: AdminUserActionModalType,
+        run: () => Promise<void>,
+        userId: string
+    ) => {
+        setPendingActionType(actionType)
+        setActionErrorMessage(null)
+        setActionFeedbackMessage(null)
+
+        try {
+            await run()
+            await invalidateAdminCaches(userId)
+            setActionFeedbackMessage(actionSuccessMessage[actionType])
+            closeActionModal()
+        } catch (error) {
+            setActionErrorMessage(getErrorMessage(error, 'Failed to update user action.'))
+            setPendingActionType(null)
+        }
+    }
+
+    const runBulkActionMutation = async (
+        actionType: Extract<AdminUserActionModalType, 'warn' | 'suspend'>,
+        targetUserIds: string[],
+        run: (userId: string) => Promise<void>
+    ) => {
+        const normalizedTargetUserIds = normalizeUserIds(targetUserIds)
+        if (!normalizedTargetUserIds.length) return
+
+        setPendingActionType(actionType)
+        setActionErrorMessage(null)
+        setActionFeedbackMessage(null)
+
+        try {
+            const results = await Promise.allSettled(
+                normalizedTargetUserIds.map((userId) => run(userId))
+            )
+
+            const successfulUserIds: string[] = []
+            const failedReasons: unknown[] = []
+
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled') {
+                    successfulUserIds.push(normalizedTargetUserIds[index])
+                    return
+                }
+                failedReasons.push(result.reason)
+            })
+
+            if (successfulUserIds.length > 0) {
+                await invalidateAdminCaches(successfulUserIds)
+                setSelectedUserIds((previousIds) =>
+                    previousIds.filter((id) => !successfulUserIds.includes(id))
+                )
+            }
+
+            const failedCount = normalizedTargetUserIds.length - successfulUserIds.length
+            if (failedCount === 0) {
+                setActionFeedbackMessage(getBulkActionSuccessMessage(actionType, successfulUserIds.length))
+                closeActionModal()
+                return
+            }
+
+            if (successfulUserIds.length > 0) {
+                closeActionModal()
+                setActionFeedbackMessage(
+                    `${getBulkActionSuccessMessage(actionType, successfulUserIds.length)} ${failedCount} user${
+                        failedCount === 1 ? '' : 's'
+                    } failed.`
+                )
+                setActionErrorMessage(
+                    getErrorMessage(
+                        failedReasons[0],
+                        `Failed to apply action to ${failedCount} user${failedCount === 1 ? '' : 's'}.`
+                    )
+                )
+                return
+            }
+
+            setActionErrorMessage(
+                getErrorMessage(
+                    failedReasons[0],
+                    `Failed to apply action to ${failedCount} user${failedCount === 1 ? '' : 's'}.`
+                )
+            )
+            setPendingActionType(null)
+        } catch (error) {
+            setActionErrorMessage(getErrorMessage(error, 'Failed to update user action.'))
+            setPendingActionType(null)
+        }
+    }
 
     const isAllRowsChecked = rows.length > 0 && rows.every((row) => selectedUserIds.includes(row.id))
 
@@ -493,6 +733,127 @@ export const AdminUsersList: React.FC = () => {
         navigate(`/admin/users/${user.id}`, {
             state: { userSnapshot: user },
         })
+    }
+
+    const submitWarnUser = async (payload: AdminUserRestrictionPayload) => {
+        if (!actionModalState?.user.id) return
+        const targetUserIds = normalizeUserIds(actionModalState.targetUserIds ?? [actionModalState.user.id])
+        if (targetUserIds.length > 1) {
+            await runBulkActionMutation('warn', targetUserIds, (userId) =>
+                warnMutation.mutateAsync({
+                    userId,
+                    payload,
+                })
+            )
+            return
+        }
+
+        const targetUserId = targetUserIds[0]
+        if (!targetUserId) return
+        await runActionMutation(
+            'warn',
+            async () =>
+                warnMutation.mutateAsync({
+                    userId: targetUserId,
+                    payload,
+                }),
+            targetUserId
+        )
+    }
+
+    const submitSuspendUser = async (payload: AdminUserRestrictionPayload) => {
+        if (!actionModalState?.user.id) return
+        const targetUserIds = normalizeUserIds(actionModalState.targetUserIds ?? [actionModalState.user.id])
+        if (targetUserIds.length > 1) {
+            await runBulkActionMutation('suspend', targetUserIds, (userId) =>
+                suspendMutation.mutateAsync({
+                    userId,
+                    payload,
+                })
+            )
+            return
+        }
+
+        const targetUserId = targetUserIds[0]
+        if (!targetUserId) return
+        await runActionMutation(
+            'suspend',
+            async () =>
+                suspendMutation.mutateAsync({
+                    userId: targetUserId,
+                    payload,
+                }),
+            targetUserId
+        )
+    }
+
+    const submitBanUser = async (payload: AdminUserRestrictionPayload) => {
+        if (!actionModalState?.user.id) return
+        await runActionMutation(
+            'ban',
+            async () =>
+                banMutation.mutateAsync({
+                    userId: actionModalState.user.id,
+                    payload,
+                }),
+            actionModalState.user.id
+        )
+    }
+
+    const submitAdjustPoints = async (payload: AdminUserAdjustPointsPayload) => {
+        if (!actionModalState?.user.id) return
+        await runActionMutation(
+            'adjust-points',
+            async () =>
+                adjustPointsMutation.mutateAsync({
+                    userId: actionModalState.user.id,
+                    payload,
+                }),
+            actionModalState.user.id
+        )
+    }
+
+    const submitInternalNote = async (payload: { externalNote: string }) => {
+        if (!actionModalState?.user.id) return
+        await runActionMutation(
+            'internal-note',
+            async () =>
+                addNoteMutation.mutateAsync({
+                    userId: actionModalState.user.id,
+                    externalNote: payload.externalNote,
+                }),
+            actionModalState.user.id
+        )
+    }
+
+    const selectedPrimaryUser =
+        selectedUserIds.length > 0 ? rows.find((row) => row.id === selectedUserIds[0]) ?? null : null
+
+    const openWarnForSelection = () => {
+        clearActionMessages()
+        if (!selectedPrimaryUser) return
+        openActionModal('warn', selectedPrimaryUser, selectedUserIds)
+    }
+
+    const openSuspendForSelection = () => {
+        clearActionMessages()
+        if (!selectedPrimaryUser) return
+        openActionModal('suspend', selectedPrimaryUser, selectedUserIds)
+    }
+
+    const handleUnban = async (user: AdminUserItem) => {
+        setActiveActionUserId(null)
+        setPendingActionType(null)
+        setActionErrorMessage(null)
+        setActionFeedbackMessage(null)
+
+        try {
+            await unbanMutation.mutateAsync({ userId: user.id })
+            await invalidateAdminCaches(user.id)
+            setActionFeedbackMessage('User unbanned successfully.')
+        } catch (error) {
+            setActionErrorMessage(getErrorMessage(error, 'Failed to unban user.'))
+        }
     }
 
     const usersErrorMessage = usersQuery.error
@@ -839,13 +1200,58 @@ export const AdminUsersList: React.FC = () => {
                                                             </button>
 
                                                             {activeActionUserId === user.id && (
-                                                                <div className="absolute right-0 top-10 z-20 w-[148px] rounded-lg border border-[#E5E7EB] bg-white p-2 shadow-[0px_0px_4.7px_0px_rgba(0,0,0,0.25)]">
+                                                                <div className="absolute right-0 top-10 z-20 w-[206px] rounded-lg border border-[#E5E7EB] bg-white p-2 shadow-[0px_0px_4.7px_0px_rgba(0,0,0,0.25)]">
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => openUserDetails(user)}
-                                                                        className="w-full rounded-[4px] bg-[#E5E7EB] px-2 py-2 text-left text-sm text-[#0C0D0F]"
+                                                                        className="w-full rounded-[4px] px-2 py-2 text-left text-sm text-[#0C0D0F] transition-colors hover:bg-[#F3F4F6]"
                                                                     >
                                                                         View Details
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => openActionModal('warn', user)}
+                                                                        className="mt-1 w-full rounded-[4px] px-2 py-2 text-left text-sm text-[#DC2626] transition-colors hover:bg-[rgba(220,38,38,0.08)]"
+                                                                    >
+                                                                        Warn User
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => openActionModal('suspend', user)}
+                                                                        className="mt-1 w-full rounded-[4px] px-2 py-2 text-left text-sm text-[#F59E0B] transition-colors hover:bg-[rgba(245,158,11,0.12)]"
+                                                                    >
+                                                                        Suspend User
+                                                                    </button>
+                                                                    {user.status === 'BANNED' ? (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => handleUnban(user)}
+                                                                            className="mt-1 w-full rounded-[4px] px-2 py-2 text-left text-sm text-[#16A34A] transition-colors hover:bg-[rgba(22,163,74,0.1)]"
+                                                                        >
+                                                                            Unban User
+                                                                        </button>
+                                                                    ) : (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => openActionModal('ban', user)}
+                                                                            className="mt-1 w-full rounded-[4px] px-2 py-2 text-left text-sm text-[#DC2626] transition-colors hover:bg-[rgba(220,38,38,0.08)]"
+                                                                        >
+                                                                            Ban User
+                                                                        </button>
+                                                                    )}
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => openActionModal('adjust-points', user)}
+                                                                        className="mt-1 w-full rounded-[4px] px-2 py-2 text-left text-sm text-[#3272A3] transition-colors hover:bg-[rgba(62,143,204,0.12)]"
+                                                                    >
+                                                                        Adjust Points
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => openActionModal('internal-note', user)}
+                                                                        className="mt-1 w-full rounded-[4px] px-2 py-2 text-left text-sm text-[#3272A3] transition-colors hover:bg-[rgba(62,143,204,0.12)]"
+                                                                    >
+                                                                        Add Internal Note
                                                                     </button>
                                                                 </div>
                                                             )}
@@ -915,6 +1321,18 @@ export const AdminUsersList: React.FC = () => {
                         {usersQuery.isFetching && !usersQuery.isLoading && (
                             <p className="text-xs text-[#666666]">Updating users list...</p>
                         )}
+
+                        {actionFeedbackMessage ? (
+                            <div className="rounded-[10px] border border-[rgba(22,163,74,0.3)] bg-[rgba(22,163,74,0.08)] px-4 py-3">
+                                <p className="text-sm text-[#166534]">{actionFeedbackMessage}</p>
+                            </div>
+                        ) : null}
+
+                        {actionErrorMessage && !actionModalState ? (
+                            <div className="rounded-[10px] border border-[rgba(220,38,38,0.3)] bg-[rgba(220,38,38,0.08)] px-4 py-3">
+                                <p className="text-sm text-[#B91C1C]">{actionErrorMessage}</p>
+                            </div>
+                        ) : null}
                     </section>
 
                     {selectedUserIds.length > 0 && (
@@ -928,14 +1346,18 @@ export const AdminUsersList: React.FC = () => {
                                 <div className="flex flex-wrap items-center justify-end gap-2">
                                     <button
                                         type="button"
-                                        className="flex h-10 items-center gap-1 rounded-[30px] border border-[#DC2626] bg-white px-4 text-sm text-[#DC2626]"
+                                        onClick={openWarnForSelection}
+                                        disabled={!selectedPrimaryUser}
+                                        className="flex h-10 items-center gap-1 rounded-[30px] border border-[#DC2626] bg-white px-4 text-sm text-[#DC2626] disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         Warn
                                         <WarnIcon className="h-6 w-6" />
                                     </button>
                                     <button
                                         type="button"
-                                        className="flex h-10 items-center gap-1 rounded-[30px] border border-[#FFA412] bg-white px-4 text-sm text-[#FFA412]"
+                                        onClick={openSuspendForSelection}
+                                        disabled={!selectedPrimaryUser}
+                                        className="flex h-10 items-center gap-1 rounded-[30px] border border-[#FFA412] bg-white px-4 text-sm text-[#FFA412] disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         Suspend
                                         <SuspendIcon className="h-6 w-6" />
@@ -955,6 +1377,20 @@ export const AdminUsersList: React.FC = () => {
                             </div>
                         </section>
                     )}
+
+                    <AdminUserActionModals
+                        key={`${actionModalState?.type ?? 'none'}-${actionModalState?.user.id ?? 'none'}`}
+                        state={actionModalState}
+                        pendingType={pendingActionType}
+                        errorMessage={actionErrorMessage}
+                        adminName={adminActorName}
+                        onClose={closeActionModal}
+                        onWarnSubmit={submitWarnUser}
+                        onSuspendSubmit={submitSuspendUser}
+                        onBanSubmit={submitBanUser}
+                        onAdjustPointsSubmit={submitAdjustPoints}
+                        onInternalNoteSubmit={submitInternalNote}
+                    />
                 </main>
             </div>
         </div>
