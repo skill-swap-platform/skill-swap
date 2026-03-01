@@ -75,6 +75,24 @@ export interface AdminUserOverviewData {
     adminNotes: AdminUserOverviewNote[]
 }
 
+export type AdminUserActivityEntity = 'AdminNote' | 'UserRestriction' | string
+
+export type AdminUserActivityType = string
+
+export interface AdminUserActivityLogItem {
+    id: string
+    entity: AdminUserActivityEntity
+    type: AdminUserActivityType
+    adminId: string
+    adminName: string
+    adminEmail: string
+    externalNote: string
+    reason: string
+    metadata: Record<string, unknown> | null
+    endAt: string
+    createdAt: string
+}
+
 export type AdminSwapStatus =
     | 'PENDING'
     | 'ACCEPTED'
