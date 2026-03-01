@@ -99,6 +99,20 @@ const actionSuccessMessage: Record<AdminUserActionModalType, string> = {
     'internal-note': 'Internal note added successfully.',
 }
 
+const getBulkActionSuccessMessage = (
+    actionType: Extract<AdminUserActionModalType, 'warn' | 'suspend'>,
+    successfulUsersCount: number
+): string => {
+    if (actionType === 'warn') {
+        return `Warnings sent to ${successfulUsersCount} user${successfulUsersCount === 1 ? '' : 's'}.`
+    }
+
+    return `Suspensions applied to ${successfulUsersCount} user${successfulUsersCount === 1 ? '' : 's'}.`
+}
+
+const normalizeUserIds = (userIds: string[]): string[] =>
+    Array.from(new Set(userIds.map((id) => id.trim()).filter((id) => id.length > 0)))
+
 const pageCount = (totalPages: number): number => Math.max(1, totalPages)
 
 const pageRange = (start: number, end: number): number[] => {
@@ -556,19 +570,36 @@ export const AdminUsersList: React.FC = () => {
         }
     }
 
-    const openActionModal = (type: AdminUserActionModalType, user: AdminUserItem) => {
+    const openActionModal = (
+        type: AdminUserActionModalType,
+        user: AdminUserItem,
+        targetUserIds?: string[]
+    ) => {
         setActiveActionUserId(null)
         setActionFeedbackMessage(null)
         setActionErrorMessage(null)
-        setActionModalState({ type, user: withResolvedImage(user) })
+        const normalizedTargetUserIds = targetUserIds ? normalizeUserIds(targetUserIds) : undefined
+        setActionModalState({
+            type,
+            user: withResolvedImage(user),
+            targetUserIds: normalizedTargetUserIds && normalizedTargetUserIds.length > 0 ? normalizedTargetUserIds : undefined,
+        })
     }
 
-    const invalidateAdminCaches = async (userId: string) => {
-        await Promise.all([
+    const invalidateAdminCaches = async (userIds: string | string[]) => {
+        const normalizedUserIds = normalizeUserIds(Array.isArray(userIds) ? userIds : [userIds])
+        const invalidations: Promise<void>[] = [
             queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
-            queryClient.invalidateQueries({ queryKey: ['admin-user-overview', userId] }),
-            queryClient.invalidateQueries({ queryKey: ['admin-user-activity-log', userId] }),
-        ])
+        ]
+
+        normalizedUserIds.forEach((userId) => {
+            invalidations.push(
+                queryClient.invalidateQueries({ queryKey: ['admin-user-overview', userId] }),
+                queryClient.invalidateQueries({ queryKey: ['admin-user-activity-log', userId] })
+            )
+        })
+
+        await Promise.all(invalidations)
     }
 
     const runActionMutation = async (
@@ -585,6 +616,77 @@ export const AdminUsersList: React.FC = () => {
             await invalidateAdminCaches(userId)
             setActionFeedbackMessage(actionSuccessMessage[actionType])
             closeActionModal()
+        } catch (error) {
+            setActionErrorMessage(getErrorMessage(error, 'Failed to update user action.'))
+            setPendingActionType(null)
+        }
+    }
+
+    const runBulkActionMutation = async (
+        actionType: Extract<AdminUserActionModalType, 'warn' | 'suspend'>,
+        targetUserIds: string[],
+        run: (userId: string) => Promise<void>
+    ) => {
+        const normalizedTargetUserIds = normalizeUserIds(targetUserIds)
+        if (!normalizedTargetUserIds.length) return
+
+        setPendingActionType(actionType)
+        setActionErrorMessage(null)
+        setActionFeedbackMessage(null)
+
+        try {
+            const results = await Promise.allSettled(
+                normalizedTargetUserIds.map((userId) => run(userId))
+            )
+
+            const successfulUserIds: string[] = []
+            const failedReasons: unknown[] = []
+
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled') {
+                    successfulUserIds.push(normalizedTargetUserIds[index])
+                    return
+                }
+                failedReasons.push(result.reason)
+            })
+
+            if (successfulUserIds.length > 0) {
+                await invalidateAdminCaches(successfulUserIds)
+                setSelectedUserIds((previousIds) =>
+                    previousIds.filter((id) => !successfulUserIds.includes(id))
+                )
+            }
+
+            const failedCount = normalizedTargetUserIds.length - successfulUserIds.length
+            if (failedCount === 0) {
+                setActionFeedbackMessage(getBulkActionSuccessMessage(actionType, successfulUserIds.length))
+                closeActionModal()
+                return
+            }
+
+            if (successfulUserIds.length > 0) {
+                closeActionModal()
+                setActionFeedbackMessage(
+                    `${getBulkActionSuccessMessage(actionType, successfulUserIds.length)} ${failedCount} user${
+                        failedCount === 1 ? '' : 's'
+                    } failed.`
+                )
+                setActionErrorMessage(
+                    getErrorMessage(
+                        failedReasons[0],
+                        `Failed to apply action to ${failedCount} user${failedCount === 1 ? '' : 's'}.`
+                    )
+                )
+                return
+            }
+
+            setActionErrorMessage(
+                getErrorMessage(
+                    failedReasons[0],
+                    `Failed to apply action to ${failedCount} user${failedCount === 1 ? '' : 's'}.`
+                )
+            )
+            setPendingActionType(null)
         } catch (error) {
             setActionErrorMessage(getErrorMessage(error, 'Failed to update user action.'))
             setPendingActionType(null)
@@ -635,27 +737,53 @@ export const AdminUsersList: React.FC = () => {
 
     const submitWarnUser = async (payload: AdminUserRestrictionPayload) => {
         if (!actionModalState?.user.id) return
+        const targetUserIds = normalizeUserIds(actionModalState.targetUserIds ?? [actionModalState.user.id])
+        if (targetUserIds.length > 1) {
+            await runBulkActionMutation('warn', targetUserIds, (userId) =>
+                warnMutation.mutateAsync({
+                    userId,
+                    payload,
+                })
+            )
+            return
+        }
+
+        const targetUserId = targetUserIds[0]
+        if (!targetUserId) return
         await runActionMutation(
             'warn',
             async () =>
                 warnMutation.mutateAsync({
-                    userId: actionModalState.user.id,
+                    userId: targetUserId,
                     payload,
                 }),
-            actionModalState.user.id
+            targetUserId
         )
     }
 
     const submitSuspendUser = async (payload: AdminUserRestrictionPayload) => {
         if (!actionModalState?.user.id) return
+        const targetUserIds = normalizeUserIds(actionModalState.targetUserIds ?? [actionModalState.user.id])
+        if (targetUserIds.length > 1) {
+            await runBulkActionMutation('suspend', targetUserIds, (userId) =>
+                suspendMutation.mutateAsync({
+                    userId,
+                    payload,
+                })
+            )
+            return
+        }
+
+        const targetUserId = targetUserIds[0]
+        if (!targetUserId) return
         await runActionMutation(
             'suspend',
             async () =>
                 suspendMutation.mutateAsync({
-                    userId: actionModalState.user.id,
+                    userId: targetUserId,
                     payload,
                 }),
-            actionModalState.user.id
+            targetUserId
         )
     }
 
@@ -704,13 +832,13 @@ export const AdminUsersList: React.FC = () => {
     const openWarnForSelection = () => {
         clearActionMessages()
         if (!selectedPrimaryUser) return
-        openActionModal('warn', selectedPrimaryUser)
+        openActionModal('warn', selectedPrimaryUser, selectedUserIds)
     }
 
     const openSuspendForSelection = () => {
         clearActionMessages()
         if (!selectedPrimaryUser) return
-        openActionModal('suspend', selectedPrimaryUser)
+        openActionModal('suspend', selectedPrimaryUser, selectedUserIds)
     }
 
     const handleUnban = async (user: AdminUserItem) => {
