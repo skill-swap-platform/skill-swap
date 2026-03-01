@@ -1,6 +1,5 @@
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
-import PhoneImageContainer from "../assets/landingPage/Phone-Image-Container.png";
 import WhyChooseSkillSwap from "@/components/LandingPage/WhyChooseSkillSwap";
 import Header from "@/components/LandingPage/Header";
 import AboutSkillSwap from "@/components/LandingPage/AboutSkillSwap";
@@ -87,7 +86,7 @@ const HeroSection = () => {
             }}
           >
             <img
-              src={PhoneImageContainer}
+              src="/assets/landingPage/Phone-Image-Container.png"
               alt="phone-image-container"
               style={{
                 maxHeight: "100%",

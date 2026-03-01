@@ -1,6 +1,3 @@
-import ConnectionIcon from "../../assets/landingPage/connections.svg";
-import PeopleIcon from "../../assets/landingPage/people.svg";
-import AccessibleIcon from "../../assets/landingPage/accessible.svg";
 import { Box } from "@mui/material";
 
 type Feature = {
@@ -16,21 +13,21 @@ export default function WhyChooseSkillSwap() {
       title: "Learn From Real People",
       description:
         "Connect with others to exchange practical skills and gain real-world experience through collaboration",
-      iconSrc: PeopleIcon,
+      iconSrc: "/assets/landingPage/people.svg",
       iconAlt: "People icon",
     },
     {
       title: "Accessible Learning",
       description:
         "Learn new skills without costs by sharing what you know and learning from the community",
-      iconSrc: AccessibleIcon,
+      iconSrc: "/assets/landingPage/accessible.svg",
       iconAlt: "Accessible learning icon",
     },
     {
       title: "Build Meaningful Connections",
       description:
         "Create valuable connections with people who share your interests and support your learning journey",
-      iconSrc: ConnectionIcon,
+      iconSrc: "/assets/landingPage/connections.svg",
       iconAlt: "Connections icon",
     },
   ];
