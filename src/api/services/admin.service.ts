@@ -103,15 +103,40 @@ export interface AdminSkillDetails {
     updatedAt: string
 }
 
+export interface AdminBadgeManagementItem {
+    id: string
+    name: string
+    requirement: number
+    usersCount: number
+    icon: string | null
+}
+
 const toNumber = (value: unknown, fallback = 0): number => {
     const normalized = Number(value)
     return Number.isFinite(normalized) ? normalized : fallback
 }
 
-const toText = (value: unknown): string => {
+const toText = (value: unknown, fallback = ''): string => {
     if (typeof value === 'string') return value
     if (typeof value === 'number') return String(value)
-    return ''
+    return fallback
+}
+
+const imageUrlFromUnknown = (value: unknown): string | null => {
+    if (typeof value === 'string') return value
+    if (!value || typeof value !== 'object') return null
+
+    const image = value as Record<string, unknown>
+    const resolved =
+        image.url ??
+        image.secure_url ??
+        image.secureUrl ??
+        image.path ??
+        image.publicUrl ??
+        image.public_url ??
+        image.src
+
+    return typeof resolved === 'string' ? resolved : null
 }
 
 const toProvider = (value: unknown): AdminSkillProvider | null => {
@@ -179,6 +204,57 @@ const normalizeSkillDetails = (value: unknown): AdminSkillDetails => {
     }
 }
 
+const normalizeAdminBadge = (value: unknown): AdminBadgeManagementItem => {
+    const row = (value ?? {}) as Record<string, unknown>
+
+    return {
+        id: toText(row.id ?? row._id ?? row.badgeId),
+        name: toText(row.name ?? row.badgeName ?? row.title, 'Badge'),
+        requirement: toNumber(
+            row.requirement ??
+                row.requiredSessions ??
+                row.requiredSession ??
+                row.conditionValue ??
+                row.sessionsRequired ??
+                row.sessions
+        ),
+        usersCount: toNumber(
+            row.totalUsers ??
+                row.usersCount ??
+                row.userCount ??
+                row.earnedUsers ??
+                row.awardedUsers ??
+                row.earnedBy
+        ),
+        icon: imageUrlFromUnknown(row.icon ?? row.image ?? row.badgeIcon ?? row.iconUrl),
+    }
+}
+
+const normalizeAdminBadgesResponse = (value: unknown): AdminBadgeManagementItem[] => {
+    const root = (value ?? {}) as Record<string, unknown>
+    const payload =
+        root.data && typeof root.data === 'object' && !Array.isArray(root.data)
+            ? (root.data as Record<string, unknown>)
+            : root
+
+    const nestedData =
+        payload.data && typeof payload.data === 'object' && !Array.isArray(payload.data)
+            ? (payload.data as Record<string, unknown>)
+            : null
+
+    const source =
+        (Array.isArray(value) && value) ||
+        (Array.isArray(payload.data) && payload.data) ||
+        (Array.isArray(payload.badges) && payload.badges) ||
+        (Array.isArray(payload.items) && payload.items) ||
+        (nestedData && Array.isArray(nestedData.data) && nestedData.data) ||
+        (nestedData && Array.isArray(nestedData.badges) && nestedData.badges) ||
+        (nestedData && Array.isArray(nestedData.items) && nestedData.items) ||
+        []
+
+    return source.map(normalizeAdminBadge).filter((badge) => badge.id.length > 0)
+}
+
 export const adminService = {
     getDashboard: async (params: AdminDashboardPeriod): Promise<AdminDashboardData> => {
         const response = await axiosInstance.get('/api/v1/admin/dashboard', { params })
@@ -197,5 +273,16 @@ export const adminService = {
 
     deleteSkill: async (skillId: string): Promise<void> => {
         await axiosInstance.delete(`/api/v1/admin/skills/${skillId}`)
+    },
+
+    getBadges: async (): Promise<AdminBadgeManagementItem[]> => {
+        const response = await axiosInstance.get('/api/v1/admin/badges')
+        return normalizeAdminBadgesResponse(response.data)
+    },
+
+    updateBadgeRequirement: async (badgeId: string, requirement: number): Promise<void> => {
+        await axiosInstance.patch(`/api/v1/admin/${badgeId}/requirement`, {
+            requirement: String(requirement),
+        })
     },
 }

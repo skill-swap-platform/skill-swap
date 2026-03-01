@@ -10,72 +10,13 @@ import {
 } from './adminBadgeOptionPresets'
 
 const renderEarnedIcon = (preset: AdminEarnedBadgePreset): React.ReactNode => {
-    if (preset.iconType === 'single') {
-        return <img src={preset.iconMainUrl} alt="" className="h-6 w-6 object-contain" loading="lazy" />
-    }
-
-    if (preset.iconType === 'experienced') {
-        return (
-            <div className="relative h-12 w-12">
-                <img
-                    src={preset.iconMainUrl}
-                    alt=""
-                    className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 object-contain"
-                    loading="lazy"
-                />
-                <div className="absolute left-[27.86px] top-[10.5px] flex h-[28.276px] w-[28.276px] items-center justify-center">
-                    <div className="rotate-[11.42deg]">
-                        <img
-                            src={preset.iconAccentRightUrl}
-                            alt=""
-                            className="h-6 w-6 object-contain"
-                            loading="lazy"
-                        />
-                    </div>
-                </div>
-                <div className="absolute left-[-14px] top-[10.5px] flex h-[28.276px] w-[28.276px] items-center justify-center">
-                    <div className="-scale-y-100 rotate-[168.58deg]">
-                        <img
-                            src={preset.iconAccentLeftUrl}
-                            alt=""
-                            className="h-6 w-6 object-contain"
-                            loading="lazy"
-                        />
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
     return (
-        <div className="relative h-12 w-12">
-            <img
-                src={preset.iconMainUrl}
-                alt=""
-                className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 object-contain"
-                loading="lazy"
-            />
-            <div className="absolute left-[29px] top-[9.5px] flex h-[28.277px] w-[28.277px] items-center justify-center">
-                <div className="rotate-[11.42deg]">
-                    <img
-                        src={preset.iconAccentRightUrl}
-                        alt=""
-                        className="h-6 w-6 object-contain"
-                        loading="lazy"
-                    />
-                </div>
-            </div>
-            <div className="absolute left-[-14px] top-[9.5px] flex h-[28.277px] w-[28.277px] items-center justify-center">
-                <div className="-scale-y-100 rotate-[168.58deg]">
-                    <img
-                        src={preset.iconAccentLeftUrl}
-                        alt=""
-                        className="h-6 w-6 object-contain"
-                        loading="lazy"
-                    />
-                </div>
-            </div>
-        </div>
+        <img
+            src={preset.iconMainUrl}
+            alt=""
+            className="h-auto w-auto max-h-7 max-w-[56px] object-contain"
+            loading="lazy"
+        />
     )
 }
 
@@ -213,7 +154,7 @@ export const AdminUserBadgesPanel: React.FC<AdminUserBadgesPanelProps> = ({ user
                                         <img
                                             src={badge.icon}
                                             alt=""
-                                            className="h-6 w-6 object-contain"
+                                            className="h-auto w-auto max-h-7 max-w-[56px] object-contain"
                                             loading="lazy"
                                         />
                                     )
