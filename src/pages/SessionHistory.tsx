@@ -31,6 +31,7 @@ export const SessionHistory: React.FC = () => {
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
     const [selectedSession, setSelectedSession] = useState<any>(null)
     const [receivedReview, setReceivedReview] = useState<any>(null)
+    const [sentReview, setSentReview] = useState<any>(null)
     const [sessions, setSessions] = useState<any[]>([])
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -88,6 +89,8 @@ export const SessionHistory: React.FC = () => {
 
                     setTotalPages(response.data.totalPages || Math.ceil((response.data.total || 0) / pageSize) || 1)
 
+                    const storedRatings: Record<string, number> = JSON.parse(localStorage.getItem('ss_session_ratings') || '{}')
+
                     const transformed = rawSessions.map((s: any) => {
                         const isHost = s.host?.id === currentUserId
                         const partner = isHost ? s.attendee : s.host
@@ -101,7 +104,7 @@ export const SessionHistory: React.FC = () => {
                             role: isHost ? 'provider' : 'seeker',
                             status: s.status,
                             duration: s.duration,
-                            rating: s.swapRequest?.id ? (reviewMap[s.swapRequest.id] || 0) : 0,
+                            rating: storedRatings[s.id] || 0,
                             _raw: s,
                             _partner: partner,
                         }
@@ -158,12 +161,10 @@ export const SessionHistory: React.FC = () => {
 
                 const isHost = sData.host?.id === currentUser?.id;
                 const partnerId = isHost ? sData.attendee?.id : sData.host?.id;
-
                 if (reviewsRes.success && reviewsRes.data.reviews) {
                     const match = reviewsRes.data.reviews.find((r: any) =>
                         r.reviewer?.id === partnerId
                     );
-
                     if (match) {
                         try {
                             const fullReview = await sessionService.getReviewDetail(match.id);
@@ -171,6 +172,19 @@ export const SessionHistory: React.FC = () => {
                         } catch {
                             setReceivedReview(match);
                         }
+                    }
+                }
+
+                if (partnerId) {
+                    try {
+                        const partnerReviewsRes = await sessionService.getUserReceivedReviews(partnerId)
+                        if (partnerReviewsRes.success && partnerReviewsRes.data?.review) {
+                            const myReview = partnerReviewsRes.data.review.find(
+                                (r: any) => r.reviewer?.id === currentUser?.id
+                            )
+                            if (myReview) setSentReview(myReview)
+                        }
+                    } catch {
                     }
                 }
             }
@@ -294,11 +308,12 @@ export const SessionHistory: React.FC = () => {
                     setSelectedSession(null)
                     setSelectedSessionId(null)
                     setReceivedReview(null)
+                    setSentReview(null)
                 }}
                 sessionFeedback={selectedSession ? {
                     sessionId: selectedSession.id,
                     isComplete: selectedSession.status === 'COMPLETED',
-                    comment: receivedReview?.comment || selectedSession.notes || 'No public review available yet.',
+                    comment: sentReview?.comment || '',
                     providerFeedback: (selectedSession.host?.id === currentUser?.id)
                         ? (selectedSession.feedbackAttendee ||
                             selectedSession.feedbacks?.find((f: any) => f.role === 'learning' || f.type === 'LEARNING') ||
