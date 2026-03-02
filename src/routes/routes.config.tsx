@@ -18,6 +18,8 @@ import { AdminUsersList } from "@/pages/admin/AdminUsersList";
 import AdminUserDetailsOverview from "@/pages/admin/AdminUserDetailsOverview";
 import { AdminBadgesManagement } from "@/pages/admin/AdminBadgesManagement";
 import { AdminAuditLog } from "@/pages/admin/AdminAuditLog";
+import { AdminSwapRequests } from "@/pages/admin/AdminSwapRequests";
+import { AdminSessions } from "@/pages/admin/AdminSessions";
 import { PointsAndBadges } from "@/pages/PointsAndBadges";
 import { SessionHistory } from "@/pages/SessionHistory";
 import { SessionFeedback } from "@/pages/SessionFeedback";
@@ -166,6 +168,22 @@ export const routesConfig: RouteConfig[] = [
     element: (
       <ProtectedRoute allowedRoles={["ADMIN"]}>
         <AdminBadgesManagement />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/requests",
+    element: (
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
+        <AdminSwapRequests />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/sessions",
+    element: (
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
+        <AdminSessions />
       </ProtectedRoute>
     ),
   },
