@@ -5,3 +5,4 @@ export { RequestCard } from './RequestCard';
 export type { RequestCardProps } from './RequestCard';
 export { RequestDetailsPanel } from './RequestDetailsPanel';
 export { ReceivedRequestDetailsPanel } from './ReceivedRequestDetailsPanel';
+export { SentRequestStatusModal } from './SentRequestStatusModal';
