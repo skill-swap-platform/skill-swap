@@ -150,6 +150,17 @@ export const SessionFeedback: React.FC = () => {
     const handleRoleFeedbackSubmit = async (data: any) => {
         const { ratings, improvements, bestPart } = data;
 
+        // Calculate overall rating: onTime (yes=5 / no=1) + stars ÷ total questions
+        const calcAndStoreRating = (sid: string, onTime: boolean | null, stars: Record<string, number>) => {
+            const onTimeScore = onTime === true ? 5 : 1
+            const starScores = Object.values(stars).map(Number).filter(v => v > 0)
+            const all = [onTimeScore, ...starScores]
+            const rating = Math.round(all.reduce((s, v) => s + v, 0) / all.length)
+            const stored = JSON.parse(localStorage.getItem('ss_session_ratings') || '{}')
+            stored[sid] = rating
+            localStorage.setItem('ss_session_ratings', JSON.stringify(stored))
+        }
+
         try {
             const rawSessionId = sessionId || sessionData?.id;
             const isTeaching = currentFeedbackRole === 'teaching';
@@ -162,7 +173,7 @@ export const SessionFeedback: React.FC = () => {
                 sessionFocus: Number(ratings.sessionFocus) || 5,
                 activeParticipation: Number(ratings.activeParticipation) || 5,
                 openToFeedback: Number(ratings.openToFeedback) || 5,
-                onTime: true
+                onTime: data.onTime ?? true
             } : {
                 sessionId: rawSessionId || '',
                 communication: Number(ratings.communication) || 5,
@@ -172,11 +183,12 @@ export const SessionFeedback: React.FC = () => {
                 clarity: Number(ratings.clarity) || 5,
                 patience: Number(ratings.patience) || 5,
                 sessionStructure: Number(ratings.sessionStructure) || 5,
-                onTime: true
+                onTime: data.onTime ?? true
             };
 
             await sessionService.submitRoleFeedback(currentFeedbackRole, feedbackPayload)
             showToast(`${isTeaching ? 'Teaching' : 'Learning'} feedback submitted! ✓`, 'success')
+            calcAndStoreRating(rawSessionId || '', data.onTime, ratings)
         } catch (err: any) {
             const msg = err?.response?.data?.message || 'Failed to submit feedback. Please try again.'
             showToast(msg, 'error')
@@ -206,7 +218,7 @@ export const SessionFeedback: React.FC = () => {
                 communication: Number(ratings.communication) || 5,
                 strengths: bestPart || 'N/A',
                 improvements: improvements || 'N/A',
-                onTime: true,
+                onTime: data.onTime ?? true,
                 sessionFocus: Number(ratings.sessionFocus) || 5,
                 activeParticipation: Number(ratings.activeParticipation) || 5,
                 openToFeedback: Number(ratings.openToFeedback) || 5
