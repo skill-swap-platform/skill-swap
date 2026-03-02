@@ -11,6 +11,7 @@ import {
     X,
 } from 'lucide-react'
 import { SortOrderIcon } from '@/components/admin-users/SortOrderIcon'
+import { DateRangePopover } from '@/components/admin/DateRangePopover'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import { AdminHeader } from '@/components/layout/AdminHeader'
 import { userService } from '@/api/services/user.service'
@@ -478,16 +479,6 @@ export const AdminSwapRequests: React.FC = () => {
         setDateMenuOpen(false)
     }
 
-    const clearDateFilter = () => {
-        setDraftStartDate('')
-        setDraftEndDate('')
-        setStartDate('')
-        setEndDate('')
-        setPage(1)
-        setSelectedSwapIds([])
-        setDateMenuOpen(false)
-    }
-
     const handleExport = async () => {
         if (selectedSwapIds.length === 0 || exportMutation.isPending) return
 
@@ -637,45 +628,13 @@ export const AdminSwapRequests: React.FC = () => {
                                     </button>
 
                                     {dateMenuOpen && (
-                                        <div className="absolute right-0 top-14 z-30 w-[280px] rounded-[10px] border border-[#E5E7EB] bg-white p-3 shadow-[0px_0px_4.7px_0px_rgba(0,0,0,0.25)]">
-                                            <div className="space-y-2">
-                                                <label className="block text-xs text-[#666666]">
-                                                    Start date
-                                                    <input
-                                                        type="date"
-                                                        value={draftStartDate}
-                                                        onChange={(event) => setDraftStartDate(event.target.value)}
-                                                        className="mt-1 h-9 w-full rounded-[8px] border border-[#E5E7EB] px-2 text-sm text-[#0C0D0F] outline-none focus:border-[#3272A3]"
-                                                    />
-                                                </label>
-                                                <label className="block text-xs text-[#666666]">
-                                                    End date
-                                                    <input
-                                                        type="date"
-                                                        value={draftEndDate}
-                                                        min={draftStartDate || undefined}
-                                                        onChange={(event) => setDraftEndDate(event.target.value)}
-                                                        className="mt-1 h-9 w-full rounded-[8px] border border-[#E5E7EB] px-2 text-sm text-[#0C0D0F] outline-none focus:border-[#3272A3]"
-                                                    />
-                                                </label>
-                                            </div>
-                                            <div className="mt-3 flex gap-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={clearDateFilter}
-                                                    className="flex-1 rounded-[8px] border border-[#E5E7EB] px-2 py-2 text-xs text-[#666666]"
-                                                >
-                                                    Clear
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={applyDateFilter}
-                                                    className="flex-1 rounded-[8px] bg-[#3272A3] px-2 py-2 text-xs text-white"
-                                                >
-                                                    Apply
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <DateRangePopover
+                                            startDate={draftStartDate}
+                                            endDate={draftEndDate}
+                                            onStartDateChange={setDraftStartDate}
+                                            onEndDateChange={setDraftEndDate}
+                                            onApply={applyDateFilter}
+                                        />
                                     )}
                                 </div>
 
