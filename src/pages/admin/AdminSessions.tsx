@@ -8,43 +8,44 @@ import {
     ChevronRight,
     Download,
     Search,
-    X,
 } from 'lucide-react'
 import { SortOrderIcon } from '@/components/admin-users/SortOrderIcon'
 import { DateRangePopover } from '@/components/admin/DateRangePopover'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import { AdminHeader } from '@/components/layout/AdminHeader'
 import { userService } from '@/api/services/user.service'
-import { useAdminSwaps, useExportAdminSwapsCsv } from '@/hooks/useAdminSwaps'
-import type { AdminSwapItem, AdminSwapsSort } from '@/types/adminSwaps.types'
+import { useAdminSessions, useExportAdminSessionsCsv } from '@/hooks/useAdminSessions'
+import type {
+    AdminSessionItem,
+    AdminSessionParticipant,
+    AdminSessionStatus,
+    AdminSessionsSort,
+} from '@/types/adminSessions.types'
 import type { UserAuthDto } from '@/types/api.types'
-import type { AdminSwapStatus } from '@/types/adminUsers.types'
 
 const DEFAULT_AVATAR_URL = 'https://api.dicebear.com/7.x/notionists/svg?seed=currentuser'
 const PAGE_LIMIT = 10
 
-const statusOptions: { label: string; value: AdminSwapStatus | 'ALL' }[] = [
+const statusOptions: { label: string; value: AdminSessionStatus | 'ALL' }[] = [
     { label: 'All Status', value: 'ALL' },
-    { label: 'Pending', value: 'PENDING' },
-    { label: 'Accepted', value: 'ACCEPTED' },
-    { label: 'Declined', value: 'DECLINED' },
-    { label: 'Expired', value: 'EXPIRED' },
+    { label: 'Scheduled', value: 'SCHEDULED' },
     { label: 'Completed', value: 'COMPLETED' },
     { label: 'Cancelled', value: 'CANCELLED' },
+    { label: 'Rescheduled', value: 'RESCHEDULED' },
+    { label: 'Disputed', value: 'DISPUTED' },
 ]
 
-const sortOptions: { label: string; value: AdminSwapsSort }[] = [
+const sortOptions: { label: string; value: AdminSessionsSort }[] = [
     { label: 'Newest', value: 'newest' },
     { label: 'Oldest', value: 'oldest' },
 ]
 
-const statusPillClassName: Record<AdminSwapStatus, string> = {
-    PENDING: 'bg-[#FEF3C7] text-[#F59E0B]',
-    ACCEPTED: 'bg-[#D2F7DF] text-[#16A34A]',
-    DECLINED: 'bg-[#FECACA] text-[#DC2626]',
-    EXPIRED: 'bg-[#FFE8C2] text-[#D97706]',
+const statusPillClassName: Record<AdminSessionStatus, string> = {
+    SCHEDULED: 'bg-[#E8F1FA] text-[#3272A3]',
     COMPLETED: 'bg-[#D2F7DF] text-[#16A34A]',
-    CANCELLED: 'bg-[#E5E7EB] text-[#6B7280]',
+    CANCELLED: 'bg-[#FECACA] text-[#EF4444]',
+    RESCHEDULED: 'bg-[#FFE8C2] text-[#F59E0B]',
+    DISPUTED: 'bg-[#FFE8C2] text-[#F59E0B]',
 }
 
 const getStoredUser = (): UserAuthDto | null => {
@@ -70,13 +71,12 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
     return fallback
 }
 
-const toStatusLabel = (status: AdminSwapStatus): string => {
-    if (status === 'DECLINED') return 'Declined'
-    if (status === 'CANCELLED') return 'Cancelled'
+const toStatusLabel = (status: AdminSessionStatus): string => {
     if (status === 'COMPLETED') return 'Completed'
-    if (status === 'EXPIRED') return 'Expired'
-    if (status === 'ACCEPTED') return 'Accepted'
-    return 'Pending'
+    if (status === 'CANCELLED') return 'Canceled'
+    if (status === 'RESCHEDULED') return 'Rescheduled'
+    if (status === 'DISPUTED') return 'Disputed'
+    return 'Scheduled'
 }
 
 const formatDate = (value: string): string => {
@@ -100,8 +100,36 @@ const formatTime = (value: string): string => {
         .toLowerCase()
 }
 
-const avatarFallback = (name: string, id: string): string =>
-    `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(name || id || 'user')}`
+const formatSessionId = (value: string): string => {
+    const normalized = value.trim()
+    if (!normalized) return '--'
+    if (normalized.startsWith('#')) return normalized
+    if (/^\d+$/.test(normalized)) return `#${normalized}`
+    if (normalized.length <= 8) return `#${normalized}`
+    return `#${normalized.slice(-4)}`
+}
+
+const formatDuration = (session: AdminSessionItem): string => {
+    if (typeof session.duration === 'number' && Number.isFinite(session.duration) && session.duration > 0) {
+        return `${Math.round(session.duration)} min`
+    }
+
+    const start = new Date(session.scheduledAt).getTime()
+    const end = new Date(session.endsAt).getTime()
+    if (Number.isNaN(start) || Number.isNaN(end) || end <= start) return '--'
+
+    const durationInMinutes = Math.round((end - start) / 60000)
+    if (durationInMinutes <= 0) return '--'
+    return `${durationInMinutes} min`
+}
+
+const formatSkills = (value: string): string[] => {
+    const lines = value
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+    return lines.length > 0 ? lines : ['--']
+}
 
 const downloadBlob = (blob: Blob, fileName: string) => {
     const url = window.URL.createObjectURL(blob)
@@ -166,7 +194,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ label, value, icon, iconConta
     </article>
 )
 
-const SwapRequestsTitleIcon: React.FC<{ className?: string }> = ({ className }) => (
+const SessionsTitleIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg
         viewBox="0 0 20 20"
         fill="none"
@@ -175,31 +203,35 @@ const SwapRequestsTitleIcon: React.FC<{ className?: string }> = ({ className }) 
         aria-hidden="true"
     >
         <path
-            d="M2.98334 4.29999H14.5167C15.9 4.29999 17.0167 5.41665 17.0167 6.79999V9.56666"
+            d="M18.3333 12.5V7.5C18.3333 3.33333 16.6667 1.66667 12.5 1.66667H7.5C3.33333 1.66667 1.66667 3.33333 1.66667 7.5V12.5C1.66667 16.6667 3.33333 18.3333 7.5 18.3333H12.5C16.6667 18.3333 18.3333 16.6667 18.3333 12.5Z"
             stroke="currentColor"
             strokeWidth="1.5"
-            strokeMiterlimit="10"
             strokeLinecap="round"
             strokeLinejoin="round"
         />
         <path
-            d="M5.61667 1.66669L2.98334 4.3L5.61667 6.93336"
+            d="M2.1 5.925H17.9"
             stroke="currentColor"
             strokeWidth="1.5"
-            strokeMiterlimit="10"
             strokeLinecap="round"
             strokeLinejoin="round"
         />
         <path
-            d="M17.0167 15.7H5.48334C4.1 15.7 2.98334 14.5834 2.98334 13.2V10.4333"
+            d="M7.1 1.75833V5.80833"
             stroke="currentColor"
             strokeWidth="1.5"
-            strokeMiterlimit="10"
             strokeLinecap="round"
             strokeLinejoin="round"
         />
         <path
-            d="M14.3834 18.3333L17.0167 15.7L14.3834 13.0667"
+            d="M12.9 1.75833V5.43333"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+        <path
+            d="M8.125 12.0417V11.0417C8.125 9.75833 9.03333 9.23333 10.1417 9.875L11.0083 10.375L11.875 10.875C12.9833 11.5167 12.9833 12.5667 11.875 13.2083L11.0083 13.7083L10.1417 14.2083C9.03333 14.85 8.125 14.325 8.125 13.0417V12.0417Z"
             stroke="currentColor"
             strokeWidth="1.5"
             strokeMiterlimit="10"
@@ -209,7 +241,7 @@ const SwapRequestsTitleIcon: React.FC<{ className?: string }> = ({ className }) 
     </svg>
 )
 
-const AcceptedIcon: React.FC = () => (
+const CompletedSessionsIcon: React.FC = () => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         width="24"
@@ -230,7 +262,7 @@ const AcceptedIcon: React.FC = () => (
     </svg>
 )
 
-const RejectedIcon: React.FC = () => (
+const CancelledSessionsIcon: React.FC = () => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         width="24"
@@ -251,7 +283,7 @@ const RejectedIcon: React.FC = () => (
     </svg>
 )
 
-const PendingIcon: React.FC = () => (
+const DisputedSessionsIcon: React.FC = () => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         width="24"
@@ -272,20 +304,35 @@ const PendingIcon: React.FC = () => (
     </svg>
 )
 
-export const AdminSwapRequests: React.FC = () => {
+const ParticipantCell: React.FC<{ participant: AdminSessionParticipant }> = ({ participant }) => (
+    <div className="flex items-center gap-2">
+        {participant.image ? (
+            <img
+                src={participant.image}
+                alt={participant.userName}
+                className="h-6 w-6 rounded-full object-cover"
+            />
+        ) : (
+            <span className="h-5 w-5 rounded-full bg-[#D4D4D4]" aria-hidden="true" />
+        )}
+        <span className="truncate text-[14px] text-[#0C0D0F]">{participant.userName || '--'}</span>
+    </div>
+)
+
+export const AdminSessions: React.FC = () => {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
     const [currentUser, setCurrentUser] = useState<UserAuthDto | null>(() => getStoredUser())
 
     const [page, setPage] = useState(1)
     const [searchInput, setSearchInput] = useState('')
     const [searchValue, setSearchValue] = useState('')
-    const [status, setStatus] = useState<AdminSwapStatus | 'ALL'>('ALL')
-    const [sort, setSort] = useState<AdminSwapsSort>('newest')
+    const [status, setStatus] = useState<AdminSessionStatus | 'ALL'>('ALL')
+    const [sort, setSort] = useState<AdminSessionsSort>('newest')
     const [startDate, setStartDate] = useState('')
     const [endDate, setEndDate] = useState('')
     const [draftStartDate, setDraftStartDate] = useState('')
     const [draftEndDate, setDraftEndDate] = useState('')
-    const [selectedSwapIds, setSelectedSwapIds] = useState<string[]>([])
+    const [selectedSessionIds, setSelectedSessionIds] = useState<string[]>([])
     const [statusMenuOpen, setStatusMenuOpen] = useState(false)
     const [sortMenuOpen, setSortMenuOpen] = useState(false)
     const [dateMenuOpen, setDateMenuOpen] = useState(false)
@@ -295,16 +342,17 @@ export const AdminSwapRequests: React.FC = () => {
     const sortMenuRef = useRef<HTMLDivElement>(null)
     const dateMenuRef = useRef<HTMLDivElement>(null)
 
-    const swapsQuery = useAdminSwaps({
+    const sessionsQuery = useAdminSessions({
         page,
         limit: PAGE_LIMIT,
+        search: searchValue || undefined,
         status: status === 'ALL' ? undefined : status,
         sort,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
     })
 
-    const exportMutation = useExportAdminSwapsCsv()
+    const exportMutation = useExportAdminSessionsCsv()
 
     const statusLabel = useMemo(
         () => statusOptions.find((option) => option.value === status)?.label ?? 'All Status',
@@ -316,36 +364,18 @@ export const AdminSwapRequests: React.FC = () => {
         [sort]
     )
 
-    const rows = useMemo(() => swapsQuery.data?.data ?? [], [swapsQuery.data?.data])
-    const pagination = swapsQuery.data?.pagination
-    const summary = swapsQuery.data?.summary ?? { accepted: 0, pending: 0, rejected: 0 }
-
-    const filteredRows = useMemo(() => {
-        const query = searchValue.trim().toLowerCase()
-        if (!query) return rows
-
-        return rows.filter((swap) => {
-            const sender = swap.sender.userName.toLowerCase()
-            const receiver = swap.receiver.userName.toLowerCase()
-            const senderEmail = swap.sender.email.toLowerCase()
-            const receiverEmail = swap.receiver.email.toLowerCase()
-            return (
-                sender.includes(query) ||
-                receiver.includes(query) ||
-                senderEmail.includes(query) ||
-                receiverEmail.includes(query)
-            )
-        })
-    }, [rows, searchValue])
+    const rows = useMemo(() => sessionsQuery.data?.data ?? [], [sessionsQuery.data?.data])
+    const pagination = sessionsQuery.data?.pagination
+    const summary = sessionsQuery.data?.summary ?? { completed: 0, cancelled: 0, disputed: 0 }
 
     const totalRows = pagination?.total ?? rows.length
     const currentPage = pagination?.page ?? page
     const currentLimit = pagination?.limit ?? PAGE_LIMIT
     const totalPages = Math.max(1, pagination?.totalPages ?? 1)
     const shownCount =
-        filteredRows.length === 0
+        rows.length === 0
             ? 0
-            : Math.min(totalRows, (Math.max(1, currentPage) - 1) * currentLimit + filteredRows.length)
+            : Math.min(totalRows, (Math.max(1, currentPage) - 1) * currentLimit + rows.length)
 
     const pageNumbers = useMemo(() => {
         if (totalPages <= 3) return pageRange(1, totalPages)
@@ -355,12 +385,13 @@ export const AdminSwapRequests: React.FC = () => {
     }, [currentPage, totalPages])
 
     const isAllRowsChecked =
-        filteredRows.length > 0 && filteredRows.every((swap) => selectedSwapIds.includes(swap.id))
+        rows.length > 0 && rows.every((session) => selectedSessionIds.includes(session.id))
 
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
             setSearchValue(searchInput.trim())
-            setSelectedSwapIds([])
+            setPage(1)
+            setSelectedSessionIds([])
         }, 250)
 
         return () => window.clearTimeout(timeoutId)
@@ -441,33 +472,35 @@ export const AdminSwapRequests: React.FC = () => {
 
     const toggleAllRows = () => {
         if (isAllRowsChecked) {
-            setSelectedSwapIds((previous) =>
-                previous.filter((id) => !filteredRows.some((row) => row.id === id))
+            setSelectedSessionIds((previous) =>
+                previous.filter((id) => !rows.some((row) => row.id === id))
             )
             return
         }
 
-        const idsToAdd = filteredRows.map((swap) => swap.id)
-        setSelectedSwapIds((previous) => Array.from(new Set([...previous, ...idsToAdd])))
+        const idsToAdd = rows.map((session) => session.id)
+        setSelectedSessionIds((previous) => Array.from(new Set([...previous, ...idsToAdd])))
     }
 
-    const toggleSingleRow = (swapId: string) => {
-        setSelectedSwapIds((previous) =>
-            previous.includes(swapId) ? previous.filter((id) => id !== swapId) : [...previous, swapId]
+    const toggleSingleRow = (sessionId: string) => {
+        setSelectedSessionIds((previous) =>
+            previous.includes(sessionId)
+                ? previous.filter((id) => id !== sessionId)
+                : [...previous, sessionId]
         )
     }
 
-    const onStatusChange = (value: AdminSwapStatus | 'ALL') => {
+    const onStatusChange = (value: AdminSessionStatus | 'ALL') => {
         setStatus(value)
         setPage(1)
-        setSelectedSwapIds([])
+        setSelectedSessionIds([])
         setStatusMenuOpen(false)
     }
 
-    const onSortChange = (value: AdminSwapsSort) => {
+    const onSortChange = (value: AdminSessionsSort) => {
         setSort(value)
         setPage(1)
-        setSelectedSwapIds([])
+        setSelectedSessionIds([])
         setSortMenuOpen(false)
     }
 
@@ -475,77 +508,68 @@ export const AdminSwapRequests: React.FC = () => {
         setStartDate(draftStartDate)
         setEndDate(draftEndDate)
         setPage(1)
-        setSelectedSwapIds([])
+        setSelectedSessionIds([])
         setDateMenuOpen(false)
     }
 
     const handleExport = async () => {
-        if (selectedSwapIds.length === 0 || exportMutation.isPending) return
+        if (selectedSessionIds.length === 0 || exportMutation.isPending) return
 
         setExportError(null)
 
         try {
-            const result = await exportMutation.mutateAsync({ swapIds: selectedSwapIds })
+            const result = await exportMutation.mutateAsync({ sessionIds: selectedSessionIds })
             downloadBlob(result.blob, result.fileName)
         } catch (error: unknown) {
-            setExportError(getErrorMessage(error, 'Failed to export selected swap requests.'))
+            setExportError(getErrorMessage(error, 'Failed to export selected sessions.'))
         }
     }
 
-    const renderRow = (swap: AdminSwapItem) => {
-        const checked = selectedSwapIds.includes(swap.id)
+    const renderRow = (session: AdminSessionItem) => {
+        const checked = selectedSessionIds.includes(session.id)
+        const skills = formatSkills(session.skillName)
 
         return (
-            <tr key={swap.id}>
+            <tr key={session.id}>
                 <td className="h-[62px] border-b border-[#F3F4F6] px-4">
                     <SelectionCheckbox
                         checked={checked}
-                        onChange={() => toggleSingleRow(swap.id)}
-                        ariaLabel={`Select swap request ${swap.id}`}
+                        onChange={() => toggleSingleRow(session.id)}
+                        ariaLabel={`Select session ${session.id}`}
                     />
                 </td>
-                <td className="h-[62px] border-b border-[#F3F4F6] px-4">
-                    <div className="flex items-center gap-2">
-                        <img
-                            src={swap.sender.image || avatarFallback(swap.sender.userName, swap.sender.id)}
-                            alt={swap.sender.userName}
-                            className="h-6 w-6 rounded-full object-cover"
-                        />
-                        <span className="text-[14px] text-[#0C0D0F]">{swap.sender.userName}</span>
-                    </div>
+                <td className="h-[62px] border-b border-[#F3F4F6] px-4 text-[14px] text-[#0C0D0F]">
+                    {formatSessionId(session.id)}
                 </td>
                 <td className="h-[62px] border-b border-[#F3F4F6] px-4">
-                    <div className="flex items-center gap-2">
-                        <img
-                            src={swap.receiver.image || avatarFallback(swap.receiver.userName, swap.receiver.id)}
-                            alt={swap.receiver.userName}
-                            className="h-6 w-6 rounded-full object-cover"
-                        />
-                        <span className="text-[14px] text-[#0C0D0F]">{swap.receiver.userName}</span>
+                    <div className="flex flex-col gap-[2px]">
+                        <span className="text-[14px] text-[#0C0D0F]">{formatDate(session.scheduledAt)}</span>
+                        <span className="text-[13px] text-[#666666]">{formatTime(session.scheduledAt)}</span>
                     </div>
                 </td>
                 <td className="h-[62px] border-b border-[#F3F4F6] px-4">
                     <span
-                        className={`inline-flex h-[23px] items-center rounded-[8px] px-2 text-[14px] ${statusPillClassName[swap.status]}`}
+                        className={`inline-flex h-[23px] items-center rounded-[8px] px-2 text-[14px] ${statusPillClassName[session.status]}`}
                     >
                         <span className="mr-1 text-[8px] leading-none">●</span>
-                        {toStatusLabel(swap.status)}
+                        {toStatusLabel(session.status)}
                     </span>
                 </td>
                 <td className="h-[62px] border-b border-[#F3F4F6] px-4 text-[14px] text-[#0C0D0F]">
-                    {swap.requestType || '--'}
-                </td>
-                <td className="h-[62px] border-b border-[#F3F4F6] px-4 text-[14px] text-[#0C0D0F]">
-                    {swap.requestedSkill?.name || '--'}
-                </td>
-                <td className="h-[62px] border-b border-[#F3F4F6] px-4 text-[14px] text-[#0C0D0F]">
-                    {swap.offeredSkill?.name || '______________'}
+                    <div className="flex flex-col leading-[18px]">
+                        {skills.slice(0, 2).map((skillLine, index) => (
+                            <span key={`${session.id}-skill-${index}`}>{skillLine}</span>
+                        ))}
+                    </div>
                 </td>
                 <td className="h-[62px] border-b border-[#F3F4F6] px-4">
-                    <div className="flex flex-col gap-1">
-                        <span className="text-[14px] text-[#0C0D0F]">{formatDate(swap.dateTime)}</span>
-                        <span className="text-[13px] text-[#666666]">{formatTime(swap.dateTime)}</span>
-                    </div>
+                    <ParticipantCell participant={session.host} />
+                </td>
+                <td className="h-[62px] border-b border-[#F3F4F6] px-4">
+                    <ParticipantCell participant={session.attendee} />
+                </td>
+                <td className="h-[62px] border-b border-[#F3F4F6] px-4 text-[14px] text-[#0C0D0F]">
+                    {formatDuration(session)}
                 </td>
             </tr>
         )
@@ -569,27 +593,27 @@ export const AdminSwapRequests: React.FC = () => {
 
                 <main className="space-y-4 px-4 py-4 md:px-2 md:py-4">
                     <section className="flex items-center gap-2">
-                        <SwapRequestsTitleIcon className="h-6 w-6 text-[#3272A3]" />
-                        <h1 className="text-[28px] font-bold leading-[34px] text-[#0C0D0F]">Swap Requests</h1>
+                        <SessionsTitleIcon className="h-6 w-6 text-[#3272A3]" />
+                        <h1 className="text-[38px] font-bold leading-[34px] text-[#0C0D0F]">Sessions</h1>
                     </section>
 
                     <section className="grid gap-4 lg:grid-cols-3">
                         <SummaryCard
-                            label="Requests accepted (this week)"
-                            value={summary.accepted}
-                            icon={<AcceptedIcon />}
+                            label="Completed Sessions(this week)"
+                            value={summary.completed}
+                            icon={<CompletedSessionsIcon />}
                             iconContainerClassName="bg-[#F0FFF6]"
                         />
                         <SummaryCard
-                            label="Requests rejected"
-                            value={summary.rejected}
-                            icon={<RejectedIcon />}
+                            label="Canceled Sessions"
+                            value={summary.cancelled}
+                            icon={<CancelledSessionsIcon />}
                             iconContainerClassName="bg-[#FFEAEA]"
                         />
                         <SummaryCard
-                            label="Requests pended"
-                            value={summary.pending}
-                            icon={<PendingIcon />}
+                            label="Disputed(this week)"
+                            value={summary.disputed}
+                            icon={<DisputedSessionsIcon />}
                             iconContainerClassName="bg-[#FFF8E7]"
                         />
                     </section>
@@ -714,54 +738,54 @@ export const AdminSwapRequests: React.FC = () => {
                                             <SelectionCheckbox
                                                 checked={isAllRowsChecked}
                                                 onChange={toggleAllRows}
-                                                ariaLabel="Select all swaps"
+                                                ariaLabel="Select all sessions"
                                             />
                                         </th>
-                                        <th className="h-[62px] w-[154px] border-b border-[#F3F4F6] px-4 text-left text-[16px] font-semibold text-[#666666]">
-                                            Sender
-                                        </th>
-                                        <th className="h-[62px] w-[154px] border-b border-[#F3F4F6] px-4 text-left text-[16px] font-semibold text-[#666666]">
-                                            Receiver
-                                        </th>
-                                        <th className="h-[62px] w-[162px] border-b border-[#F3F4F6] px-4 text-left text-[16px] font-semibold text-[#666666]">
-                                            Status
-                                        </th>
-                                        <th className="h-[62px] w-[162px] border-b border-[#F3F4F6] px-4 text-left text-[16px] font-semibold text-[#666666]">
-                                            Request Type
-                                        </th>
-                                        <th className="h-[62px] w-[162px] border-b border-[#F3F4F6] px-4 text-left text-[16px] font-semibold text-[#666666]">
-                                            Requested Skill
-                                        </th>
-                                        <th className="h-[62px] w-[162px] border-b border-[#F3F4F6] px-4 text-left text-[16px] font-semibold text-[#666666]">
-                                            Offered Skill
+                                        <th className="h-[62px] w-[112px] border-b border-[#F3F4F6] px-4 text-left text-[16px] font-semibold text-[#666666]">
+                                            Session ID
                                         </th>
                                         <th className="h-[62px] w-[126px] border-b border-[#F3F4F6] px-4 text-left text-[16px] font-semibold text-[#666666]">
-                                            Date & Time
+                                            Date &amp; Time
+                                        </th>
+                                        <th className="h-[62px] w-[112px] border-b border-[#F3F4F6] px-4 text-left text-[16px] font-semibold text-[#666666]">
+                                            Status
+                                        </th>
+                                        <th className="h-[62px] w-[112px] border-b border-[#F3F4F6] px-4 text-left text-[16px] font-semibold text-[#666666]">
+                                            Skills
+                                        </th>
+                                        <th className="h-[62px] w-[154px] border-b border-[#F3F4F6] px-4 text-left text-[16px] font-semibold text-[#666666]">
+                                            Person 1
+                                        </th>
+                                        <th className="h-[62px] w-[154px] border-b border-[#F3F4F6] px-4 text-left text-[16px] font-semibold text-[#666666]">
+                                            Person 2
+                                        </th>
+                                        <th className="h-[62px] w-[107px] border-b border-[#F3F4F6] px-4 text-left text-[16px] font-semibold text-[#666666]">
+                                            Duration
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {swapsQuery.isLoading && (
+                                    {sessionsQuery.isLoading && (
                                         <tr>
                                             <td
                                                 colSpan={8}
                                                 className="h-[88px] border-b border-[#F3F4F6] px-4 text-center text-sm text-[#666666]"
                                             >
-                                                Loading swap requests...
+                                                Loading sessions...
                                             </td>
                                         </tr>
                                     )}
 
-                                    {swapsQuery.isError && !swapsQuery.isLoading && (
+                                    {sessionsQuery.isError && !sessionsQuery.isLoading && (
                                         <tr>
                                             <td colSpan={8} className="border-b border-[#F3F4F6] px-4 py-4">
                                                 <div className="rounded-[10px] border border-[#FECACA] bg-[#FEF2F2] p-3">
                                                     <p className="text-sm text-[#B91C1C]">
-                                                        Failed to load swap requests.
+                                                        Failed to load sessions.
                                                     </p>
                                                     <button
                                                         type="button"
-                                                        onClick={() => swapsQuery.refetch()}
+                                                        onClick={() => sessionsQuery.refetch()}
                                                         className="mt-2 rounded-md bg-[#B91C1C] px-3 py-1.5 text-xs text-white"
                                                     >
                                                         Retry
@@ -771,22 +795,22 @@ export const AdminSwapRequests: React.FC = () => {
                                         </tr>
                                     )}
 
-                                    {!swapsQuery.isLoading &&
-                                        !swapsQuery.isError &&
-                                        filteredRows.length === 0 && (
+                                    {!sessionsQuery.isLoading &&
+                                        !sessionsQuery.isError &&
+                                        rows.length === 0 && (
                                             <tr>
                                                 <td
                                                     colSpan={8}
                                                     className="h-[88px] border-b border-[#F3F4F6] px-4 text-center text-sm text-[#666666]"
                                                 >
-                                                    No swap requests found.
+                                                    No sessions found.
                                                 </td>
                                             </tr>
                                         )}
 
-                                    {!swapsQuery.isLoading &&
-                                        !swapsQuery.isError &&
-                                        filteredRows.map((swap) => renderRow(swap))}
+                                    {!sessionsQuery.isLoading &&
+                                        !sessionsQuery.isError &&
+                                        rows.map((session) => renderRow(session))}
                                 </tbody>
                             </table>
                         </div>
@@ -834,14 +858,18 @@ export const AdminSwapRequests: React.FC = () => {
                         </div>
                     </section>
 
-                    {selectedSwapIds.length > 0 && (
-                        <section className="md:px-14">
+                    {sessionsQuery.isFetching && !sessionsQuery.isLoading && (
+                        <p className="text-xs text-[#666666]">Updating sessions list...</p>
+                    )}
+
+                    {selectedSessionIds.length > 0 && (
+                        <section className="md:px-10">
                             <div className="flex flex-col gap-3 rounded-[50px] border border-[#3272A3] bg-[#F7FAFF] p-4 lg:flex-row lg:items-center">
                                 <div className="flex flex-1 items-center gap-2 text-[#3272A3]">
                                     <div className="flex h-6 w-6 items-center justify-center rounded-[6px] bg-[#3272A3]">
                                         <Check className="h-4 w-4 text-white" />
                                     </div>
-                                    <p className="text-[16px]">{selectedSwapIds.length} Sessions selected</p>
+                                    <p className="text-[16px]">{selectedSessionIds.length} Sessions selected</p>
                                 </div>
 
                                 <button
@@ -855,11 +883,7 @@ export const AdminSwapRequests: React.FC = () => {
                                     }}
                                 >
                                     {exportMutation.isPending ? 'Exporting...' : 'Export'}
-                                    {exportMutation.isPending ? (
-                                        <X className="h-[18px] w-[18px]" />
-                                    ) : (
-                                        <Download className="h-[18px] w-[18px]" />
-                                    )}
+                                    <Download className="h-[18px] w-[18px]" />
                                 </button>
                             </div>
 
@@ -872,4 +896,4 @@ export const AdminSwapRequests: React.FC = () => {
     )
 }
 
-export default AdminSwapRequests
+export default AdminSessions
