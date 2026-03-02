@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { RequestTabs } from '../../components/requests/RequestTabs';
 import { StatusFilterTabs } from '../../components/requests/StatusFilterTabs';
 import type { RequestStatus } from '../../components/requests/StatusFilterTabs';
@@ -6,6 +7,7 @@ import { RequestCard } from '../../components/requests/RequestCard';
 import type { RequestCardProps } from '../../components/requests/RequestCard';
 import { RequestDetailsPanel } from '../../components/requests/RequestDetailsPanel';
 import { ReceivedRequestDetailsPanel } from '../../components/requests/ReceivedRequestDetailsPanel';
+import { SentRequestStatusModal } from '../../components/requests/SentRequestStatusModal';
 import { Header } from '../../components/Header';
 import { Footer } from '../../components/Footer';
 import {
@@ -27,10 +29,13 @@ interface SwapRequestCardItem extends RequestCardProps {
   id: string;
   backendStatus: SwapRequestStatus;
   expiresAt: string;
+  statusUpdatedAt?: string;
+  rejectionReason?: string | null;
 }
 
 const LIST_PAGE = 1;
 const LIST_LIMIT = 20;
+const STATUS_MODAL_STORAGE_KEY = 'requests-sent:status-modal-seen';
 
 const mapUiFilterToApiStatus = (filter: RequestStatus): SwapApiStatus | undefined => {
   if (filter === 'all') return undefined;
@@ -107,6 +112,8 @@ const mapSwapToCard = (swap: SwapRequest, tab: 'sent' | 'received'): SwapRequest
     startAt: swap.startAt,
     endAt: swap.endAt,
     timezone: swap.timezone,
+    statusUpdatedAt: swap.updatedAt ?? swap.createdAt,
+    rejectionReason: swap.rejectionReason ?? null,
   };
 };
 
@@ -147,11 +154,35 @@ const getDeclineReason = (metadata: DeclineMetadata): string => {
   return reasonMap[metadata.reason] ?? metadata.reason ?? 'No reason provided';
 };
 
+const isDecisionStatus = (status: SwapRequestStatus): boolean =>
+  status === 'ACCEPTED' || status === 'DECLINED' || status === 'REJECTED';
+
+const createStatusModalKey = (request: SwapRequestCardItem): string =>
+  `${request.id}:${request.backendStatus}`;
+
+const getStatusUpdatedTimestamp = (request: SwapRequestCardItem): number => {
+  const date = new Date(request.statusUpdatedAt ?? '');
+  if (!Number.isNaN(date.getTime())) {
+    return date.getTime();
+  }
+
+  const fallback = new Date(request.startAt ?? '');
+  if (!Number.isNaN(fallback.getTime())) {
+    return fallback.getTime();
+  }
+
+  return 0;
+};
+
 export const RequestsSent: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'sent' | 'received'>('sent');
   const [activeFilter, setActiveFilter] = useState<RequestStatus>('all');
   const [selectedRequest, setSelectedRequest] = useState<SwapRequestCardItem | null>(null);
+  const [statusModalRequest, setStatusModalRequest] = useState<SwapRequestCardItem | null>(null);
   const detailsPanelRef = useRef<HTMLDivElement | null>(null);
+  const seenStatusModalKeysRef = useRef<Set<string>>(new Set());
+  const hasHydratedStatusKeysRef = useRef(false);
 
   const queryParams = useMemo(
     () => ({
@@ -253,6 +284,82 @@ export const RequestsSent: React.FC = () => {
   const handleViewProfile = (userName: string) => {
     console.log('View profile:', userName);
     // Handle view profile logic
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const rawValue = window.sessionStorage.getItem(STATUS_MODAL_STORAGE_KEY);
+      if (!rawValue) {
+        hasHydratedStatusKeysRef.current = true;
+        return;
+      }
+
+      const parsed = JSON.parse(rawValue);
+      if (Array.isArray(parsed)) {
+        const validKeys = parsed.filter((value): value is string => typeof value === 'string');
+        seenStatusModalKeysRef.current = new Set(validKeys);
+      }
+    } catch {
+      seenStatusModalKeysRef.current = new Set();
+    } finally {
+      hasHydratedStatusKeysRef.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasHydratedStatusKeysRef.current) return;
+    if (activeTab !== 'sent') return;
+    if (sentSwapsQuery.isPending || sentSwapsQuery.isError) return;
+    if (statusModalRequest) return;
+
+    const nextRequest = [...sentRequests]
+      .filter((request) => isDecisionStatus(request.backendStatus))
+      .filter((request) => !seenStatusModalKeysRef.current.has(createStatusModalKey(request)))
+      .sort((first, second) => getStatusUpdatedTimestamp(second) - getStatusUpdatedTimestamp(first))[0];
+
+    if (!nextRequest) return;
+    setStatusModalRequest(nextRequest);
+  }, [
+    activeTab,
+    sentRequests,
+    sentSwapsQuery.isPending,
+    sentSwapsQuery.isError,
+    statusModalRequest,
+  ]);
+
+  const persistSeenStatusModalKeys = () => {
+    if (typeof window === 'undefined') return;
+    window.sessionStorage.setItem(
+      STATUS_MODAL_STORAGE_KEY,
+      JSON.stringify([...seenStatusModalKeysRef.current])
+    );
+  };
+
+  const handleCloseStatusModal = () => {
+    if (!statusModalRequest) return;
+    seenStatusModalKeysRef.current.add(createStatusModalKey(statusModalRequest));
+    persistSeenStatusModalKeys();
+    setStatusModalRequest(null);
+  };
+
+  const handleStatusModalPrimaryAction = () => {
+    if (!statusModalRequest) return;
+
+    if (statusModalRequest.backendStatus === 'ACCEPTED') {
+      handleCloseStatusModal();
+      navigate('/messages');
+      return;
+    }
+
+    handleCloseStatusModal();
+    navigate('/explore');
+  };
+
+  const handleStatusModalSecondaryAction = () => {
+    handleCloseStatusModal();
+    navigate('/sessions');
   };
 
   useEffect(() => {
@@ -365,6 +472,19 @@ export const RequestsSent: React.FC = () => {
           )}
         </div>
       </div>
+
+      <SentRequestStatusModal
+        isOpen={!!statusModalRequest}
+        variant={statusModalRequest?.backendStatus === 'ACCEPTED' ? 'accepted' : 'declined'}
+        providerName={statusModalRequest?.userName ?? 'Provider'}
+        requestedSkill={statusModalRequest?.requestedSkill ?? 'Requested Skill'}
+        requestedSkillLevel={statusModalRequest?.requestedSkillLevel ?? null}
+        scheduledAt={statusModalRequest?.startAt}
+        rejectionReason={statusModalRequest?.rejectionReason}
+        onClose={handleCloseStatusModal}
+        onPrimaryAction={handleStatusModalPrimaryAction}
+        onSecondaryAction={handleStatusModalSecondaryAction}
+      />
 
       {/* Footer */}
       <div className="w-full mt-auto">
