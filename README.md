@@ -1,88 +1,146 @@
-# Skill Swap Platform 🔄 💡
+# Skill Swap
 
-### *"Exchange Skills, Grow Together"*
+Skill Swap is a web platform for exchanging skills between users through session-based learning. Users can discover skills, send swap requests, schedule sessions, and track progress through points and badges.
 
-**Skill Swap** is an innovative digital platform designed to facilitate skill and knowledge exchange between individuals through a **skill-for-skill barter system**. The platform enables users to learn new skills (such as programming or languages) by sharing their own expertise—without any financial transactions.
+## What Is Skill Swap Platform?
 
+Skill Swap Platform is a digital service that allows individuals to exchange skills and knowledge through direct skill-for-skill exchanges. Instead of monetary transactions, users trade expertise (for example: graphic design for guitar lessons, or coding tutoring for language practice).
 
-## ✨ Key Features
+## Platform Purpose
 
-Based on the platform’s **Information Architecture (IA)** and **UI/UX designs**:
+The platform enables:
 
-* **Onboarding & Profile Setup:**
-  A flexible registration flow that allows users to select **3–5 skills** they want to learn or offer.
+- Skill Providers to list their skills, set availability, and connect with learners
+- Skill Seekers to discover skills, request swaps, and schedule sessions
+- Administrators to moderate content, manage disputes, and maintain platform quality
 
-* **Skill Discovery:**
-  An advanced search and discovery engine to find skill providers, with filtering by category and difficulty level.
+## Target Audience
 
-* **Swap Request System:**
-  Send skill exchange requests or free session invitations, with the ability to specify preferred time slots and include an introductory message.
+Primary users:
 
-* **Real-time Chat & Scheduling:**
-  An integrated chat system to coordinate session details and confirm schedules.
+- Skill Providers/Teachers: Ages 22-55, including professionals, hobbyists, and retirees with expertise to share
+- Skill Seekers/Learners: Ages 18-60, including curious learners, career changers, and skill enthusiasts
 
-* **Sessions Management:**
-  Dedicated interfaces for upcoming sessions, session summaries, and request management (accept / decline).
+## User Roles
 
-* **Gamification & Feedback:**
-  A motivational system including **Skill Points**, **Badges** such as *“Consistency Champion”*, and a mutual rating system after each session.
+| Role | Main Goal | Key Actions |
+| --- | --- | --- |
+| Learner (Skill Seeker) | Learn new skills through exchange sessions | Search skills, send swap requests, schedule sessions, leave feedback |
+| Provider (Skill Teacher) | Share expertise and receive other skills in return | Create/manage skill offerings, set availability, accept/decline requests, run sessions |
+| Admin | Keep platform quality and safety | Moderate content, handle disputes, manage users/sessions/swaps, monitor platform activity |
 
+## Features
 
-## 🎨 Design System
+- Authentication flows: register, email verification, login, forgot/reset password
+- Onboarding and profile setup
+- Skill discovery and provider exploration
+- Swap request lifecycle (send, accept, decline, cancel)
+- Session management and session feedback
+- Gamification system (points, badges, achievements)
+- Admin area for users, sessions, swaps, badges, and audit logs
 
-The front-end was developed based on a defined visual identity to enhance trust and collaboration:
+## Tech Stack
 
-### Color Palette
+- React 19 + TypeScript
+- Vite (Rolldown Vite)
+- React Router
+- TanStack Query
+- Zustand
+- Axios
+- Tailwind CSS + MUI
 
-* **Primary Blue:** `#3E8FCC` (used for core elements and branding)
-* **Skill Orange:** `#FF9F00` (represents growth and creativity)
-* **Success:** `#16A34A` | **Error:** `#DC2626` | **Warning:** `#F59E0B`
-* **Neutrals:** Backgrounds starting from `#F9FAFB` with white cards `#FFFFFF`
+## Design System
+
+### Core Colors
+
+- `Primary`:
+  `#3272A3` (default), `#3E8FCC` (light), `#2F71A3` (dark)
+- `Text`:
+  `#0C0D0F` (primary), `#666666` (secondary), `#9CA3AF` (disabled)
+- `Neutral`:
+  `#F9FAFB` (background), `#F7FAFF` (background2), `#FFFFFF` (card/background), `#E5E7EB` (border)
+- `Status`:
+  `#16A34A` (success), `#FFA412` / `#F59E0B` (warning)
 
 ### Typography
 
-* **Titles & Headings:** **Poppins** 
-* **UI & Body Text:** **Inter** 
+- `Outfit` is used as the main body font in `src/index.css`
+- `Inter` and `Poppins` are configured in Tailwind (`fontFamily.sans`, `fontFamily.poppins`)
 
+## Getting Started
 
-## 🏗️ Site Structure (Site Map)
+### Prerequisites
 
-The platform follows a clear hierarchical flow:
+- Node.js (recommended: latest LTS)
+- npm
 
-1. **Landing & Auth:** Landing pages, authentication, and onboarding
-2. **Explore:** Skill and provider discovery
-3. **Exchange & Chat:** Request handling and real-time messaging
-4. **Dashboard:** User dashboard (sessions, points, badges)
-5. **Support:** Help center and dispute reporting
+### Installation
 
+```bash
+npm install
+```
 
-## 🛠️ Tech Stack
+### Run in Development
 
+```bash
+npm run dev
+```
 
+App runs by default on:
 
-* **Framework:** React.js 
-* **Styling:** Tailwind CSS
+```text
+http://localhost:5173
+```
 
-## State Management & Data Fetching
+### Build for Production
 
-The platform uses a hybrid approach for state management to ensure performance, scalability, and clean separation of concerns:
+```bash
+npm run build
+```
 
-**Zustand:**
+### Preview Production Build
 
-Used for managing simple and local UI states, such as:
+```bash
+npm run preview
+```
 
-* Opening and closing menus and modals
+### Lint
 
-* Temporary profile data
+```bash
+npm run lint
+```
 
-* UI preferences and lightweight global states
+## Environment Configuration
 
-**TanStack Query (React Query):**
+Create a `.env` file in the project root:
 
-Used for handling server-side state and data fetched from the database, including:
+```env
+VITE_API_BASE_URL=https://your-api-url.com
+```
 
-* Skills data
+Notes:
 
-* Sessions and exchange requests
+- `src/services/api.ts` uses `VITE_API_BASE_URL` (with a fallback URL).
+- Most API calls in the app use `src/api/axiosInstance.ts`, where `API_BASE_URL` is currently hardcoded.
+- If you need a different backend URL, update both places to keep behavior consistent.
 
-* Caching, background refetching, and data synchronization
+## Project Structure
+
+```text
+src/
+  api/          # Axios instance + API service modules
+  services/     # Domain services used by features/pages
+  pages/        # Route-level pages
+  components/   # Reusable UI components
+  hooks/        # Custom React hooks
+  routes/       # Route config and guards
+  store/        # Zustand stores
+  types/        # Shared TypeScript types
+```
+
+## Main Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Type-check and build
+- `npm run preview` - Preview production build locally
+- `npm run lint` - Run ESLint
