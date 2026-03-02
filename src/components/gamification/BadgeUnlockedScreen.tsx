@@ -1,4 +1,5 @@
 import React from 'react'
+import { Trophy, ChevronRight } from 'lucide-react'
 
 interface BadgeUnlockedScreenProps {
     unlockedBadges?: any[]
@@ -31,8 +32,8 @@ export const BadgeUnlockedScreen: React.FC<BadgeUnlockedScreenProps> = ({
                 </h2>
 
                 <div className="flex justify-center mb-5">
-                    <div className="w-24 h-24 bg-[#E8F5E9] rounded-full flex items-center justify-center text-5xl shadow-sm">
-                        {badge.icon || '🏆'}
+                    <div className="w-24 h-24 bg-[#E8F5E9] rounded-full flex items-center justify-center shadow-sm">
+                        <Trophy className="w-12 h-12 text-[#4CAF50]" strokeWidth={1.8} />
                     </div>
                 </div>
 
@@ -56,8 +57,8 @@ export const BadgeUnlockedScreen: React.FC<BadgeUnlockedScreenProps> = ({
                     <div className="mb-8">
                         <h4 className="text-sm font-bold text-gray-900 mb-3">Next Badge</h4>
                         <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
-                            <div className="w-11 h-11 bg-[#E0F2FE] rounded-full flex items-center justify-center flex-shrink-0 text-2xl">
-                                {nextBadge.icon || '🎯'}
+                            <div className="w-11 h-11 bg-[#E0F2FE] rounded-full flex items-center justify-center flex-shrink-0">
+                                <ChevronRight className="w-5 h-5 text-[#3E8FCC]" />
                             </div>
                             <div>
                                 <div className="text-sm font-semibold text-gray-900">{nextBadge.name}</div>

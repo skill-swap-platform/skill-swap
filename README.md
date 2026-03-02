@@ -29,7 +29,7 @@ Primary users:
 | Provider (Skill Teacher) | Share expertise and receive other skills in return | Create/manage skill offerings, set availability, accept/decline requests, run sessions |
 | Admin | Keep platform quality and safety | Moderate content, handle disputes, manage users/sessions/swaps, monitor platform activity |
 
-## Features
+## 🧩 Features
 
 - Authentication flows: register, email verification, login, forgot/reset password
 - Onboarding and profile setup
@@ -39,7 +39,7 @@ Primary users:
 - Gamification system (points, badges, achievements)
 - Admin area for users, sessions, swaps, badges, and audit logs
 
-## Tech Stack
+## 🛠 Tech Stack
 
 - React 19 + TypeScript
 - Vite (Rolldown Vite)
@@ -49,7 +49,7 @@ Primary users:
 - Axios
 - Tailwind CSS + MUI
 
-## Design System
+## 🎨 Design System
 
 ### Core Colors
 
@@ -67,7 +67,7 @@ Primary users:
 - `Outfit` is used as the main body font in `src/index.css`
 - `Inter` and `Poppins` are configured in Tailwind (`fontFamily.sans`, `fontFamily.poppins`)
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -124,7 +124,7 @@ Notes:
 - Most API calls in the app use `src/api/axiosInstance.ts`, where `API_BASE_URL` is currently hardcoded.
 - If you need a different backend URL, update both places to keep behavior consistent.
 
-## Project Structure
+## 📁 Project Structure
 
 ```text
 src/

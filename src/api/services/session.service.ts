@@ -74,5 +74,10 @@ export const sessionService = {
     getReviewDetail: async (reviewId: string): Promise<ApiResponse<any>> => {
         const response = await axiosInstance.get(`/api/v1/reviews/${reviewId}`);
         return response.data;
+    },
+
+    getUserReceivedReviews: async (userId: string, page = 1, limit = 50): Promise<ApiResponse<any>> => {
+        const response = await axiosInstance.get(`/api/v1/reviews/${userId}/received`, { params: { page, limit } });
+        return response.data;
     }
 };
