@@ -230,7 +230,7 @@ const primaryNavItems: AdminSidebarNavItem[] = [
     { icon: UsersListFigmaIcon, label: 'Users List', to: '/admin/users' },
     { icon: BadgesManagementFigmaIcon, label: 'Badges Management', to: '/points-badges' },
     { icon: SwapRequestsFigmaIcon, label: 'Swap Requests', to: '/admin/requests' },
-    { icon: SessionsFigmaIcon, label: 'Sessions', to: '/session-history' },
+    { icon: SessionsFigmaIcon, label: 'Sessions', to: '/admin/sessions' },
     { icon: AlertCircle, label: 'Disputes', to: '/admin/disputes' },
 ]
 
