@@ -326,11 +326,6 @@ export const AdminSwapRequests: React.FC = () => {
         return [currentPage - 1, currentPage, currentPage + 1]
     }, [currentPage, totalPages])
 
-    const selectedRows = useMemo(
-        () => filteredRows.filter((swap) => selectedSwapIds.includes(swap.id)),
-        [filteredRows, selectedSwapIds]
-    )
-
     const isAllRowsChecked =
         filteredRows.length > 0 && filteredRows.every((swap) => selectedSwapIds.includes(swap.id))
 
@@ -853,14 +848,14 @@ export const AdminSwapRequests: React.FC = () => {
                         </div>
                     </section>
 
-                    {selectedRows.length > 0 && (
+                    {selectedSwapIds.length > 0 && (
                         <section className="md:px-14">
                             <div className="flex flex-col gap-3 rounded-[50px] border border-[#3272A3] bg-[#F7FAFF] p-4 lg:flex-row lg:items-center">
                                 <div className="flex flex-1 items-center gap-2 text-[#3272A3]">
                                     <div className="flex h-6 w-6 items-center justify-center rounded-[6px] bg-[#3272A3]">
                                         <Check className="h-4 w-4 text-white" />
                                     </div>
-                                    <p className="text-[16px]">{selectedRows.length} Sessions selected</p>
+                                    <p className="text-[16px]">{selectedSwapIds.length} Sessions selected</p>
                                 </div>
 
                                 <button
