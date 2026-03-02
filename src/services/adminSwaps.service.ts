@@ -12,6 +12,10 @@ import type {
 } from '@/types/adminSwaps.types'
 
 const DEFAULT_LIMIT = 10
+type NormalizedAdminSwapsQueryParams = Omit<AdminSwapsQueryParams, 'page' | 'limit'> & {
+    page: number
+    limit: number
+}
 
 const toText = (value: unknown, fallback = ''): string => {
     if (typeof value === 'string') return value
@@ -205,7 +209,7 @@ const normalizeAdminSwapsData = (
     }
 }
 
-const buildParams = (params: AdminSwapsQueryParams): AdminSwapsQueryParams => {
+const buildParams = (params: AdminSwapsQueryParams): NormalizedAdminSwapsQueryParams => {
     const page = Math.max(1, params.page ?? 1)
     const limit = Math.max(1, params.limit ?? DEFAULT_LIMIT)
 
