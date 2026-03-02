@@ -182,7 +182,18 @@ export const SessionHistory: React.FC = () => {
                             const myReview = partnerReviewsRes.data.review.find(
                                 (r: any) => r.reviewer?.id === currentUser?.id
                             )
-                            if (myReview) setSentReview(myReview)
+                            if (myReview) {
+                                setSentReview(myReview)
+                                const apiRating = parseOverallRating(myReview.overallRating)
+                                if (apiRating > 0) {
+                                    const stored = JSON.parse(localStorage.getItem('ss_session_ratings') || '{}')
+                                    stored[sessionId] = apiRating
+                                    localStorage.setItem('ss_session_ratings', JSON.stringify(stored))
+                                    setSessions(prev => prev.map(s =>
+                                        s.id === sessionId ? { ...s, rating: apiRating } : s
+                                    ))
+                                }
+                            }
                         }
                     } catch {
                     }
