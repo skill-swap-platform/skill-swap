@@ -70,8 +70,8 @@ const HeroSection = () => {
 
               <button
                 onClick={() => navigate("/auth/register")}
-                className="rounded-lg bg-blue-600 px-8 py-3 text-white font-medium
-                           transition hover:bg-blue-700 focus:outline-none
+                className="rounded-lg bg-[#3E8FCC] px-8 py-3 text-white font-medium
+                           transition focus:outline-none
                            focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
               >
                 Get Started
