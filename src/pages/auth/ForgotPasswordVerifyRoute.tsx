@@ -1,13 +1,16 @@
-import { useMemo } from "react";
+import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import EmailVerificationPage from "@/pages/auth/EmailVerificationPage";
 import { authService } from "@/api/services/auth.service";
 
 const FORGOT_PASSWORD_KEY = "forgot_password_email_v1";
-const TTL_MS = 15 * 60 * 1000; // 15 minutes
-const VALID_OTP = "123456"; // Temporary: backend doesn't validate OTP yet
+const TTL_MS = 10 * 60 * 1000;
+const VALID_OTP = "123456";
 
-type ForgotPasswordData = { email: string; createdAt: number };
+type ForgotPasswordData = {
+  email: string;
+  createdAt: number;
+};
 
 function getValidForgotPasswordData(): ForgotPasswordData | null {
   const raw = sessionStorage.getItem(FORGOT_PASSWORD_KEY);
@@ -15,9 +18,12 @@ function getValidForgotPasswordData(): ForgotPasswordData | null {
 
   try {
     const parsed = JSON.parse(raw) as ForgotPasswordData;
+
+    if (!parsed.email) return null;
+
     const expired = Date.now() - parsed.createdAt > TTL_MS;
 
-    if (!parsed.email || expired) {
+    if (expired) {
       sessionStorage.removeItem(FORGOT_PASSWORD_KEY);
       return null;
     }
@@ -32,48 +38,67 @@ function getValidForgotPasswordData(): ForgotPasswordData | null {
 export default function ForgotPasswordVerifyRoute() {
   const navigate = useNavigate();
 
-  // Compute initial data once
-  const forgotPasswordData = useMemo(() => getValidForgotPasswordData(), []);
+  const [verificationState] = useState(() => {
+    const data = getValidForgotPasswordData();
 
-  // Redirect if no valid data
-  if (!forgotPasswordData) {
+    if (!data) {
+      return {
+        data: null,
+        remainingSeconds: 0,
+      };
+    }
+
+    const remainingSeconds = Math.max(
+      0,
+      Math.floor((data.createdAt + TTL_MS - Date.now()) / 1000),
+    );
+
+    return {
+      data,
+      remainingSeconds,
+    };
+  });
+
+  const data = verificationState.data;
+  const remainingSeconds = verificationState.remainingSeconds;
+
+  if (!data) {
     return <Navigate to="/auth/forgot-password" replace />;
   }
 
   const onVerify = async (code: string) => {
-    // TODO: Once backend supports OTP validation for password reset,
-    // replace this with actual API call
     if (code !== VALID_OTP) {
       throw new Error("Invalid code. Please try again.");
     }
 
-    // Navigate to reset password page with email context
     navigate("/auth/reset-password", {
       replace: true,
-      state: { email: forgotPasswordData.email },
+      state: { email: data.email },
     });
   };
 
   const onResend = async () => {
-    const res = await authService.forgotPassword(forgotPasswordData.email);
+    const res = await authService.forgotPassword(data.email);
 
     if (!res.success) {
       throw new Error(res.message || "Failed to resend code");
     }
 
-    // Update timestamp
     sessionStorage.setItem(
       FORGOT_PASSWORD_KEY,
-      JSON.stringify({ email: forgotPasswordData.email, createdAt: Date.now() })
+      JSON.stringify({
+        email: data.email,
+        createdAt: Date.now(),
+      }),
     );
   };
 
   return (
     <EmailVerificationPage
-      email={forgotPasswordData.email}
+      email={data.email}
       onVerify={onVerify}
       onResend={onResend}
-      initialSeconds={165} // 2:45
+      initialSeconds={remainingSeconds}
       supportEmail="support@swap.xyz"
     />
   );
