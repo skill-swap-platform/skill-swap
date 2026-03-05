@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import type { Review, ReviewsData } from "@/services/exploreService";
+import type { Review, ReviewsData } from "@/api/extended-services/exploreService";
 
 interface ReviewsProps {
   data?: ReviewsData | null;

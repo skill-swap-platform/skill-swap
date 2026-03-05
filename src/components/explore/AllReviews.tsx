@@ -6,7 +6,7 @@ import {
   getSkillDetails,
   type Review,
   type SkillDetailsResponse,
-} from "@/services";
+} from "@/api/extended-services";
 
 const STAR_FILTERS = [5, 4, 3, 2, 1] as const;
 

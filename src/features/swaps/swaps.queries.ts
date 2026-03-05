@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { swapsService } from '@/services/swaps.service';
+import { swapsService } from '@/api/extended-services/swaps.service';
 import type {
   CreateSwapRequestPayload,
   DeclineSwapRequestPayload,

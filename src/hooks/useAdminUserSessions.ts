@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { getAdminUserSessions } from '@/services/adminUsers.service'
+import { getAdminUserSessions } from '@/api/extended-services/adminUsers.service'
 import type { AdminUserSessionsQueryParams } from '@/types/adminUsers.types'
 
 export const useAdminUserSessions = (

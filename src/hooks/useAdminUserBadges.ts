@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getAdminUserBadges } from '@/services/adminUsers.service'
+import { getAdminUserBadges } from '@/api/extended-services/adminUsers.service'
 
 export const useAdminUserBadges = (userId: string | undefined) => {
     const normalizedUserId = userId?.trim() ?? ''

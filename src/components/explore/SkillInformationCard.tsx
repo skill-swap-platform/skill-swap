@@ -1,4 +1,4 @@
-import type { SkillDetailsResponse } from "@/services/exploreService";
+import type { SkillDetailsResponse } from "@/api/extended-services/exploreService";
 
 interface SkillInformationCardProps {
   data?: SkillDetailsResponse | null;

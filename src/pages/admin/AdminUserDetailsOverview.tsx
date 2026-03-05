@@ -33,7 +33,7 @@ import {
     suspendAdminUser,
     unbanAdminUser,
     warnAdminUser,
-} from '@/services/adminUsers.service'
+} from '@/api/extended-services/adminUsers.service'
 import type {
     AdminUserActivityLogItem,
     AdminUserAdjustPointsPayload,

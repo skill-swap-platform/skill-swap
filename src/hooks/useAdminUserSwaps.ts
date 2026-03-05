@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { getAdminUserSwaps } from '@/services/adminUsers.service'
+import { getAdminUserSwaps } from '@/api/extended-services/adminUsers.service'
 import type { AdminUserSwapsQueryParams } from '@/types/adminUsers.types'
 
 export const useAdminUserSwaps = (

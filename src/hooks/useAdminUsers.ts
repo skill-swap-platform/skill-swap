@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { getAdminUsers } from '@/services/adminUsers.service'
+import { getAdminUsers } from '@/api/extended-services/adminUsers.service'
 import type {
     AdminUsersQueryParams,
     AdminUsersSort,

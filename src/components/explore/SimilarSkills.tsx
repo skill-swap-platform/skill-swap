@@ -5,7 +5,7 @@ import {
   getUserIdentifier,
   type ExploreResultItem,
   type RecommendedUserSkill,
-} from "@/services/exploreService";
+} from "@/api/extended-services/exploreService";
 
 interface SimilarSkillsProps {
   data?: ExploreResultItem[] | null;
