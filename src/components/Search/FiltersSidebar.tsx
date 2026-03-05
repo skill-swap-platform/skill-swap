@@ -25,6 +25,85 @@ const radioClass =
 const checkboxClass =
   "h-4 w-4 rounded-[4px] border flex items-center justify-center shrink-0";
 
+const LANGUAGE_OPTIONS = [
+  "Afrikaans",
+  "Albanian",
+  "Amharic",
+  "Arabic",
+  "Armenian",
+  "Azerbaijani",
+  "Basque",
+  "Belarusian",
+  "Bengali",
+  "Bosnian",
+  "Bulgarian",
+  "Burmese",
+  "Catalan",
+  "Chinese",
+  "Croatian",
+  "Czech",
+  "Danish",
+  "Dutch",
+  "English",
+  "Estonian",
+  "Finnish",
+  "French",
+  "Georgian",
+  "German",
+  "Greek",
+  "Gujarati",
+  "Hebrew",
+  "Hindi",
+  "Hungarian",
+  "Icelandic",
+  "Indonesian",
+  "Irish",
+  "Italian",
+  "Japanese",
+  "Kannada",
+  "Kazakh",
+  "Khmer",
+  "Korean",
+  "Kurdish",
+  "Lao",
+  "Latvian",
+  "Lithuanian",
+  "Macedonian",
+  "Malay",
+  "Malayalam",
+  "Maltese",
+  "Mongolian",
+  "Nepali",
+  "Norwegian",
+  "Pashto",
+  "Persian",
+  "Polish",
+  "Portuguese",
+  "Punjabi",
+  "Romanian",
+  "Russian",
+  "Serbian",
+  "Sinhala",
+  "Slovak",
+  "Slovenian",
+  "Somali",
+  "Spanish",
+  "Swahili",
+  "Swedish",
+  "Tagalog",
+  "Tamil",
+  "Telugu",
+  "Thai",
+  "Turkish",
+  "Ukrainian",
+  "Urdu",
+  "Uzbek",
+  "Vietnamese",
+  "Welsh",
+  "Yoruba",
+  "Zulu",
+];
+
 const FiltersSidebar: FC<Props> = ({
   filters,
   onSelectSkillType,
@@ -131,10 +210,11 @@ const FiltersSidebar: FC<Props> = ({
             className="h-10 w-full rounded-[5px] border border-[#e5e7eb] bg-transparent px-3 text-base text-[#0c0d0f] outline-none"
           >
             <option value="">Choose a language</option>
-            <option value="English">English</option>
-            <option value="Arabic">Arabic</option>
-            <option value="Spanish">Spanish</option>
-            <option value="French">French</option>
+            {LANGUAGE_OPTIONS.map((language) => (
+              <option key={language} value={language}>
+                {language}
+              </option>
+            ))}
           </select>
         </div>
 

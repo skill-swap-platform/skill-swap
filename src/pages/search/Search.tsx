@@ -48,57 +48,16 @@ const skillTypeMap: Record<SkillTypeFilter, string | undefined> = {
   both: "BOTH",
 };
 
-const normalizeLanguage = (value?: string): string => {
-  const normalized = value?.trim().toLowerCase() ?? "";
-  if (!normalized) return "";
-
-  if (
-    normalized === "en" ||
-    normalized === "eng" ||
-    normalized === "english" ||
-    normalized === "en-us" ||
-    normalized === "en_uk"
-  ) {
-    return "english";
-  }
-
-  if (normalized === "ar" || normalized === "ara" || normalized === "arabic") {
-    return "arabic";
-  }
-
-  if (normalized === "es" || normalized === "spa" || normalized === "spanish") {
-    return "spanish";
-  }
-
-  if (normalized === "fr" || normalized === "fra" || normalized === "french") {
-    return "french";
-  }
-
-  return normalized;
-};
-
 const toApiLanguage = (value?: string): string | undefined => {
-  const normalized = normalizeLanguage(value);
-  if (!normalized) return undefined;
-
-  if (normalized === "english") return "English";
-  if (normalized === "arabic") return "Arabic";
-  if (normalized === "spanish") return "Spanish";
-  if (normalized === "french") return "French";
-
-  return value?.trim() || undefined;
+  const normalized = value?.trim() ?? "";
+  return normalized || undefined;
 };
 
 const getLanguageFallbacks = (value?: string): string[] => {
   const first = toApiLanguage(value);
   if (!first) return [];
 
-  const candidates = [first, first.toLowerCase(), first.toUpperCase()];
-  if (first === "Arabic") {
-    candidates.push("العربية");
-  }
-
-  return Array.from(new Set(candidates));
+  return Array.from(new Set([first, first.toLowerCase(), first.toUpperCase()]));
 };
 
 const matchesSearchText = (item: ExploreResultItem, query: string): boolean => {
