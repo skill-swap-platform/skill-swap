@@ -94,7 +94,7 @@ const SimilarSkills = ({
             </div>
           </div>
 
-          <button
+          {/* <button
             type="button"
             className="text-[#666] transition-colors hover:text-[#0c0d0f]"
             aria-label="Bookmark"
@@ -108,7 +108,7 @@ const SimilarSkills = ({
                 strokeLinejoin="round"
               />
             </svg>
-          </button>
+          </button> */}
         </div>
 
         <div>

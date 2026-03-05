@@ -372,7 +372,7 @@ const Search = () => {
             </div>
           </div>
 
-          <button
+          {/* <button
             type="button"
             className="text-[#666666] transition-colors hover:text-[#0c0d0f]"
             aria-label="Bookmark"
@@ -386,7 +386,7 @@ const Search = () => {
                 strokeLinejoin="round"
               />
             </svg>
-          </button>
+          </button> */}
         </div>
 
         <div className="mt-4">
