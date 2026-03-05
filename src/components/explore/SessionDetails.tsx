@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { SkillDetailsResponse } from "@/services/exploreService";
+import type { SkillDetailsResponse } from "@/api/extended-services/exploreService";
 
 interface SessionDetailsProps {
   data?: SkillDetailsResponse | null;

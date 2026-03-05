@@ -10,7 +10,7 @@ import {
     getFeedbackReceived,
     getFeedbackGiven,
     canSubmitFeedback,
-} from '@/services'
+} from '@/api/extended-services'
 import { useFeedbackStore } from '@/store'
 import type { SubmitFeedbackDto, FeedbackHistoryFilter } from '@/types'
 

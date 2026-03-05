@@ -8,7 +8,7 @@ import {
   getUserIdentifier,
   searchSkills,
   type ExploreResultItem,
-} from "@/services/exploreService";
+} from "@/api/extended-services/exploreService";
 
 type SkillTypeFilter = "learning" | "offering" | "both" | "";
 type DifficultyFilter = "beginner" | "intermediate" | "advanced" | "";

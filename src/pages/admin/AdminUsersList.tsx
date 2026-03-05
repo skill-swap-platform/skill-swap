@@ -25,7 +25,7 @@ import {
     suspendAdminUser,
     unbanAdminUser,
     warnAdminUser,
-} from '@/services/adminUsers.service'
+} from '@/api/extended-services/adminUsers.service'
 import { useAdminUsers } from '@/hooks/useAdminUsers'
 import { useAdminUserImages } from '@/hooks/useAdminUserImages'
 import type {

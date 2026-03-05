@@ -7,7 +7,7 @@ import {
     updateUserPoints,
     getUserRank,
     getPointsHistory,
-} from '@/services'
+} from '@/api/extended-services'
 import { usePointsStore } from '@/store'
 import type {
     AddPointsDto,

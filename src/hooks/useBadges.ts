@@ -10,7 +10,7 @@ import {
     deleteBadge,
     removeBadgeFromUser,
     getBadgesByCategory,
-} from '@/services'
+} from '@/api/extended-services'
 import { useBadgesStore } from '@/store'
 import type { CreateBadgeDto, UpdateBadgeDto } from '@/types'
 

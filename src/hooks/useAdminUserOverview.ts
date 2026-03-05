@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getAdminUserOverview } from '@/services/adminUsers.service'
+import { getAdminUserOverview } from '@/api/extended-services/adminUsers.service'
 
 export const useAdminUserOverview = (userId: string | undefined) =>
     useQuery({

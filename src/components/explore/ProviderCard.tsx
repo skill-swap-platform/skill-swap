@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { getUserIdentifier, type SkillProvider } from "@/services/exploreService";
+import { getUserIdentifier, type SkillProvider } from "@/api/extended-services/exploreService";
 
 interface ProviderCardProps {
   data?: SkillProvider | null;

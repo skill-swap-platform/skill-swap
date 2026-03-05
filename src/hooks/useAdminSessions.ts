@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
-import { exportAdminSessionsCsv, getAdminSessions } from '@/services/adminSessions.service'
+import { exportAdminSessionsCsv, getAdminSessions } from '@/api/extended-services/adminSessions.service'
 import type {
     AdminSessionsExportPayload,
     AdminSessionsQueryParams,

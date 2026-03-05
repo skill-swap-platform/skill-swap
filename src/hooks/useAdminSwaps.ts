@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
-import { exportAdminSwapsCsv, getAdminSwaps } from '@/services/adminSwaps.service'
+import { exportAdminSwapsCsv, getAdminSwaps } from '@/api/extended-services/adminSwaps.service'
 import type { AdminSwapsExportPayload, AdminSwapsQueryParams } from '@/types/adminSwaps.types'
 
 const DEFAULT_LIMIT = 10

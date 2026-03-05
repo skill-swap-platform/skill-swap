@@ -17,7 +17,7 @@ import {
   type RecommendedUserSkill,
   type ReviewsData,
   type SkillDetailsResponse,
-} from "@/services";
+} from "@/api/extended-services";
 
 const getErrorMessage = (error: unknown, fallback: string): string => {
   if (typeof error === "object" && error !== null) {

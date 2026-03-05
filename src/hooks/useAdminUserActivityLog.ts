@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getAdminUserActivityLog } from '@/services/adminUsers.service'
+import { getAdminUserActivityLog } from '@/api/extended-services/adminUsers.service'
 
 export const useAdminUserActivityLog = (userId: string | undefined) => {
     const normalizedUserId = userId?.trim() ?? ''

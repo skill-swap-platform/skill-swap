@@ -9,7 +9,7 @@ import {
   getSkillDetails,
   type ReviewsData,
   type SkillDetailsResponse,
-} from "@/services";
+} from "@/api/extended-services";
 
 type SimpleSkill = {
   id: string;
