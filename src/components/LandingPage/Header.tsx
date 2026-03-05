@@ -73,16 +73,16 @@ export default function Header({
         <div className="hidden items-center gap-4 md:flex">
           <Link
             to={signInPath}
-            className="rounded bg-blue-600 px-4 py-2 text-white"
+            className="rounded bg-transparent px-4 py-2 text-[#3E8FCC] font-bold"
           >
             Sign In
           </Link>
 
           <Link
             to={getStartedPath}
-            className="rounded border border-blue-600 px-4 py-2 text-blue-600"
+            className="rounded border bg-[#3E8FCC] px-4 py-2 text-white border-none"
           >
-            Sign Up
+            Get Started
           </Link>
         </div>
 
