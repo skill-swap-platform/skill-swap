@@ -108,7 +108,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-[#F9FAFB]">
       <div className="mx-auto grid min-h-screen max-w-6xl grid-cols-1 lg:grid-cols-2">
         {/* LEFT */}
         <section className="flex items-center justify-center px-6 py-10">

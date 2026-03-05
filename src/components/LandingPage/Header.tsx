@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Brand from "../Auth/Brand";
 
 type SectionLink = {
   label: string;
@@ -49,11 +50,7 @@ export default function Header({
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         {/* Logo */}
         <Link to={homePath} aria-label="Go to home">
-          <div className="flex w-[304px] flex-shrink-0 text-center text-2xl">
-            <span className="font-poppins font-normal text-warning">Skill</span>
-            <span className="font-poppins font-bold text-primary">Swap</span>
-            <span className="font-poppins font-bold text-warning">.</span>
-          </div>
+          <Brand />
         </Link>
 
         {/* Desktop Navigation */}
