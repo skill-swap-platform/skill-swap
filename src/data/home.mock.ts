@@ -1,7 +1,7 @@
 import type { DashboardData } from "@/types/home.types";
 
 export const HomeDashboardMockData: DashboardData = {
-  userName: "Ahmed",
+  userName: "",
   heroSubtitle: "Ready to exchange skills? Start your learning journey today",
 
   quickActions: [
