@@ -20,14 +20,29 @@
     height: 100%;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    font-family:
+      "Outfit",
+      "Inter",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      "Roboto",
+      "Oxygen",
+      "Ubuntu",
+      "Cantarell",
+      "Fira Sans",
+      "Droid Sans",
+      "Helvetica Neue",
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-color: #f9fafb;
-    color: #0C0D0F;
+    color: #0c0d0f;
     overflow-x: hidden;
   }
 
@@ -38,7 +53,6 @@
 }
 
 @layer components {
-
   /* Custom CSS for numbered list styling */
   .css-8097nc {
     list-style-type: decimal;
@@ -52,7 +66,6 @@
 }
 
 @layer utilities {
-
   /* Animation keyframes */
   @keyframes fadeIn {
     from {
@@ -92,7 +105,9 @@
     top: auto;
   }
 
-  .requests-page .requests-details-panel [class*="h-[72px]"][class*="rounded-[5px]"][class*="w-full"] {
+  .requests-page
+    .requests-details-panel
+    [class*="h-[72px]"][class*="rounded-[5px]"][class*="w-full"] {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -105,7 +120,9 @@
     width: 100%;
   }
 
-  .requests-page .requests-details-panel [class*="h-[40px]"][class*="items-center"][class*="w-full"] {
+  .requests-page
+    .requests-details-panel
+    [class*="h-[40px]"][class*="items-center"][class*="w-full"] {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -136,7 +153,9 @@
     min-height: 86px;
   }
 
-  .requests-page .requests-details-panel [class*="h-[48px]"][class*="w-full"][class*="px-[8px]"] {
+  .requests-page
+    .requests-details-panel
+    [class*="h-[48px]"][class*="w-full"][class*="px-[8px]"] {
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -144,7 +163,10 @@
     height: auto;
   }
 
-  .requests-page .requests-details-panel [class*="h-[48px]"][class*="w-full"][class*="px-[8px]"]>button {
+  .requests-page
+    .requests-details-panel
+    [class*="h-[48px]"][class*="w-full"][class*="px-[8px]"]
+    > button {
     min-height: 44px;
   }
 

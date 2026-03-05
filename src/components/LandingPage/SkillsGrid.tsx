@@ -9,7 +9,7 @@ type SkillsGridProps = {
 
 export function SkillsGrid({ skills = SKILLS }: SkillsGridProps) {
   return (
-    <div className="py-10 bg-white">
+    <div className="py-10 bg-white" id="browse-skills">
       <h2 className="text-center w-6/12 text-2xl font-semibold tracking-tight text-slate-800 sm:text-3xl mx-auto py-4">
         Some of the skills provided by the skills swap application
       </h2>

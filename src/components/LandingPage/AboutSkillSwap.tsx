@@ -3,6 +3,8 @@ import { Box, Grid } from "@mui/material";
 const AboutSkillSwap = () => {
   return (
     <Box
+      component="section"
+      id="about"
       sx={{
         flexGrow: 1,
         padding: 2,
@@ -28,7 +30,11 @@ const AboutSkillSwap = () => {
               justifyContent: "center",
             }}
           >
-            <img src="/assets/landingPage/rafiki.png" alt="rafiki" className="object-fill" />
+            <img
+              src="/assets/landingPage/rafiki.png"
+              alt="rafiki"
+              className="object-fill"
+            />
           </Box>
         </Grid>
 
