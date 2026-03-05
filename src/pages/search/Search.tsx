@@ -48,6 +48,10 @@ const skillTypeMap: Record<SkillTypeFilter, string | undefined> = {
   both: "BOTH",
 };
 
+const API_PAGE_LIMIT = 20;
+const RESULTS_PER_PAGE = 6;
+const MAX_API_PAGES = 100;
+
 const toApiLanguage = (value?: string): string | undefined => {
   const normalized = value?.trim() ?? "";
   return normalized || undefined;
@@ -75,6 +79,17 @@ const matchesSearchText = (item: ExploreResultItem, query: string): boolean => {
   return fields.some((field) => field?.toLowerCase().includes(normalizedQuery));
 };
 
+const getResultKey = (item: ExploreResultItem): string => {
+  const skillId = getSkillIdentifier(item.skill);
+  const userId = getUserIdentifier(item.user);
+
+  if (skillId && userId) {
+    return `${skillId}-${userId}`;
+  }
+
+  return `${item.skill.name}-${item.user.userName}`;
+};
+
 const Search = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -89,6 +104,7 @@ const Search = () => {
   const [draftFilters, setDraftFilters] = useState<FilterState>(defaultFilters);
   const [appliedFilters, setAppliedFilters] = useState<FilterState>(defaultFilters);
   const [sortBy, setSortBy] = useState<"recent" | "popular" | "rating">("recent");
+  const [currentPage, setCurrentPage] = useState(1);
   const latestRequestIdRef = useRef(0);
 
   const hasActiveFilters =
@@ -119,14 +135,45 @@ const Search = () => {
       const selectedLevel = levelMap[filters.difficultyLevel];
       const selectedLanguage = toApiLanguage(filters.language);
 
+      const fetchAllPages = async (
+        requestPage: (page: number) => Promise<ExploreResultItem[]>,
+      ): Promise<ExploreResultItem[]> => {
+        const collected: ExploreResultItem[] = [];
+        const seen = new Set<string>();
+
+        for (let page = 1; page <= MAX_API_PAGES; page += 1) {
+          const pageData = await requestPage(page);
+          if (requestId !== latestRequestIdRef.current) {
+            return [];
+          }
+          if (pageData.length === 0) {
+            break;
+          }
+
+          for (const item of pageData) {
+            const key = getResultKey(item);
+            if (seen.has(key)) {
+              continue;
+            }
+            seen.add(key);
+            collected.push(item);
+          }
+
+          if (pageData.length < API_PAGE_LIMIT) {
+            break;
+          }
+        }
+
+        return collected;
+      };
+
       let baseResults: ExploreResultItem[] = [];
       if (hasFilters) {
         const sharedParams = {
           skillType: skillTypeMap[filters.skillType],
           availability: selectedAvailability,
           level: selectedLevel,
-          page: 1,
-          limit: 20,
+          limit: API_PAGE_LIMIT,
         };
 
         if (selectedLanguage) {
@@ -135,10 +182,13 @@ const Search = () => {
 
           for (let index = 0; index < languageCandidates.length; index += 1) {
             const language = languageCandidates[index];
-            const response = await discoverSkills({
-              ...sharedParams,
-              language,
-            });
+            const response = await fetchAllPages((page) =>
+              discoverSkills({
+                ...sharedParams,
+                page,
+                language,
+              }),
+            );
 
             if (index === 0) {
               firstResponse = response;
@@ -154,15 +204,22 @@ const Search = () => {
             baseResults = firstResponse;
           }
         } else {
-          baseResults = await discoverSkills({
-            ...sharedParams,
-            language: undefined,
-          });
+          baseResults = await fetchAllPages((page) =>
+            discoverSkills({
+              ...sharedParams,
+              page,
+              language: undefined,
+            }),
+          );
         }
       } else if (trimmedQuery.length > 0) {
-        baseResults = await searchSkills(trimmedQuery, 1, 20);
+        baseResults = await fetchAllPages((page) =>
+          searchSkills(trimmedQuery, page, API_PAGE_LIMIT),
+        );
       } else {
-        baseResults = await discoverSkills({ page: 1, limit: 20 });
+        baseResults = await fetchAllPages((page) =>
+          discoverSkills({ page, limit: API_PAGE_LIMIT }),
+        );
       }
 
       const filteredResults = baseResults.filter((item) => {
@@ -213,6 +270,10 @@ const Search = () => {
 
     return () => window.clearTimeout(debounce);
   }, [appliedFilters, searchQuery]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, appliedFilters]);
 
   const applyFilters = () => {
     setAppliedFilters(draftFilters);
@@ -277,6 +338,26 @@ const Search = () => {
       return 0;
     });
   }, [recommendations, sortBy]);
+
+  const totalPages = Math.ceil(sortedRecommendations.length / RESULTS_PER_PAGE);
+
+  useEffect(() => {
+    if (totalPages === 0) {
+      if (currentPage !== 1) {
+        setCurrentPage(1);
+      }
+      return;
+    }
+
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedRecommendations = useMemo(() => {
+    const start = (currentPage - 1) * RESULTS_PER_PAGE;
+    return sortedRecommendations.slice(start, start + RESULTS_PER_PAGE);
+  }, [currentPage, sortedRecommendations]);
 
   const showRecentSection =
     searchQuery.trim().length === 0 && !hasActiveFilters && recentSearches.length > 0;
@@ -544,13 +625,54 @@ const Search = () => {
                 ))}
               </div>
             ) : sortedRecommendations.length > 0 ? (
-              <div className="space-y-4">{sortedRecommendations.map(renderCard)}</div>
+              <div className="space-y-4">{paginatedRecommendations.map(renderCard)}</div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12">
                 <p className="mb-2 text-xl font-semibold text-[#666666]">No skills found</p>
                 <p className="text-[#666666]">Try adjusting your search query or filters</p>
               </div>
             )}
+
+            {!loading && totalPages > 1 ? (
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  aria-label="Previous page"
+                  className="h-9 rounded-lg border border-[#e5e7eb] px-3 text-sm text-[#0c0d0f] transition hover:bg-[#f3f4f6] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  &larr;
+                </button>
+
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => setCurrentPage(page)}
+                    className={`h-9 min-w-[36px] rounded-lg border px-3 text-sm transition ${
+                      currentPage === page
+                        ? "border-[#3e8fcc] bg-[#3e8fcc] text-white"
+                        : "border-[#e5e7eb] text-[#0c0d0f] hover:bg-[#f3f4f6]"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  aria-label="Next page"
+                  className="h-9 rounded-lg border border-[#e5e7eb] px-3 text-sm text-[#0c0d0f] transition hover:bg-[#f3f4f6] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  &rarr;
+                </button>
+              </div>
+            ) : null}
           </div>
 
           {showFilters ? (
