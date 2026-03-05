@@ -35,7 +35,8 @@ interface SwapRequestCardItem extends RequestCardProps {
 
 const LIST_PAGE = 1;
 const LIST_LIMIT = 20;
-const STATUS_MODAL_STORAGE_KEY = 'requests-sent:status-modal-seen';
+const STATUS_MODAL_SEEN_KEYS_STORAGE_KEY = 'requests-sent:status-modal-seen';
+const STATUS_MODAL_LAST_SEEN_AT_STORAGE_KEY = 'requests-sent:status-modal-last-seen-at';
 
 const mapUiFilterToApiStatus = (filter: RequestStatus): SwapApiStatus | undefined => {
   if (filter === 'all') return undefined;
@@ -182,6 +183,7 @@ export const RequestsSent: React.FC = () => {
   const [statusModalRequest, setStatusModalRequest] = useState<SwapRequestCardItem | null>(null);
   const detailsPanelRef = useRef<HTMLDivElement | null>(null);
   const seenStatusModalKeysRef = useRef<Set<string>>(new Set());
+  const statusModalLastSeenAtRef = useRef(0);
   const hasHydratedStatusKeysRef = useRef(false);
 
   const queryParams = useMemo(
@@ -290,19 +292,24 @@ export const RequestsSent: React.FC = () => {
     if (typeof window === 'undefined') return;
 
     try {
-      const rawValue = window.sessionStorage.getItem(STATUS_MODAL_STORAGE_KEY);
+      const rawValue = window.localStorage.getItem(STATUS_MODAL_SEEN_KEYS_STORAGE_KEY);
       if (!rawValue) {
-        hasHydratedStatusKeysRef.current = true;
-        return;
+        seenStatusModalKeysRef.current = new Set();
+      } else {
+        const parsed = JSON.parse(rawValue);
+        if (Array.isArray(parsed)) {
+          const validKeys = parsed.filter((value): value is string => typeof value === 'string');
+          seenStatusModalKeysRef.current = new Set(validKeys);
+        }
       }
 
-      const parsed = JSON.parse(rawValue);
-      if (Array.isArray(parsed)) {
-        const validKeys = parsed.filter((value): value is string => typeof value === 'string');
-        seenStatusModalKeysRef.current = new Set(validKeys);
-      }
+      const rawLastSeenAt = window.localStorage.getItem(STATUS_MODAL_LAST_SEEN_AT_STORAGE_KEY);
+      const parsedLastSeenAt = rawLastSeenAt ? Number(rawLastSeenAt) : 0;
+      statusModalLastSeenAtRef.current =
+        Number.isFinite(parsedLastSeenAt) && parsedLastSeenAt > 0 ? parsedLastSeenAt : 0;
     } catch {
       seenStatusModalKeysRef.current = new Set();
+      statusModalLastSeenAtRef.current = 0;
     } finally {
       hasHydratedStatusKeysRef.current = true;
     }
@@ -313,9 +320,18 @@ export const RequestsSent: React.FC = () => {
     if (activeTab !== 'sent') return;
     if (sentSwapsQuery.isPending || sentSwapsQuery.isError) return;
     if (statusModalRequest) return;
+    if (statusModalLastSeenAtRef.current === 0) {
+      statusModalLastSeenAtRef.current = Date.now();
+      window.localStorage.setItem(
+        STATUS_MODAL_LAST_SEEN_AT_STORAGE_KEY,
+        String(statusModalLastSeenAtRef.current)
+      );
+      return;
+    }
 
     const nextRequest = [...sentRequests]
       .filter((request) => isDecisionStatus(request.backendStatus))
+      .filter((request) => getStatusUpdatedTimestamp(request) > statusModalLastSeenAtRef.current)
       .filter((request) => !seenStatusModalKeysRef.current.has(createStatusModalKey(request)))
       .sort((first, second) => getStatusUpdatedTimestamp(second) - getStatusUpdatedTimestamp(first))[0];
 
@@ -329,18 +345,26 @@ export const RequestsSent: React.FC = () => {
     statusModalRequest,
   ]);
 
-  const persistSeenStatusModalKeys = () => {
+  const persistStatusModalState = () => {
     if (typeof window === 'undefined') return;
-    window.sessionStorage.setItem(
-      STATUS_MODAL_STORAGE_KEY,
+    window.localStorage.setItem(
+      STATUS_MODAL_SEEN_KEYS_STORAGE_KEY,
       JSON.stringify([...seenStatusModalKeysRef.current])
+    );
+    window.localStorage.setItem(
+      STATUS_MODAL_LAST_SEEN_AT_STORAGE_KEY,
+      String(statusModalLastSeenAtRef.current)
     );
   };
 
   const handleCloseStatusModal = () => {
     if (!statusModalRequest) return;
     seenStatusModalKeysRef.current.add(createStatusModalKey(statusModalRequest));
-    persistSeenStatusModalKeys();
+    statusModalLastSeenAtRef.current = Math.max(
+      statusModalLastSeenAtRef.current,
+      getStatusUpdatedTimestamp(statusModalRequest)
+    );
+    persistStatusModalState();
     setStatusModalRequest(null);
   };
 
