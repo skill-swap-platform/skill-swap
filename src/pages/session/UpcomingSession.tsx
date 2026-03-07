@@ -7,12 +7,21 @@ import { sessionService } from '@/api/services/session.service';
 import { userService } from '@/api/services/user.service';
 import { Loader2 } from 'lucide-react';
 
+interface SessionParticipant {
+  id: string;
+  userName: string;
+  fullName?: string;
+  profileImage?: string;
+}
+
 interface UpcomingSessionViewModel {
   id: string;
   title: string;
   date: string;
   time: string;
   partnerName: string;
+  currentUser: SessionParticipant;
+  partner: SessionParticipant;
 }
 
 const UpcomingSession = () => {
@@ -39,12 +48,23 @@ const UpcomingSession = () => {
             const timeStr = endTime
               ? `${startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`
               : startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const me = userRes.data;
             setSession({
               id: s.id,
               title: s.skill?.name || s.title || 'Skill Session',
               date: new Date(s.scheduledAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
               time: timeStr,
               partnerName: partner?.userName || 'Partner',
+              currentUser: {
+                id: me.id,
+                userName: me.userName || me.email || 'You',
+                profileImage: (me as any).image || (me as any).profileImage,
+              },
+              partner: {
+                id: partner?.id || '',
+                userName: partner?.userName || 'Partner',
+                profileImage: partner?.image || partner?.profileImage,
+              },
             });
           }
         }
@@ -76,7 +96,7 @@ const UpcomingSession = () => {
                 dateLabel={session?.date}
                 timeLabel={session?.time}
                 partnerName={session?.partnerName}
-                onJoin={() => navigate('/session-room', { state: { sessionId: session?.id } })}
+                onJoin={() => navigate('/session-room', { state: { sessionId: session?.id, currentUser: session?.currentUser, partner: session?.partner } })}
               />
 
             </div>

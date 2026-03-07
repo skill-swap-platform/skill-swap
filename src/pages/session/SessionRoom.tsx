@@ -4,10 +4,43 @@ import Header from '@/components/Header/Header';
 import { sessionService } from '@/api/services/session.service';
 import { Video, VideoOff, Mic, MicOff, Monitor, LogOut, Clock, X } from 'lucide-react';
 
+interface SessionParticipant {
+    id?: string;
+    userName: string;
+    fullName?: string;
+    profileImage?: string;
+}
+
+interface SessionRoomState {
+    sessionId?: string;
+    currentUser?: SessionParticipant;
+    partner?: SessionParticipant;
+}
+
+/** Returns a dicebear avatar URL seeded by the given username */
+function getAvatarUrl(seed: string, bg = 'b6e3f4'): string {
+    return `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(seed)}&backgroundColor=${bg}`;
+}
+
+/** Returns the best display name for a participant */
+function displayName(p?: SessionParticipant): string {
+    if (!p) return 'Participant';
+    return p.fullName || p.userName || 'Participant';
+}
+
+/** Returns the best avatar src for a participant */
+function avatarSrc(p?: SessionParticipant, bg = 'b6e3f4'): string {
+    return p?.profileImage || getAvatarUrl(p?.userName || 'user', bg);
+}
+
 const SessionRoom: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const sessionId: string | undefined = (location.state as any)?.sessionId;
+    const state = (location.state as SessionRoomState) || {};
+    const sessionId: string | undefined = state.sessionId;
+    const currentUser: SessionParticipant = state.currentUser || { userName: 'You' };
+    const partner: SessionParticipant = state.partner || { userName: 'Partner' };
+
     const [isCamOn, setIsCamOn] = useState(true);
     const [isMicOn, setIsMicOn] = useState(true);
     const [isSharing, setIsSharing] = useState(false);
@@ -82,29 +115,33 @@ const SessionRoom: React.FC = () => {
                     </div>
                 )}
 
+                {/* Waiting banner — shows current user waiting for partner */}
                 {!hasJoined && (
                     <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-[#2D333B]/80 backdrop-blur-md px-6 py-2.5 rounded-2xl flex items-center gap-3 border border-white/5 shadow-2xl z-10 transition-all">
                         <img
-                            src="https://api.dicebear.com/7.x/notionists/svg?seed=Curtis&backgroundColor=b6e3f4"
-                            alt="Curtis"
+                            src={avatarSrc(currentUser, 'ffdfbf')}
+                            alt={displayName(currentUser)}
                             className="w-10 h-10 rounded-xl object-cover bg-white/10"
                         />
                         <div className="text-left">
-                            <h3 className="text-white text-[14px] font-bold leading-tight">Curtis Welsh</h3>
-                            <p className="text-gray-400 text-[11px] font-medium leading-tight">Waiting for Ade to join the call</p>
+                            <h3 className="text-white text-[14px] font-bold leading-tight">{displayName(currentUser)}</h3>
+                            <p className="text-gray-400 text-[11px] font-medium leading-tight">
+                                Waiting for {displayName(partner)} to join the call
+                            </p>
                         </div>
                     </div>
                 )}
 
                 <div className="w-full max-w-[1240px] flex flex-col md:flex-row gap-4 flex-1 items-center justify-center my-12">
 
+                    {/* Current user video cell */}
                     <div className={`relative bg-[#2D333B] rounded-[24px] border border-white/5 shadow-2xl flex items-center justify-center transition-all duration-500 overflow-hidden ${hasJoined ? 'flex-1 aspect-video' : 'w-full max-w-[900px] aspect-video'}`}>
                         {!isCamOn ? (
                             <div className="w-full h-full flex items-center justify-center bg-[#24292F]">
                                 <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-white/10 bg-gray-700 shadow-xl transform transition-transform hover:scale-105">
                                     <img
-                                        src="https://api.dicebear.com/7.x/notionists/svg?seed=Adam&backgroundColor=ffdfbf"
-                                        alt="Adam"
+                                        src={avatarSrc(currentUser, 'ffdfbf')}
+                                        alt={displayName(currentUser)}
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
@@ -120,22 +157,23 @@ const SessionRoom: React.FC = () => {
                             </div>
                         )}
                         <div className="absolute bottom-4 left-4 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-xl text-white text-[11px] font-bold border border-white/10">
-                            Adam jallad
+                            {displayName(currentUser)}
                         </div>
                     </div>
 
+                    {/* Partner video cell (shown after joining) */}
                     {hasJoined && (
                         <div className="relative bg-[#2D333B] rounded-[24px] border border-white/5 shadow-2xl flex items-center justify-center transition-all duration-500 flex-1 aspect-video overflow-hidden animate-fade-in">
                             <div className="w-full h-full relative">
                                 <img
                                     src="/Video-Cell.png"
-                                    alt="Curtis feed"
+                                    alt={`${displayName(partner)} feed`}
                                     className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                             </div>
                             <div className="absolute bottom-4 left-4 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-xl text-white text-[11px] font-bold border border-white/10">
-                                Curtis Welsh
+                                {displayName(partner)}
                             </div>
                         </div>
                     )}
